@@ -8,11 +8,11 @@
   "main": "lib/index",
   "scripts": {
     "build": "node scripts/build",
-    "preinstall": "yarn build",
-    "prelint": "yarn build",
+    "preinstall": "npm run build",
+    "prelint": "npm run build",
     "lint": "eslint .",
-    "pretest": "yarn lint",
-    "test": "yarn ~~test-pkg-bin && echo \"No tests yet :(\" && node --eval \"process.exit(process.env.CI ? 0 : 1)\"",
+    "pretest": "npm run lint",
+    "test": "npm run ~~test-pkg-bin && echo \"No tests yet :(\" && node --eval \"process.exit(process.env.CI ? 0 : 1)\"",
     "postversion": "git push && git push --tags",
     "~~test-pkg-bin": "node scripts/test-pkg-bin"
   },
