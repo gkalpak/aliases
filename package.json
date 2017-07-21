@@ -19,6 +19,7 @@
     "~~test-pkg-bin": "node scripts/test-pkg-bin"
   },
   "bin": {
+    "alv": "./bin/misc/alv.js",
     "gaa": "./bin/git/gaa.js",
     "gb": "./bin/git/gb.js",
     "gbc": "./bin/git/gbc.js",
