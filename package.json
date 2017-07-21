@@ -48,6 +48,8 @@
     "grba": "./bin/git/grba.js",
     "grbc": "./bin/git/grbc.js",
     "grbi": "./bin/git/grbi.js",
+    "grbia": "./bin/git/grbia.js",
+    "grbin": "./bin/git/grbin.js",
     "gs": "./bin/git/gs.js",
     "gsync": "./bin/git/gsync.js",
     "gsyncm": "./bin/git/gsyncm.js",
