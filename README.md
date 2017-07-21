@@ -43,12 +43,12 @@ Run `halp` for a list of all available aliases.
 - Add support for `halp <group>`.
 - Make `gcom`, `gprom`, `gprum`, `grbm` fallbacks of their non-`m` equivalents.
   (Requires feature to slice `$*`.)
+- Test/Fix/Improve commands (`gcopr`, `gsync`, `nvu`):
+  - Some commands are currently broken (e.g. `nvu`).
+  - Some commands are Windows-specific (e.g. `nvu`).
 - Document that `ng-maintain` is a peer dependency (+ show in `halp` (if not installed?)) and
     which commands require it (e.g. in `halp`).
     (Or make a real dependency - if it works for global bin scripts.)
-- Test/Fix/Improve commands (`gcopr`, `gcp(l)`, `gsync`, `nvu`):
-  - Some commands are currently broken (e.g. `nvu`).
-  - Some commands are Windows-specific (e.g. `nvu`).
 - Add unit tests.
 - (?) Add support for different commands, based on current OS.
 
