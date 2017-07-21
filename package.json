@@ -68,7 +68,10 @@
     "nrmsd": "./bin/node/nrmsd.js",
     "ns": "./bin/node/ns.js",
     "nt": "./bin/node/nt.js",
-    "nv": "./bin/node/nv.js"
+    "nv": "./bin/node/nv.js",
+    "yr": "./bin/node/yr.js",
+    "ys": "./bin/node/ys.js",
+    "yt": "./bin/node/yt.js"
   },
   "license": "Unlicense",
   "author": "gkalpak <kalpakas.g@gmail.com>",
