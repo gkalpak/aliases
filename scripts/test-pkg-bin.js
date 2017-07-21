@@ -16,14 +16,14 @@ function _main() {
   const {missing, extra} = diff(expected, actual);
 
   if (missing.length || extra.length) {
-    const joiner = '\n  ';
+    const joiner = '\n    ';
 
     console.error('The `bin` property in `./package.json` is out-of-sync with the aliases in `./lib/constants.js`.');
     if (missing.length) {
-      console.error(`Missing aliases:${joiner}${missing.join(joiner)}`);
+      console.error(`  Missing aliases:${joiner}${missing.join(joiner)}`);
     }
     if (extra.length) {
-      console.error(`Extra aliases:${joiner}${extra.join(joiner)}`);
+      console.error(`  Extra aliases:${joiner}${extra.join(joiner)}`);
     }
     console.error();
 
