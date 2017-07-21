@@ -42,11 +42,9 @@ Run `halp` for a list of all available aliases.
 - Document that `ng-maintain` is a peer dependency (+ show in `halp` (if not installed?)) and
     which commands require it (e.g. in `halp`).
     (Or make a real dependency - if it works for global bin scripts.)
-- Test/Fix/Improve commands (gcopr, gcp(l), gsync(m), nvu):
-  - Some commands are currently broken (e.g. `gcp(l)`, `nvu`).
-  - Some commands are Windows-specific (e.g. `gcp(l)`, `nvu`).
-  - Some commands would benefit from default/fallback values, e.g.:
-    - `gcp(l)` --> current branch
+- Test/Fix/Improve commands:
+  - Some commands are currently broken (e.g. `nvu`).
+  - Some commands are Windows-specific (e.g. `nvu`).
 - Add unit tests.
 - (?) Add support for different commands, based on current OS.
 
