@@ -30,6 +30,9 @@ My global aliases packaged as a node module for easy installation/update across 
 
 3. All aliases also accept the following arguments:
    - `--al-debug`: Produce verbose, debug-friendly output.
+   - `--al-dryrun`*: Print the commands instead of actually running them (hopefully).
+
+<sub>(*): This is still an experimental feature and not guaranteed to work as expected.</sub>
 
 Run `halp` for a list of all available aliases.
 
