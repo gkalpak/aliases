@@ -24,8 +24,8 @@ function _main() {
 
         Object.keys(group).forEach(aliasName => {
           const file = join(groupDir, `${aliasName}.js`);
-          const info = group[aliasName];
-          const code = `${info.code || DEF_CODE(info)}\n`;
+          const spec = group[aliasName];
+          const code = `${spec.code || DEF_CODE(spec)}\n`;
 
           writeFileSync(file, code);
         });

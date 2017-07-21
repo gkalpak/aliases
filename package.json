@@ -12,7 +12,7 @@
     "prelint": "npm run build",
     "lint": "eslint .",
     "pretest": "npm run lint",
-    "test": "npm run ~~test-pkg-bin && echo \"No tests yet :(\" && node --eval \"process.exit(process.env.CI ? 0 : 1)\"",
+    "test": "npm run ~~test-pkg-bin && node --eval \"console.log('No tests yet :('); process.exit(process.env.CI ? 0 : 1)\"",
     "postversion": "git push && git push --tags",
     "~~test-pkg-bin": "node scripts/test-pkg-bin"
   },
