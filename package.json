@@ -71,6 +71,7 @@
     "ns": "./bin/node/ns.js",
     "nt": "./bin/node/nt.js",
     "nv": "./bin/node/nv.js",
+    "salfup": "./bin/misc/salfup.js",
     "yr": "./bin/node/yr.js",
     "ys": "./bin/node/ys.js",
     "yt": "./bin/node/yt.js"
