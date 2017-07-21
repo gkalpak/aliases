@@ -62,7 +62,6 @@
     "gstl": "./bin/git/gstl.js",
     "gstp": "./bin/git/gstp.js",
     "gsync": "./bin/git/gsync.js",
-    "gsyncm": "./bin/git/gsyncm.js",
     "halp": "./bin/misc/halp.js",
     "ll": "./bin/misc/ll.js",
     "lla": "./bin/misc/lla.js",

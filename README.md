@@ -35,7 +35,6 @@ Run `halp` for a list of all available aliases.
 
 ## TODO
 
-- Add support for default args (with same syntax on all OSes).
 - Document that `ng-maintain` is a peer dependency (+ show in `halp` (if not installed?)) and
     which commands require it (e.g. in `halp`).
     (Or make a real dependency - if it works for global bin scripts.)
@@ -43,14 +42,9 @@ Run `halp` for a list of all available aliases.
   - Some commands are currently broken (e.g. `gcp(l)`, `nvu`).
   - Some commands are Windows-specific (e.g. `gcp(l)`, `nvu`).
   - Some commands would benefit from default/fallback values, e.g.:
-    - `gsync` --> master
     - `gcp(l)` --> current branch
-    - `gcmf` --> 0
-    - ...
-  - ...
 - Add unit tests.
 - (?) Add support for different commands, based on current OS.
-- ...
 
 
 [build-status]: https://travis-ci.org/gkalpak/aliases
