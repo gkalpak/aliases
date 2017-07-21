@@ -27,6 +27,7 @@
     "gcm": "./bin/git/gcm.js",
     "gcma": "./bin/git/gcma.js",
     "gcmane": "./bin/git/gcmane.js",
+    "gcmf": "./bin/git/gcmf.js",
     "gco": "./bin/git/gco.js",
     "gcom": "./bin/git/gcom.js",
     "gcopr": "./bin/git/gcopr.js",
