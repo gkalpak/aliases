@@ -28,7 +28,8 @@ My global aliases packaged as a node module for easy installation/update across 
     nls   // npm list --depth=0
     ```
 
-3. Pass `--debug` as argument to any command for debug-friendly output.
+3. All aliases also accept the following arguments:
+   - `--al-debug`: Produce verbose, debug-friendly output.
 
 Run `halp` for a list of all available aliases.
 
