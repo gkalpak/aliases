@@ -35,14 +35,12 @@ My global aliases packaged as a node module for easy installation/update across 
 <sub>(*): This is still an experimental feature and not guaranteed to work as expected.</sub>
 
 Run `halp` for a list of all available aliases.
+Run `halp <category>` for a list of available aliases for a particular category (e.g. `git`, `node`, `misc`).
 
 
 ## TODO
 
-- Add support for `halp <group>`.
-- Test/Fix/Improve commands (`nvu`):
-  - Some commands are currently broken (e.g. `nvu`).
-  - Some commands are Windows-specific (e.g. `nvu`).
+- Fix `nvu` (and make it work across OSes).
 - Document that `ng-maintain` is a peer dependency (+ show in `halp` (if not installed?)) and
     which commands require it (e.g. in `halp`).
     (Or make a real dependency - if it works for global bin scripts.)
