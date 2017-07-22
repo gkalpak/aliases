@@ -39,10 +39,7 @@ Run `halp` for a list of all available aliases.
 
 ## TODO
 
-- Add alias for `git commit --amend (--no-edit)`.
 - Add support for `halp <group>`.
-- Make `gcom`, `gprom`, `gprum`, `grbm` fallbacks of their non-`m` equivalents.
-  (Requires feature to slice `$*`. Or maybe not.)
 - Test/Fix/Improve commands (`nvu`):
   - Some commands are currently broken (e.g. `nvu`).
   - Some commands are Windows-specific (e.g. `nvu`).
