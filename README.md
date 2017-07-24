@@ -29,10 +29,13 @@ My global aliases packaged as a node module for easy installation/update across 
     ```
 
 3. All aliases also accept the following arguments:
-   - `--al-debug`: Produce verbose, debug-friendly output.
-   - `--al-dryrun`*: Print the commands instead of actually running them (hopefully).
+    - `--al-debug`: Produce verbose, debug-friendly output.
+    - `--al-dryrun`*: Print the command instead of actually running it.
 
-<sub>(*): This is still an experimental feature and not guaranteed to work as expected.</sub>
+    NOTE: All arguments starting with `--al-` will be ignored when substituting input arguments or determining their
+    index.
+
+    <sub>(*): This is still an experimental feature and not guaranteed to work as expected.</sub>
 
 Run `halp` for a list of all available aliases.
 Run `halp <category>` for a list of available aliases for a particular category (e.g. `git`, `node`, `misc`).
