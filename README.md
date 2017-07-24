@@ -43,7 +43,6 @@ Run `halp <category>` for a list of available aliases for a particular category 
 
 ## TODO
 
-- Fix `nvu` (and make it work across OSes).
 - Document that `ng-maintain` is a peer dependency (+ show in `halp` (if not installed?)) and
     which commands require it (e.g. in `halp`).
     (Or make a real dependency - if it works for global bin scripts.)

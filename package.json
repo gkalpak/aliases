@@ -83,6 +83,7 @@
     "nv": "./bin/node/nv.js",
     "nvls": "./bin/node/nvls.js",
     "nvlsa": "./bin/node/nvlsa.js",
+    "nvu": "./bin/node/nvu.js",
     "salfup": "./bin/misc/salfup.js",
     "yr": "./bin/node/yr.js",
     "ys": "./bin/node/ys.js",
