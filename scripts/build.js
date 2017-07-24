@@ -5,7 +5,8 @@
 const {mkdirSync, writeFileSync} = require('fs');
 const {join} = require('path');
 const {ALIASES, BIN_DIR, DEF_CODE} = require('../lib/constants');
-const {run} = require('../lib/index');
+const {getSpec, onError} = require('../lib/utils');
+const {run} = require('../lib/runner');
 
 // Run
 _main();
@@ -16,15 +17,15 @@ function _main() {
     then(() => {
       mkdirSync(BIN_DIR);
 
-      Object.keys(ALIASES).forEach(groupName => {
-        const group = ALIASES[groupName];
-        const groupDir = join(BIN_DIR, groupName);
+      Object.keys(ALIASES).forEach(categoryName => {
+        const category = ALIASES[categoryName];
+        const categoryDir = join(BIN_DIR, categoryName);
 
-        mkdirSync(groupDir);
+        mkdirSync(categoryDir);
 
-        Object.keys(group).forEach(aliasName => {
-          const file = join(groupDir, `${aliasName}.js`);
-          const spec = group[aliasName];
+        Object.keys(category).forEach(aliasName => {
+          const file = join(categoryDir, `${aliasName}.js`);
+          const spec = getSpec(category, aliasName);
           const code = `${spec.code || DEF_CODE(spec)}\n`;
 
           writeFileSync(file, code);
@@ -32,9 +33,4 @@ function _main() {
       });
     }).
     catch(onError);
-}
-
-function onError(err) {
-  console.error(err);
-  process.exit(1);
 }

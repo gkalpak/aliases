@@ -48,7 +48,6 @@ Run `halp <category>` for a list of available aliases for a particular category 
     which commands require it (e.g. in `halp`).
     (Or make a real dependency - if it works for global bin scripts.)
 - Add unit tests.
-- (?) Add support for different commands, based on current OS.
 
 
 [build-status]: https://travis-ci.org/gkalpak/aliases
