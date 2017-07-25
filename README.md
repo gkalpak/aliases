@@ -47,6 +47,14 @@ Run `halp <category>` for a list of available aliases for a particular category 
     which commands require it (e.g. in `halp`).
     (Or make a real dependency - if it works for global bin scripts.)
 - Add unit tests.
+- Add aliases for:
+  - Updating to the latest version on a branch. E.g. `nvup 6` would:
+    - Install the latest 6.x version.
+    - Intall the packages (either via `niga` or by looking at the previously installed 6.x version).
+    - Uninstall older 6.x versions.
+  - Installing the latest version on a branch. E.g. `nvi 8` would:
+    - Install the latest 8.x version.
+    - Install the packages (either via `niga` or by looking at the highest installed version).
 
 
 [build-status]: https://travis-ci.org/gkalpak/aliases
