@@ -41,11 +41,25 @@ Run `halp` for a list of all available aliases.
 Run `halp <category>` for a list of available aliases for a particular category (e.g. `git`, `node`, `misc`).
 
 
+## Global Dependencies
+
+Obviously, aliases refer to other global commands/scripts. In order for an alias to work, the corresponding command must
+be globally available. You can see each alias' global dependency by inspecting the associated command (e.g. via `halp`).
+
+Here is the list of all global dependencies with associated min. version (older versions are not guaranteed work):
+
+- `git`: [git] >=1.8
+- `ls`: [ls] >=8 (could come through a bash emulation environment on Windows, such as [git for Windows][git-win]'
+    `Git BASH`)
+- `ngm-diff-wh`: `ngm-diff-wh` >=0.0.4 (part of the [ng-maintain] suite)
+- `ngm-pr-merge`: `ngm-pr-merge` >=0.0.4 (part of the [ng-maintain] suite)
+- `node`: [Node.js][node] >=6
+- `npm`: [npm] >=3 (comes bundled with Node.js)
+- `nvm`: [nvm] >=0.30 (on *nix) / [nvm-windows][nvm-win] >=1 (on Windows)
+- `yarn`: [yarn] >=0.24
+
 ## TODO
 
-- Document that `ng-maintain` is a peer dependency (+ show in `halp` (if not installed?)) and
-    which commands require it (e.g. in `halp`).
-    (Or make a real dependency - if it works for global bin scripts.)
 - Add unit tests.
 - Add aliases for:
   - Updating to the latest version on a branch. E.g. `nvup 6` would:
@@ -59,3 +73,12 @@ Run `halp <category>` for a list of available aliases for a particular category 
 
 [build-status]: https://travis-ci.org/gkalpak/aliases
 [build-status-image]: https://travis-ci.org/gkalpak/aliases.svg?branch=master
+[git]: https://git-scm.com/
+[git-win]: https://git-for-windows.github.io/
+[ls]: https://en.wikipedia.org/wiki/Ls
+[ng-maintain]: https://www.npmjs.com/package/@gkalpak/ng-maintain
+[node]: https://nodejs.org/en/
+[npm]: https://www.npmjs.com/
+[nvm]: https://github.com/creationix/nvm
+[nvm-win]: https://github.com/coreybutler/nvm-windows
+[yarn]: https://yarnpkg.com/lang/en/
