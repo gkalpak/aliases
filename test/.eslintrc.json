@@ -1,0 +1,14 @@
+{
+  "env": {
+    "jasmine": true
+  },
+  "extends": "plugin:jasmine/recommended",
+  "plugins": [
+    "jasmine"
+  ],
+  "rules": {
+    "jasmine/new-line-before-expect": 0,
+    "jasmine/no-spec-dupes": [1, "branch"],
+    "jasmine/no-suite-dupes": [1, "branch"]
+  }
+}

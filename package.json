@@ -8,6 +8,7 @@
   "main": "lib/index",
   "scripts": {
     "build": "node scripts/build",
+    "dev": "nodemon --exec \"npm run test\" --watch .",
     "preinstall": "npm run build",
     "prelint": "npm run build",
     "lint": "eslint .",
@@ -15,9 +16,15 @@
     "release-minor": "npm test && npm version minor && npm publish",
     "release-major": "npm test && npm version major && npm publish",
     "pretest": "npm run lint",
-    "test": "npm run ~~test-pkg-bin && node --eval \"console.log('No tests yet :(')\"",
+    "test": "npm run ~~test-pkg-bin && npm run ~~test-unit && npm run ~~test-e2e",
+    "pretest-e2e": "npm run build",
+    "test-e2e": "npm run ~~test-e2e",
+    "pretest-unit": "npm run build",
+    "test-unit": "npm run ~~test-unit",
     "postversion": "git push && git push --tags",
-    "~~test-pkg-bin": "node scripts/test-pkg-bin"
+    "~~test-e2e": "node --eval \"console.log('No e2e tests yet :(')\"",
+    "~~test-pkg-bin": "node scripts/test-pkg-bin",
+    "~~test-unit": "jasmine test/unit/**/*.spec.js"
   },
   "bin": {
     "alv": "./bin/misc/alv.js",
@@ -101,6 +108,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^4.2.0"
+    "eslint": "^4.2.0",
+    "eslint-plugin-jasmine": "^2.8.0",
+    "jasmine": "^2.6.0",
+    "nodemon": "^1.11.0"
   }
 }
