@@ -61,6 +61,9 @@ Here is the list of all global dependencies with associated min. version (older 
 ## TODO
 
 - Add unit tests.
+- Add e2e tests.
+- Does not display some colored text correctly (e.g. in `gsync`).
+- Running `gco`, `gcp(l)`, `gbd` (without a specific branch) shows a "dropdown menu" for selecting one.
 - Add aliases for:
   - Updating to the latest version on a branch. E.g. `nvup 6` would:
     - Install the latest 6.x version.
