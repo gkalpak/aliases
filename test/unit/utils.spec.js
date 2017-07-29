@@ -5,6 +5,18 @@ const utils = require('../../lib/utils');
 
 // Tests
 describe('utils', () => {
+  describe('.getPlatform()', () => {
+    const getPlatform = utils.getPlatform;
+
+    it('should be a function', () => {
+      expect(getPlatform).toEqual(jasmine.any(Function));
+    });
+
+    it('should return the current platform', () => {
+      expect(getPlatform()).toBe(process.platform);
+    });
+  });
+
   describe('.getSpec()', () => {
     const getSpec = utils.getSpec;
 
@@ -26,8 +38,6 @@ describe('utils', () => {
 
     it('should fall back to the default spec if non available for current OS', () => {
       const obj = {foo: {default: 'bar1'}};
-      obj.foo[process.platform + ' not'] = 'bar2';
-
       expect(getSpec(obj, 'foo')).toBe('bar1');
     });
   });
