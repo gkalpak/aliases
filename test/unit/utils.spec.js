@@ -5,6 +5,21 @@ const utils = require('../../lib/utils');
 
 // Tests
 describe('utils', () => {
+  describe('.capitalize()', () => {
+    const capitalize = utils.capitalize;
+
+    it('should be a function', () => {
+      expect(capitalize).toEqual(jasmine.any(Function));
+    });
+
+    it('should capitalize the input', () => {
+      expect(capitalize('foo')).toBe('Foo');
+      expect(capitalize('BAR')).toBe('BAR');
+      expect(capitalize('bAz')).toBe('BAz');
+      expect(capitalize('qux quX')).toBe('Qux quX');
+    });
+  });
+
   describe('.getPlatform()', () => {
     const getPlatform = utils.getPlatform;
 
