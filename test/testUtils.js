@@ -3,6 +3,8 @@
 // Exports
 module.exports = {
   async: _async,
+  reversePromise: _reversePromise,
+  tickAsPromised: _tickAsPromised,
 };
 
 // Functions - Definitions
@@ -17,4 +19,12 @@ function _async(fn) {
 
     promise.then(done, done.fail);
   };
+}
+
+function _reversePromise(p) {
+  return p.then(val => Promise.reject(val), err => err);
+}
+
+function _tickAsPromised() {
+  return new Promise(resolve => setTimeout(resolve));
 }
