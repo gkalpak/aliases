@@ -62,8 +62,9 @@ Here is the list of all global dependencies with associated min. version (older 
 
 - Add unit tests.
 - Add e2e tests.
-- Does not display some colored text correctly (e.g. in `gsync`).
-- Running `gco`, `gcp(l)`, `gbd` (without a specific branch) shows a "dropdown menu" for selecting one.
+- Running `gngprm X` errors the first time: `fatal: Cannot rebase onto multiple branches.`
+- Does not display some colored text correctly (e.g. in `gsync` or in `gngprm` after diff).
+- ngmUtils differ: If new file (all green) shows nothing (?).
 - Add aliases for:
   - Updating to the latest version on a branch. E.g. `nvup 6` would:
     - Install the latest 6.x version.
