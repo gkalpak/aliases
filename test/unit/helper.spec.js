@@ -145,6 +145,9 @@ describe('helper', () => {
 
   describe('._helpForCategory()', () => {
     const _helpForCategory = helper._helpForCategory;
+    const originalDescReplacements = constants.DESC_REPLACEMENTS;
+
+    afterEach(() => constants.DESC_REPLACEMENTS = originalDescReplacements);
 
     it('should be a function', () => {
       expect(_helpForCategory).toEqual(jasmine.any(Function));
@@ -178,6 +181,19 @@ describe('helper', () => {
       expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
     });
 
+    it('should ignore `__`-prefixed (private) aliases', () => {
+      const catName = 'test';
+      const catSpec = {foo: 'bar', __baz: 'qux'};
+      const joiner = ' ~ ';
+
+      const expected =
+        'Test aliases:\n' +
+        '\n' +
+        '  foo   ~ bar\n';
+
+      expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
+    });
+
     it('should use `utils.getSpec()` to retrieve the spec for each alias', () => {
       spyOn(utils, 'getSpec').and.callThrough();
 
@@ -204,6 +220,28 @@ describe('helper', () => {
         '\n' +
         '  foo ~ bar\n' +
         '  baz ~ qux\n';
+
+      expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
+    });
+
+    it('should replace certain strings in descriptions', () => {
+      constants.DESC_REPLACEMENTS = {test: '~TeSt~'};
+      const catName = 'test';
+      const catSpec = {
+        foo: 'foo --test',
+        bar: 'test --bar-- test',
+        baz: {desc: 'baz(test)'},
+        qux: {desc: '-test- qux -test-'},
+      };
+      const joiner = ' ~ ';
+
+      const expected =
+        'Test aliases:\n' +
+        '\n' +
+        '  foo ~ foo --~TeSt~\n' +
+        '  bar ~ ~TeSt~ --bar-- ~TeSt~\n' +
+        '  baz ~ baz(~TeSt~)\n' +
+        '  qux ~ -~TeSt~- qux -~TeSt~-\n';
 
       expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
     });

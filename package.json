@@ -27,6 +27,7 @@
     "~~test-unit": "jasmine test/unit/**/*.spec.js"
   },
   "bin": {
+    "__gbp": "./bin/git/__gbp.js",
     "alv": "./bin/misc/alv.js",
     "gaa": "./bin/git/gaa.js",
     "gb": "./bin/git/gb.js",
@@ -106,7 +107,9 @@
   "peerDependencies": {
     "@gkalpak/ng-maintain": "^0.0.4"
   },
-  "dependencies": {},
+  "dependencies": {
+    "inquirer": "^3.2.1"
+  },
   "devDependencies": {
     "eslint": "^4.2.0",
     "eslint-plugin-jasmine": "^2.8.0",

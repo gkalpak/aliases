@@ -60,6 +60,22 @@ describe('constants', () => {
     });
   });
 
+  describe('.DESC_REPLACEMENTS', () => {
+    const descReplacements = constants.DESC_REPLACEMENTS;
+
+    it('should be an object', () => {
+      expect(descReplacements).toEqual(jasmine.any(Object));
+    });
+
+    it('should have string values only', () => {
+      const nonStringValueTypes = Object.keys(descReplacements).
+        map(key => typeof descReplacements[key]).
+        filter(type => type !== 'string');
+
+      expect(nonStringValueTypes.length).toBe(0);
+    });
+  });
+
   describe('.ROOT_DIR', () => {
     const rootDir = constants.ROOT_DIR;
 
