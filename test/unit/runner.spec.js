@@ -160,10 +160,10 @@ describe('runner', () => {
     }));
 
     it('should remove argument placeholders if there are no corresponding arguments', async(() => {
-      cmd = 'foo $1 --bar ${2} $k $* $$ ${*}';
+      cmd = 'foo $1 --bar ${2} $k $* $$ ${*} || _$*';
 
       return _expandCmd(cmd, [], config).
-        then(expandedCmd => expect(expandedCmd).toBe('foo --bar $k $$'));
+        then(expandedCmd => expect(expandedCmd).toBe('foo --bar $k $$ || _'));
     }));
 
     it('should replace all occurences of `$*`/`${*}` with all arguments', async(() => {
@@ -178,6 +178,20 @@ describe('runner', () => {
 
       return _expandCmd(cmd, runtimeArgs, config).
         then(expandedCmd => expect(expandedCmd).toBe('foo "q u x" | "q u x" | baz | baz'));
+    }));
+
+    it('should always treat `$0`/`${0}` as not having an associated argument', async(() => {
+      cmd = 'foo $0 | $1 | ${0}';
+
+      return _expandCmd(cmd, runtimeArgs, config).
+        then(expandedCmd => expect(expandedCmd).toBe('foo | baz |'));
+    }));
+
+    it('should recognize argument placeholders even if not preceded by whitespace', async(() => {
+      cmd = 'foo .$1. | -${2}- | p$*p | $${*}$';
+
+      return _expandCmd(cmd, runtimeArgs, config).
+        then(expandedCmd => expect(expandedCmd).toBe('foo .baz. | -"q u x"- | pbaz "q u x"p | $baz "q u x"$'));
     }));
 
     describe('(with static fallback values)', () => {
@@ -198,11 +212,21 @@ describe('runner', () => {
           then(expandedCmd => expect(expandedCmd).toBe('foo three | all'));
       }));
 
+      it('should always use fallback values for `$0`/`${0}`', async(() => {
+        cmd = 'foo ${0:zero} | ${1} | $* | "${0:nil}"';
+
+        return Promise.resolve().
+          then(() => _expandCmd(cmd, runtimeArgs, config)).
+          then(expandedCmd => expect(expandedCmd).toBe('foo zero | baz | baz "q u x" | "nil"')).
+          then(() => _expandCmd(cmd, [], config)).
+          then(expandedCmd => expect(expandedCmd).toBe('foo zero | | | "nil"'));
+      }));
+
       it('should allow using "`" in fallback values (as long as not starting and ending with "`")', async(() => {
-        cmd = 'foo ${3:t`h`r`e`e}';
+        cmd = 'foo ${3:t`h`r`e`e} | ${4:```4} | ${5:5````}';
 
         return _expandCmd(cmd, runtimeArgs, config).
-          then(expandedCmd => expect(expandedCmd).toBe('foo t`h`r`e`e'));
+          then(expandedCmd => expect(expandedCmd).toBe('foo t`h`r`e`e | ```4 | 5````'));
       }));
     });
 
