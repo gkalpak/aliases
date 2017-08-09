@@ -4,6 +4,7 @@
 const constants = require('../../lib/constants');
 const helper = require('../../lib/helper');
 const utils = require('../../lib/utils');
+const {async} = require('../testUtils');
 
 // Tests
 describe('helper', () => {
@@ -26,81 +27,73 @@ describe('helper', () => {
       describe(category ? '(for specific category)' : '(for all categories)', () => {
         const getHelpMessage = () => help(category).then(() => console.log.calls.mostRecent().args[0]);
 
-        it('should return a promise', done => {
-          help(category).then(done);
-        });
+        it('should return a promise', async(() => {
+          return help(category);
+        }));
 
-        it('should log a help message', done => {
+        it('should log a help message', async(() => {
           expect(console.log).not.toHaveBeenCalled();
-          help(category).
-            then(() => expect(console.log).toHaveBeenCalledTimes(1)).
-            then(done);
-        });
+          return help(category).
+            then(() => expect(console.log).toHaveBeenCalledTimes(1));
+        }));
 
-        it('should display the version stamp', done => {
-          getHelpMessage().
-            then(msg => expect(msg).toContain(constants.VERSION_STAMP)).
-            then(done);
-        });
+        it('should display the version stamp', async(() => {
+          return getHelpMessage().
+            then(msg => expect(msg).toContain(constants.VERSION_STAMP));
+        }));
 
-        it('should mention "universal" arguments', done => {
-          getHelpMessage().
+        it('should mention "universal" arguments', async(() => {
+          return getHelpMessage().
             then(msg => {
               expect(msg).toContain('--al-debug');
               expect(msg).toContain('--al-dryrun');
-            }).
-            then(done);
-        });
+            });
+        }));
 
-        it('should mention ignoring `--al-` arguments', done => {
+        it('should mention ignoring `--al-` arguments', async(() => {
           const expected = utils.wrapLine(
             '(NOTE: All arguments starting with `--al-` will be ignored when substituting input arguments or ' +
             'determining their index.)', 0);
 
-          getHelpMessage().
-            then(msg => expect(msg).toContain(expected)).
-            then(done);
-        });
+          return getHelpMessage().
+            then(msg => expect(msg).toContain(expected));
+        }));
       });
     });
 
     describe('(for all categories)', () => {
       const getHelpMessage = () => help().then(() => console.log.calls.mostRecent().args[0]);
 
-      it('should contain "Available aliases"', done => {
-        getHelpMessage().
-          then(msg => expect(msg).toContain('Available aliases')).
-          then(done);
-      });
+      it('should contain "Available aliases"', async(() => {
+        return getHelpMessage().
+          then(msg => expect(msg).toContain('Available aliases'));
+      }));
 
-      it('should contain all aliases', done => {
-        getHelpMessage().
-          then(msg => categories.forEach(cat => expect(msg).toContain(categoryToHeading(cat)))).
-          then(done);
-      });
+      it('should contain all aliases', async(() => {
+        return getHelpMessage().
+          then(msg => categories.forEach(cat => expect(msg).toContain(categoryToHeading(cat))));
+      }));
 
-      it('should contain help for each category', done => {
+      it('should contain help for each category', async(() => {
         helper._helpForCategory.and.callFake(catName => `_helpForCategory(${catName})`);
 
-        getHelpMessage().
+        return getHelpMessage().
           then(msg => categories.forEach(cat => {
             expect(helper._helpForCategory).toHaveBeenCalledWith(cat, constants.ALIASES[cat], jasmine.any(String));
             expect(msg).toContain(`_helpForCategory(${cat})`);
-          })).
-          then(done);
-      });
+          }));
+      }));
     });
 
     describe('(for specific category)', () => {
       const getHelpMessage = cat => help(cat).then(() => console.log.calls.mostRecent().args[0]);
 
-      it('should not contain "Available aliases"', done => {
-        getHelpMessage('foo').
-          then(msg => expect(msg).not.toContain('Available aliases')).
-          then(done);
-      });
+      it('should not contain "Available aliases"', async(() => {
+        return getHelpMessage('foo').
+          then(msg => expect(msg).not.toContain('Available aliases'));
+      }));
 
-      it('should only contain aliases for the specified category', done => {
+      it('should only contain aliases for the specified category', async(() => {
         const expectToOnlyContain = (msg, cat) => categories.forEach(c => {
           const heading = categoryToHeading(c);
           if (c === cat) {
@@ -113,12 +106,11 @@ describe('helper', () => {
           then(() => getHelpMessage(cat)).
           then(msg => expectToOnlyContain(msg, cat));
 
-        categories.
-          reduce(chainCategoryTest, Promise.resolve()).
-          then(done);
-      });
+        return categories.
+          reduce(chainCategoryTest, Promise.resolve());
+      }));
 
-      it('should only contain help for the specified category', done => {
+      it('should only contain help for the specified category', async(() => {
         helper._helpForCategory.and.callFake(catName => `_helpForCategory(${catName})`);
 
         const expectToOnlyContain = (msg, cat) => categories.forEach(c => {
@@ -136,10 +128,9 @@ describe('helper', () => {
           then(msg => expectToOnlyContain(msg, cat)).
           then(() => helper._helpForCategory.calls.reset());
 
-        categories.
-          reduce(chainCategoryTest, Promise.resolve()).
-          then(done);
-      });
+        return categories.
+          reduce(chainCategoryTest, Promise.resolve());
+      }));
     });
   });
 

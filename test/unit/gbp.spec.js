@@ -5,6 +5,7 @@ const inquirer = require('inquirer');
 const gbp = require('../../lib/gbp');
 const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
+const {async} = require('../testUtils');
 
 // Tests
 describe('gbp()', () => {
@@ -20,48 +21,45 @@ describe('gbp()', () => {
   });
 
   describe('(dryrun)', () => {
-    it('should return a resolved promise', done => {
-      gbp({dryrun: true}).then(done);
-    });
+    it('should return a resolved promise', async(() => {
+      return gbp({dryrun: true});
+    }));
 
-    it('should log a short description', done => {
+    it('should log a short description', async(() => {
       const cmdDesc = 'Pick one from {{git branch}}';
 
-      gbp({dryrun: true}).
-        then(() => expect(console.log).toHaveBeenCalledWith(cmdDesc)).
-        then(done);
-    });
+      return gbp({dryrun: true}).
+        then(() => expect(console.log).toHaveBeenCalledWith(cmdDesc));
+    }));
   });
 
   describe('(no dryrun)', () => {
-    it('should return a promise', done => {
-      gbp({}).then(done);
-    });
+    it('should return a promise', async(() => {
+      return gbp({});
+    }));
 
-    it('should run `git branch` (and return the output)', done => {
-      gbp({}).
-        then(() => expect(runner.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true})).
-        then(done);
-    });
+    it('should run `git branch` (and return the output)', async(() => {
+      return gbp({}).
+        then(() => expect(runner.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true}));
+    }));
 
-    it('should return `git branch` output even if `config.returnOutput` is false (but not affect `config`)', done => {
-      const config = {returnOutput: false};
+    it('should return `git branch` output even if `config.returnOutput` is false (but not affect `config`)',
+      async(() => {
+        const config = {returnOutput: false};
 
-      gbp(config).
-        then(() => {
+        return gbp(config).then(() => {
           expect(runner.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
           expect(config.returnOutput).toBe(false);
-        }).
-        then(done);
-    });
+        });
+      })
+    );
 
-    it('should handle errors', done => {
+    it('should handle errors', async(() => {
       runner.run.and.returnValue(Promise.reject('test'));
 
-      gbp({}).
-        then(() => expect(utils.onError).toHaveBeenCalledWith('test')).
-        then(done);
-    });
+      return gbp({}).
+        then(() => expect(utils.onError).toHaveBeenCalledWith('test'));
+    }));
 
     describe('picking a branch', () => {
       let branches;
@@ -74,38 +72,35 @@ describe('gbp()', () => {
         runner.run.and.callFake(() => Promise.resolve(branches.join('\n')));
       });
 
-      it('should prompt the user to pick a branch', done => {
-        gbp({}).
+      it('should prompt the user to pick a branch', async(() => {
+        return gbp({}).
           then(verifyPromptedWith('type', 'list')).
-          then(verifyPromptedWith('message', 'Pick a branch:')).
-          then(done);
-      });
+          then(verifyPromptedWith('message', 'Pick a branch:'));
+      }));
 
-      it('should pass the branches as options (as returned by `git branch`)', done => {
+      it('should pass the branches as options (as returned by `git branch`)', async(() => {
         branches = [
           'foo',
           'bar',
           'master',
         ];
 
-        gbp({}).
-          then(verifyPromptedWith('choices', ['foo', 'bar', 'master'])).
-          then(done);
-      });
+        return gbp({}).
+          then(verifyPromptedWith('choices', ['foo', 'bar', 'master']));
+      }));
 
-      it('should trim whitespace around branches', done => {
+      it('should trim whitespace around branches', async(() => {
         branches = [
           '  foo  ',
           '\r\nbar\r\n',
           '\t\tmaster\t\t',
         ];
 
-        gbp({}).
-          then(verifyPromptedWith('choices', ['foo', 'bar', 'master'])).
-          then(done);
-      });
+        return gbp({}).
+          then(verifyPromptedWith('choices', ['foo', 'bar', 'master']));
+      }));
 
-      it('should ignore empty or whitespace-only lines', done => {
+      it('should ignore empty or whitespace-only lines', async(() => {
         branches = [
           'foo',
           '',
@@ -114,24 +109,22 @@ describe('gbp()', () => {
           'master',
         ];
 
-        gbp({}).
-          then(verifyPromptedWith('choices', ['foo', 'bar', 'master'])).
-          then(done);
-      });
+        return gbp({}).
+          then(verifyPromptedWith('choices', ['foo', 'bar', 'master']));
+      }));
 
-      it('should mark the current branch (and remove leading `*`)', done => {
+      it('should mark the current branch (and remove leading `*`)', async(() => {
         branches = [
           '  foo',
           '* bar',
           '  master',
         ];
 
-        gbp({}).
-          then(verifyPromptedWith('choices', ['foo', 'bar (current)', 'master'])).
-          then(done);
-      });
+        return gbp({}).
+          then(verifyPromptedWith('choices', ['foo', 'bar (current)', 'master']));
+      }));
 
-      it('should specify the default choice (if any)', done => {
+      it('should specify the default choice (if any)', async(() => {
         const branches1 = [
           '  foo',
           '  bar',
@@ -143,31 +136,28 @@ describe('gbp()', () => {
           '  master',
         ];
 
-        Promise.resolve().
+        return Promise.resolve().
           then(() => branches = branches1).
           then(() => gbp({})).
           then(verifyPromptedWith('default', undefined)).
           then(() => branches = branches2).
           then(() => gbp({})).
-          then(verifyPromptedWith('default', 'bar (current)')).
-          then(done);
-      });
+          then(verifyPromptedWith('default', 'bar (current)'));
+      }));
     });
 
-    it('should log the selected branch', done => {
+    it('should log the selected branch', async(() => {
       inquirer.prompt.and.returnValue(Promise.resolve({branch: 'foo'}));
 
-      gbp({}).
-        then(() => expect(console.log).toHaveBeenCalledWith('foo')).
-        then(done);
-    });
+      return gbp({}).
+        then(() => expect(console.log).toHaveBeenCalledWith('foo'));
+    }));
 
-    it('should remove the "current" marker from the selected branch\'s name', done => {
+    it('should remove the "current" marker from the selected branch\'s name', async(() => {
       inquirer.prompt.and.returnValue(Promise.resolve({branch: 'foo (current)'}));
 
-      gbp({}).
-        then(() => expect(console.log).toHaveBeenCalledWith('foo')).
-        then(done);
-    });
+      return gbp({}).
+        then(() => expect(console.log).toHaveBeenCalledWith('foo'));
+    }));
   });
 });
