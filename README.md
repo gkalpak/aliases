@@ -60,18 +60,18 @@ Here is the list of all global dependencies with associated min. version (older 
 
 ## TODO
 
-- Add e2e tests.
+- Test arg expansion (e.g. `gcmf`, `grbi`), hidden cursor, bold, messed style on Ubuntu (once released).
 - Running `gngprm X` errors the first time: `fatal: Cannot rebase onto multiple branches.`
-- Does not display some colored text correctly (e.g. in `gsync` or in `gngprm` after diff).
-- ngmUtils differ: If new file (all green) shows nothing (?).
-- Text styling (e.g. bold) remains un-reset after exiting abruptly.
-    Same for cursor (hidden) when `Ctrl+C`-ing while in `gbp`.
+  --> Debug once publish new version
+
+- Add more unit tests for `runner.spawnAsPromised()`.
+- Add e2e tests.
 - Add aliases for:
-  - Updating to the latest version on a branch. E.g. `nvup 6` would:
+  - Updating to the latest Node version on a branch. E.g. `nvup 6` would:
     - Install the latest 6.x version.
     - Intall the packages (either via `niga` or by looking at the previously installed 6.x version).
     - Uninstall older 6.x versions.
-  - Installing the latest version on a branch. E.g. `nvi 8` would:
+  - Installing the latest Node version on a branch. E.g. `nvi 8` would:
     - Install the latest 8.x version.
     - Install the packages (either via `niga` or by looking at the highest installed version).
 
