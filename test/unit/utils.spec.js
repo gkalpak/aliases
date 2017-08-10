@@ -1,6 +1,7 @@
 'use strict';
 
 // Imports
+const {EventEmitter} = require('events');
 const utils = require('../../lib/utils');
 
 // Tests
@@ -17,6 +18,103 @@ describe('utils', () => {
       expect(capitalize('BAR')).toBe('BAR');
       expect(capitalize('bAz')).toBe('BAz');
       expect(capitalize('qux quX')).toBe('Qux quX');
+    });
+  });
+
+  describe('.doOnExit()', () => {
+    const doOnExit = utils.doOnExit;
+    let mockProc;
+    let mockAction;
+    let cancelFn;
+
+    beforeEach(() => {
+      mockProc = new EventEmitter();
+      mockProc.exit = jasmine.createSpy('mockProc.exit');
+      mockAction = jasmine.createSpy('mockAction');
+
+      spyOn(console, 'warn');
+      spyOn(mockProc, 'addListener').and.callThrough();
+
+      cancelFn = doOnExit(mockProc, mockAction);
+    });
+
+    it('should be a function', () => {
+      expect(doOnExit).toEqual(jasmine.any(Function));
+    });
+
+    it('should throw if no process specified', () => {
+      expect(() => doOnExit()).toThrowError('No process specified.');
+    });
+
+    it('should throw if no action specified', () => {
+      expect(() => doOnExit(mockProc)).toThrowError('No action specified.');
+    });
+
+    it('should take action on `SIGINT`', () => {
+      expect(mockAction).not.toHaveBeenCalled();
+
+      mockProc.emit('sigint');
+      expect(mockAction).not.toHaveBeenCalled();
+
+      mockProc.emit('SIGINT');
+      expect(mockAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('should take action on `exit`', () => {
+      expect(mockAction).not.toHaveBeenCalled();
+
+      mockProc.emit('EXIT');
+      expect(mockAction).not.toHaveBeenCalled();
+
+      mockProc.emit('exit');
+      expect(mockAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('should pass the emitted code to the action', () => {
+      mockProc.emit('SIGINT');
+      expect(mockAction).toHaveBeenCalledWith(undefined);
+
+      mockProc.emit('exit', 0);
+      expect(mockAction).toHaveBeenCalledWith(0);
+
+      mockProc.emit('SIGINT', 42);
+      expect(mockAction).toHaveBeenCalledWith(42);
+
+      mockProc.emit('exit', 1337);
+      expect(mockAction).toHaveBeenCalledWith(1337);
+    });
+
+    it('should exit the process (after taking action)', () => {
+      mockProc.exit.and.callFake(() => expect(mockAction).toHaveBeenCalledTimes(1));
+      mockAction.and.callFake(() => expect(mockProc.exit).not.toHaveBeenCalled());
+
+      mockProc.emit('SIGINT');
+      expect(mockProc.exit).toHaveBeenCalledTimes(1);
+
+      mockProc.exit.calls.reset();
+      mockAction.calls.reset();
+      expect(mockProc.exit).not.toHaveBeenCalled();
+
+      mockProc.emit('exit');
+      expect(mockProc.exit).toHaveBeenCalledTimes(1);
+    });
+
+    it('should exit the process with the emitted code', () => {
+      mockProc.emit('SIGINT', 42);
+      expect(mockProc.exit).toHaveBeenCalledWith(42);
+
+      mockProc.emit('exit', 1337);
+      expect(mockProc.exit).toHaveBeenCalledWith(1337);
+    });
+
+    it('should do nothing if canceled', () => {
+      cancelFn();
+
+      mockProc.emit('SIGINT');
+      mockProc.emit('exit');
+
+      expect(mockProc.exit).not.toHaveBeenCalled();
+      expect(mockAction).not.toHaveBeenCalled();
     });
   });
 
