@@ -105,7 +105,7 @@
     "url": "git+https://github.com/gkalpak/aliases.git"
   },
   "peerDependencies": {
-    "@gkalpak/ng-maintain": "^0.0.4"
+    "@gkalpak/ng-maintain": "~0.0.7"
   },
   "dependencies": {
     "inquirer": "^3.2.1"
