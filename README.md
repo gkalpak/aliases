@@ -60,10 +60,6 @@ Here is the list of all global dependencies with associated min. version (older 
 
 ## TODO
 
-- Test arg expansion (e.g. `gcmf`, `grbi`), hidden cursor, bold, messed style on Ubuntu (once released).
-- Running `gngprm X` errors the first time: `fatal: Cannot rebase onto multiple branches.`
-  --> Debug once publish new version
-
 - Add more unit tests for `runner.spawnAsPromised()`.
 - Add e2e tests.
 - Add aliases for:
