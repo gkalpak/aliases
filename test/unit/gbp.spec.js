@@ -70,6 +70,9 @@ describe('gbp()', () => {
       beforeEach(() => {
         branches = [];
         runner.run.and.callFake(() => Promise.resolve(branches.join('\n')));
+
+        spyOn(utils, 'doOnExit').and.callThrough();
+        spyOn(utils, 'finallyAsPromised').and.callThrough();
       });
 
       it('should prompt the user to pick a branch', async(() => {
@@ -143,6 +146,63 @@ describe('gbp()', () => {
           then(() => branches = branches2).
           then(() => gbp({})).
           then(verifyPromptedWith('default', 'bar (current)'));
+      }));
+
+      it('should register a callback to exit with an error if exited while the prompt is shown', async(() => {
+        let callback;
+
+        inquirer.prompt.and.callFake(() => {
+          expect(utils.doOnExit).toHaveBeenCalledWith(process, jasmine.any(Function));
+          callback = utils.doOnExit.calls.mostRecent().args[1];
+          return Promise.resolve('');
+        });
+
+        return gbp({}).then(() => {
+          spyOn(process, 'exit');
+
+          callback(undefined);
+          callback(false);
+          callback(1);
+          callback(42);
+          expect(process.exit).not.toHaveBeenCalled();
+
+          callback(0);
+          expect(process.exit).toHaveBeenCalledWith(1);
+
+          process.exit.and.callThrough();
+        });
+      }));
+
+      it('should unregister the `onExit` callback once prompting completes successfully', async(() => {
+        const unlistenSpy = jasmine.createSpy('unlisten');
+
+        utils.doOnExit.and.returnValue(unlistenSpy);
+        inquirer.prompt.and.callFake(() => {
+          expect(utils.doOnExit).toHaveBeenCalledTimes(1);
+          expect(unlistenSpy).not.toHaveBeenCalled();
+          return Promise.resolve('');
+        });
+
+        return gbp({}).then(() => {
+          expect(inquirer.prompt).toHaveBeenCalledTimes(1);
+          expect(unlistenSpy).toHaveBeenCalledWith();
+        });
+      }));
+
+      it('should unregister the `onExit` callback once prompting completes with error', async(() => {
+        const unlistenSpy = jasmine.createSpy('unlisten');
+
+        utils.doOnExit.and.returnValue(unlistenSpy);
+        inquirer.prompt.and.callFake(() => {
+          expect(utils.doOnExit).toHaveBeenCalledTimes(1);
+          expect(unlistenSpy).not.toHaveBeenCalled();
+          return Promise.reject('');
+        });
+
+        return gbp({}).then(() => {
+          expect(inquirer.prompt).toHaveBeenCalledTimes(1);
+          expect(unlistenSpy).toHaveBeenCalledWith();
+        });
       }));
     });
 
