@@ -144,17 +144,6 @@ describe('gbp()', () => {
           then(() => gbp({})).
           then(verifyPromptedWith('default', 'bar (current)'));
       }));
-
-      it('should immediately restore the cursor (in case the process exits abruptly)', async(() => {
-        spyOn(process.stdout, 'write');
-        inquirer.prompt.and.callFake(() => {
-          expect(process.stdout.write).not.toHaveBeenCalled();
-          return Promise.resolve().
-            then(() => expect(process.stdout.write).toHaveBeenCalledWith('\u001b[?25h'));
-        });
-
-        return gbp({});
-      }));
     });
 
     it('should log the selected branch', async(() => {
