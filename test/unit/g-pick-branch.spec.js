@@ -2,13 +2,13 @@
 
 // Imports
 const inquirer = require('inquirer');
-const gbp = require('../../lib/gbp');
+const gPickBranch = require('../../lib/g-pick-branch');
 const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
 const {async} = require('../testUtils');
 
 // Tests
-describe('gbp()', () => {
+describe('gPickBranch()', () => {
   beforeEach(() => {
     spyOn(console, 'log');
     spyOn(inquirer, 'prompt').and.returnValue(Promise.resolve(''));
@@ -17,29 +17,29 @@ describe('gbp()', () => {
   });
 
   it('should be a function', () => {
-    expect(gbp).toEqual(jasmine.any(Function));
+    expect(gPickBranch).toEqual(jasmine.any(Function));
   });
 
   describe('(dryrun)', () => {
     it('should return a resolved promise', async(() => {
-      return gbp({dryrun: true});
+      return gPickBranch({dryrun: true});
     }));
 
     it('should log a short description', async(() => {
       const cmdDesc = 'Pick one from {{git branch}}';
 
-      return gbp({dryrun: true}).
+      return gPickBranch({dryrun: true}).
         then(() => expect(console.log).toHaveBeenCalledWith(cmdDesc));
     }));
   });
 
   describe('(no dryrun)', () => {
     it('should return a promise', async(() => {
-      return gbp({});
+      return gPickBranch({});
     }));
 
     it('should run `git branch` (and return the output)', async(() => {
-      return gbp({}).
+      return gPickBranch({}).
         then(() => expect(runner.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true}));
     }));
 
@@ -47,7 +47,7 @@ describe('gbp()', () => {
       async(() => {
         const config = {returnOutput: false};
 
-        return gbp(config).then(() => {
+        return gPickBranch(config).then(() => {
           expect(runner.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
           expect(config.returnOutput).toBe(false);
         });
@@ -57,7 +57,7 @@ describe('gbp()', () => {
     it('should handle errors', async(() => {
       runner.run.and.returnValue(Promise.reject('test'));
 
-      return gbp({}).
+      return gPickBranch({}).
         then(() => expect(utils.onError).toHaveBeenCalledWith('test'));
     }));
 
@@ -76,7 +76,7 @@ describe('gbp()', () => {
       });
 
       it('should prompt the user to pick a branch', async(() => {
-        return gbp({}).
+        return gPickBranch({}).
           then(verifyPromptedWith('type', 'list')).
           then(verifyPromptedWith('message', 'Pick a branch:'));
       }));
@@ -88,7 +88,7 @@ describe('gbp()', () => {
           'master',
         ];
 
-        return gbp({}).
+        return gPickBranch({}).
           then(verifyPromptedWith('choices', ['foo', 'bar', 'master']));
       }));
 
@@ -99,7 +99,7 @@ describe('gbp()', () => {
           '\t\tmaster\t\t',
         ];
 
-        return gbp({}).
+        return gPickBranch({}).
           then(verifyPromptedWith('choices', ['foo', 'bar', 'master']));
       }));
 
@@ -112,7 +112,7 @@ describe('gbp()', () => {
           'master',
         ];
 
-        return gbp({}).
+        return gPickBranch({}).
           then(verifyPromptedWith('choices', ['foo', 'bar', 'master']));
       }));
 
@@ -123,7 +123,7 @@ describe('gbp()', () => {
           '  master',
         ];
 
-        return gbp({}).
+        return gPickBranch({}).
           then(verifyPromptedWith('choices', ['foo', 'bar (current)', 'master']));
       }));
 
@@ -141,10 +141,10 @@ describe('gbp()', () => {
 
         return Promise.resolve().
           then(() => branches = branches1).
-          then(() => gbp({})).
+          then(() => gPickBranch({})).
           then(verifyPromptedWith('default', undefined)).
           then(() => branches = branches2).
-          then(() => gbp({})).
+          then(() => gPickBranch({})).
           then(verifyPromptedWith('default', 'bar (current)'));
       }));
 
@@ -157,7 +157,7 @@ describe('gbp()', () => {
           return Promise.resolve('');
         });
 
-        return gbp({}).then(() => {
+        return gPickBranch({}).then(() => {
           spyOn(process, 'exit');
 
           callback(undefined);
@@ -183,7 +183,7 @@ describe('gbp()', () => {
           return Promise.resolve('');
         });
 
-        return gbp({}).then(() => {
+        return gPickBranch({}).then(() => {
           expect(inquirer.prompt).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });
@@ -199,7 +199,7 @@ describe('gbp()', () => {
           return Promise.reject('');
         });
 
-        return gbp({}).then(() => {
+        return gPickBranch({}).then(() => {
           expect(inquirer.prompt).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });
@@ -209,14 +209,14 @@ describe('gbp()', () => {
     it('should log the selected branch', async(() => {
       inquirer.prompt.and.returnValue(Promise.resolve({branch: 'foo'}));
 
-      return gbp({}).
+      return gPickBranch({}).
         then(() => expect(console.log).toHaveBeenCalledWith('foo'));
     }));
 
     it('should remove the "current" marker from the selected branch\'s name', async(() => {
       inquirer.prompt.and.returnValue(Promise.resolve({branch: 'foo (current)'}));
 
-      return gbp({}).
+      return gPickBranch({}).
         then(() => expect(console.log).toHaveBeenCalledWith('foo'));
     }));
   });

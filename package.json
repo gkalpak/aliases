@@ -27,7 +27,7 @@
     "~~test-unit": "jasmine test/unit/**/*.spec.js"
   },
   "bin": {
-    "__gbp": "./bin/git/__gbp.js",
+    "__g-pick-branch": "./bin/git/__g-pick-branch.js",
     "alv": "./bin/misc/alv.js",
     "gaa": "./bin/git/gaa.js",
     "gb": "./bin/git/gb.js",
