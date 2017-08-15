@@ -26,7 +26,7 @@ describe('gPickBranch()', () => {
     }));
 
     it('should log a short description', async(() => {
-      const cmdDesc = 'Pick one from {{git branch}}';
+      const cmdDesc = 'Pick one from a list of branches.';
 
       return gPickBranch({dryrun: true}).
         then(() => expect(console.log).toHaveBeenCalledWith(cmdDesc));
