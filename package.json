@@ -70,6 +70,7 @@
     "grbin": "./bin/git/grbin.js",
     "grbm": "./bin/git/grbm.js",
     "gs": "./bin/git/gs.js",
+    "gsh": "./bin/git/gsh.js",
     "gst": "./bin/git/gst.js",
     "gstk": "./bin/git/gstk.js",
     "gstl": "./bin/git/gstl.js",
