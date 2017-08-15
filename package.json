@@ -28,6 +28,7 @@
   },
   "bin": {
     "__g-pick-branch": "./bin/git/__g-pick-branch.js",
+    "__g-pick-commit": "./bin/git/__g-pick-commit.js",
     "alv": "./bin/misc/alv.js",
     "gaa": "./bin/git/gaa.js",
     "gb": "./bin/git/gb.js",
