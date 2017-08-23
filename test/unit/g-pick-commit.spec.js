@@ -82,7 +82,7 @@ describe('gPickCommit()', () => {
           then(verifyPromptedWith('message', 'Pick a commit:'));
       }));
 
-      it('should pass the branches as options (as returned by `git log ...`)', async(() => {
+      it('should pass the commits as options (as returned by `git log ...`)', async(() => {
         commits = [
           '123456 The foo commit',
           '234567 The bar commit',
