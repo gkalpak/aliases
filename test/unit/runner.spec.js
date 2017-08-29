@@ -278,8 +278,9 @@ describe('runner', () => {
           then(expandedCmd => expect(expandedCmd).toBe('foo --bar'));
       }));
 
-      it('should trim the fallback command output', async(() => {
-        runner._spawnAsPromised.and.returnValue(Promise.resolve(' \n\r\t {{test}} \t\r\n '));
+      it('should trim the fallback command output (including cursor move ANSI escape sequences)', async(() => {
+        const output = ' \n\u001b[1a\r\u001B[987B\t {{test}} \t\u001b[23C\r\u001B[00d\n ';
+        runner._spawnAsPromised.and.returnValue(Promise.resolve(output));
 
         cmd = 'foo ${3:`three`} --bar ${4:`four`}';
 
