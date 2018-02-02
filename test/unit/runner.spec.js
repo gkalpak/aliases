@@ -160,10 +160,10 @@ describe('runner', () => {
     }));
 
     it('should remove argument placeholders if there are no corresponding arguments', async(() => {
-      cmd = 'foo $1 --bar ${2} $k $* $$ ${*} || _$*';
+      cmd = 'foo $1 --bar ${2} $k $* $$ ${*} || _$* && $3*-${3*}';
 
       return _expandCmd(cmd, [], config).
-        then(expandedCmd => expect(expandedCmd).toBe('foo --bar $k $$ || _'));
+        then(expandedCmd => expect(expandedCmd).toBe('foo --bar $k $$ || _ &&-'));
     }));
 
     it('should replace all occurences of `$*`/`${*}` with all arguments', async(() => {
@@ -171,6 +171,13 @@ describe('runner', () => {
 
       return _expandCmd(cmd, runtimeArgs, config).
         then(expandedCmd => expect(expandedCmd).toBe('foo baz "q u x" | baz "q u x" | baz "q u x" | baz "q u x"'));
+    }));
+
+    it('should replace all occurences of `$n*`/`${n*}` with all arguments (starting at `n`)', async(() => {
+      cmd = 'foo $1* | ${1*} | $2* | ${2*} | $33* | ${33*}';
+
+      return _expandCmd(cmd, runtimeArgs, config).
+        then(expandedCmd => expect(expandedCmd).toBe('foo baz "q u x" | baz "q u x" | "q u x" | "q u x" | |'));
     }));
 
     it('should replace all occurrences of `$n`/`${n}` with the nth argument (1-based index)', async(() => {
@@ -187,39 +194,47 @@ describe('runner', () => {
         then(expandedCmd => expect(expandedCmd).toBe('foo | baz |'));
     }));
 
-    it('should recognize argument placeholders even if not preceded by whitespace', async(() => {
-      cmd = 'foo .$1. | -${2}- | p$*p | $${*}$';
+    it('should not recognize `$0*`/`${0*}`', async(() => {
+      cmd = 'foo $0* | $1* | ${0*} | ${2*}';
 
       return _expandCmd(cmd, runtimeArgs, config).
-        then(expandedCmd => expect(expandedCmd).toBe('foo .baz. | -"q u x"- | pbaz "q u x"p | $baz "q u x"$'));
+        then(expandedCmd => expect(expandedCmd).toBe('foo* | baz "q u x" | ${0*} | "q u x"'));
+    }));
+
+    it('should recognize argument placeholders even if not preceded by whitespace', async(() => {
+      cmd = 'foo .$1. | -${2}- | 1$1*1 | 4${2*}4 | p$*p | $${*}$';
+      const expectedCmd = 'foo .baz. | -"q u x"- | 1baz "q u x"1 | 4"q u x"4 | pbaz "q u x"p | $baz "q u x"$';
+
+      return _expandCmd(cmd, runtimeArgs, config).
+        then(expandedCmd => expect(expandedCmd).toBe(expectedCmd));
     }));
 
     describe('(with static fallback values)', () => {
       it('should ignore fallback values if actual values passed as arguments', async(() => {
-        cmd = 'foo ${2:two} | ${*:all}';
+        cmd = 'foo ${2:two} | ${2*:all-skip-1} | ${*:all}';
 
         return _expandCmd(cmd, runtimeArgs, config).
-          then(expandedCmd => expect(expandedCmd).toBe('foo "q u x" | baz "q u x"'));
+          then(expandedCmd => expect(expandedCmd).toBe('foo "q u x" | "q u x" | baz "q u x"'));
       }));
 
       it('should use fallback values if actual values not passed for specific argument', async(() => {
-        cmd = 'foo ${3:three} | ${*:all}';
+        cmd = 'foo ${3:three} | ${1*:all-skip-0} | ${3*:all-skip-2} | ${*:all}';
 
         return Promise.resolve().
           then(() => _expandCmd(cmd, runtimeArgs, config)).
-          then(expandedCmd => expect(expandedCmd).toBe('foo three | baz "q u x"')).
+          then(expandedCmd => expect(expandedCmd).toBe('foo three | baz "q u x" | all-skip-2 | baz "q u x"')).
           then(() => _expandCmd(cmd, [], config)).
-          then(expandedCmd => expect(expandedCmd).toBe('foo three | all'));
+          then(expandedCmd => expect(expandedCmd).toBe('foo three | all-skip-0 | all-skip-2 | all'));
       }));
 
       it('should always use fallback values for `$0`/`${0}`', async(() => {
-        cmd = 'foo ${0:zero} | ${1} | $* | "${0:nil}"';
+        cmd = 'foo ${0:zero} | ${1} | ${0*:ooops} | $* | "${0:nil}"';
 
         return Promise.resolve().
           then(() => _expandCmd(cmd, runtimeArgs, config)).
-          then(expandedCmd => expect(expandedCmd).toBe('foo zero | baz | baz "q u x" | "nil"')).
+          then(expandedCmd => expect(expandedCmd).toBe('foo zero | baz | ${0*:ooops} | baz "q u x" | "nil"')).
           then(() => _expandCmd(cmd, [], config)).
-          then(expandedCmd => expect(expandedCmd).toBe('foo zero | | | "nil"'));
+          then(expandedCmd => expect(expandedCmd).toBe('foo zero | | ${0*:ooops} | | "nil"'));
       }));
 
       it('should allow using "`" in fallback values (as long as not starting and ending with "`")', async(() => {
@@ -254,10 +269,11 @@ describe('runner', () => {
       }));
 
       it('should replace all occurrences', async(() => {
-        cmd = 'foo ${3:`three`} ${3:`three`} ${*:`all`} ${*:`all`}';
+        cmd = 'foo ${3:`three`} ${3:`three`} ${2*:`all-skip-1`} ${2*:`all-skip-1`} ${*:`all`} ${*:`all`}';
+        const expectedCmd = 'foo {{three}} {{three}} {{all-skip-1}} {{all-skip-1}} {{all}} {{all}}';
 
         return _expandCmd(cmd, [], config).
-          then(expandedCmd => expect(expandedCmd).toBe('foo {{three}} {{three}} {{all}} {{all}}'));
+          then(expandedCmd => expect(expandedCmd).toBe(expectedCmd));
       }));
 
       it('should not call a fallback command more than once (but reuse the result)', async(() => {
@@ -333,11 +349,11 @@ describe('runner', () => {
           })));
       }));
 
-      it('should support expanding `$*`/`$n` in fallback commands (with the same runtime arguments)', async(() => {
-        cmd = 'foo ${3:`three $1 $2 $3 | $*`}';
+      it('should support expanding `$*`/`$n*`/`$n` in fallback commands (with same runtime arguments)', async(() => {
+        cmd = 'foo ${3:`three $1 $2 $3 | $2* | $*`}';
 
         return _expandCmd(cmd, runtimeArgs, config).
-          then(expandedCmd => expect(expandedCmd).toBe('foo {{three baz "q u x" | baz "q u x"}}'));
+          then(expandedCmd => expect(expandedCmd).toBe('foo {{three baz "q u x" | "q u x" | baz "q u x"}}'));
       }));
 
       it('should log debug info when expanding fallback commands (in debug mode)', async(() => {
