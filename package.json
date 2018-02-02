@@ -112,7 +112,7 @@
     "@gkalpak/ng-maintain": "~0.0.7"
   },
   "dependencies": {
-    "inquirer": "^3.2.1"
+    "inquirer": "^5.0.1"
   },
   "devDependencies": {
     "eslint": "^4.4.1",
