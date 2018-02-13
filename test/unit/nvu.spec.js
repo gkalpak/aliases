@@ -44,6 +44,13 @@ describe('nvu()', () => {
       return nvu(['333'], {dryrun: true}).
         then(() => expect(console.log).toHaveBeenCalledWith(cmdStr));
     }));
+
+    it('should include any extra arguments', async(() => {
+      const cmdStr = 'nvm use {{getVersion(\'333\',{{nvls}})}} --foo && bar --baz';
+
+      return nvu(['333', '--foo', '&&', 'bar', '--baz'], {dryrun: true}).
+        then(() => expect(console.log).toHaveBeenCalledWith(cmdStr));
+    }));
   });
 
   describe('(no dryrun)', () => {
@@ -75,11 +82,31 @@ describe('nvu()', () => {
     describe('on *nix', () => {
       beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('*nix'));
 
-      it('should run the appropriate `nvm` command', async(() => {
+      it('should print a warning', async(() => {
+        const warningRe = /^node -e "console.warn\(\\".*WARNING/;
+
+        return Promise.resolve().
+          then(() => nvu(['333'], {})).
+          then(() => expect(runner.run.calls.mostRecent().args[0]).toMatch(warningRe)).
+          then(() => nvu(['333', 'foo', '"bar"'], {})).
+          then(() => expect(runner.run.calls.mostRecent().args[0]).toMatch(warningRe));
+      }));
+
+      it('should print no warning with chanined command', async(() => {
         const cmdStr = '. $NVM_DIR/nvm.sh && nvm use 333 $*';
 
-        return nvu(['333'], {}).
+        return nvu(['333', '&&', 'foo'], {}).
           then(() => expect(runner.run.calls.mostRecent().args[0]).toBe(cmdStr));
+      }));
+
+      it('should run the appropriate `nvm` command (with or without warning)', async(() => {
+        const cmdRe = /\. \$NVM_DIR\/nvm\.sh && nvm use 333 \$\*$/;
+
+        return Promise.resolve().
+          then(() => nvu(['333'], {})).
+          then(() => expect(runner.run.calls.mostRecent().args[0]).toMatch(cmdRe)).
+          then(() => nvu(['333', '&&', 'foo'], {})).
+          then(() => expect(runner.run.calls.mostRecent().args[0]).toMatch(cmdRe));
       }));
 
       it('should pass appropriate runtime arguments', async(() => {

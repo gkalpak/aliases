@@ -531,7 +531,7 @@ describe('runner', () => {
         return promise;
       }));
 
-      it('should be resolves when all spawned processes complete (single command)', async(() => {
+      it('should be resolved when all spawned processes complete (single command)', async(() => {
         const resolved = jasmine.createSpy('resolved');
 
         _spawnAsPromised(rawCmd, config).then(resolved);

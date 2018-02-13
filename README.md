@@ -65,7 +65,7 @@ Here is the list of all global dependencies with associated min. version (older 
 - Add aliases for:
   - Updating to the latest Node version on a branch. E.g. `nvup 6` would:
     - Install the latest 6.x version.
-    - Intall the packages (either via `niga` or by looking at the previously installed 6.x version).
+    - Install the packages (either via `niga` or by looking at the previously installed 6.x version).
     - Uninstall older 6.x versions.
   - Installing the latest Node version on a branch. E.g. `nvi 8` would:
     - Install the latest 8.x version.
