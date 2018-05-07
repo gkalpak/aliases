@@ -27,8 +27,14 @@
     "~~test-unit": "jasmine test/unit/**/*.spec.js"
   },
   "bin": {
+    "__a-builds-dir": "./bin/aio/__a-builds-dir.js",
     "__g-pick-branch": "./bin/git/__g-pick-branch.js",
     "__g-pick-commit": "./bin/git/__g-pick-commit.js",
+    "aioall": "./bin/aio/aioall.js",
+    "aioatt": "./bin/aio/aioatt.js",
+    "aiobd": "./bin/aio/aiobd.js",
+    "aiord": "./bin/aio/aiord.js",
+    "aiorm": "./bin/aio/aiorm.js",
     "alv": "./bin/misc/alv.js",
     "gaa": "./bin/git/gaa.js",
     "gb": "./bin/git/gb.js",

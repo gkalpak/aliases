@@ -49,6 +49,7 @@ be globally available. You can see each alias' global dependency by inspecting t
 Here is the list of all global dependencies with associated min. version (older versions are not guaranteed work):
 
 - `git`: [git] >=1.8
+- `docker`: [docker] >= 17
 - `ls`: [ls] >=8 (could come through a bash emulation environment on Windows, such as [git for Windows][git-win]'
     `Git BASH`)
 - `ngm-diff-wh`: `ngm-diff-wh` >=0.0.4 (part of the [ng-maintain] suite)
@@ -74,6 +75,7 @@ Here is the list of all global dependencies with associated min. version (older 
 
 [build-status]: https://travis-ci.org/gkalpak/aliases
 [build-status-image]: https://travis-ci.org/gkalpak/aliases.svg?branch=master
+[docker]: https://www.docker.com/
 [git]: https://git-scm.com/
 [git-win]: https://git-for-windows.github.io/
 [ls]: https://en.wikipedia.org/wiki/Ls
