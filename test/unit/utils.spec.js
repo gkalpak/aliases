@@ -327,6 +327,50 @@ describe('utils', () => {
     });
   });
 
+  describe('.stripIndentation()', () => {
+    const stripIndentation = utils.stripIndentation;
+
+    it('should be a function', () => {
+      expect(stripIndentation).toEqual(jasmine.any(Function));
+    });
+
+    it('should strip leading/trailing whitespace-only lines and `\n`', () => {
+      expect(stripIndentation('\nFoo\n')).toBe('Foo');
+      expect(stripIndentation(' \nFoo\n ')).toBe('Foo');
+      expect(stripIndentation(' \n F\noo \n ')).toBe(' F\noo ');
+    });
+
+    it('should preserve whitespace-only lines as second/second-last', () => {
+      expect(stripIndentation(' \n \nFoo\n \n ')).toBe(' \nFoo\n ');
+    });
+
+    it('should remove extra indentation', () => {
+      const input = `
+        Hello
+          world
+        !
+      `;
+      expect(stripIndentation(input)).toBe('Hello\n  world\n!');
+    });
+
+    it('should ignore (but preserve) whitespace-only lines', () => {
+      const input =
+        '        \n' +
+        '    Hello\n' +
+        '        \n' +
+        '      world\n' +
+        '  \n' +
+        '    !\n' +
+        '        ';
+      expect(stripIndentation(input)).toBe(
+        'Hello\n' +
+        '    \n' +
+        '  world\n' +
+        '\n' +
+        '!');
+    });
+  });
+
   describe('.wrapLine()', () => {
     const wrapLine = utils.wrapLine;
 
