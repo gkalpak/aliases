@@ -207,18 +207,38 @@ describe('gPickBranch()', () => {
       }));
     });
 
-    it('should log the selected branch', async(() => {
-      inquirer.prompt.and.returnValue(Promise.resolve({branch: 'foo'}));
+    describe('output', () => {
+      it('should log the selected branch', async(() => {
+        inquirer.prompt.and.returnValues(Promise.resolve({branch: 'foo'}), Promise.resolve({branch: 'bar'}));
 
-      return gPickBranch({}).
-        then(() => expect(console.log).toHaveBeenCalledWith('foo'));
-    }));
+        return Promise.resolve().
+          then(() => gPickBranch({})).
+          then(result => expect(result).toBeUndefined()).
+          then(() => expect(console.log).toHaveBeenCalledWith('foo')).
+          then(() => gPickBranch({returnOutput: false})).
+          then(result => expect(result).toBeUndefined()).
+          then(() => expect(console.log).toHaveBeenCalledWith('bar'));
+      }));
 
-    it('should remove the "current" marker from the selected branch\'s name', async(() => {
-      inquirer.prompt.and.returnValue(Promise.resolve({branch: 'foo (current)'}));
+      it('should return the selected branch if `returnOutput` is `true`', async(() => {
+        inquirer.prompt.and.returnValue(Promise.resolve({branch: 'foo'}));
 
-      return gPickBranch({}).
-        then(() => expect(console.log).toHaveBeenCalledWith('foo'));
-    }));
+        return gPickBranch({returnOutput: true}).
+          then(result => expect(result).toBe('foo')).
+          then(() => expect(console.log).not.toHaveBeenCalled());
+      }));
+
+      it('should remove the "current" marker from the selected branch\'s name', async(() => {
+        inquirer.prompt.and.returnValues(
+          Promise.resolve({branch: 'foo (current)'}),
+          Promise.resolve({branch: 'bar (current)'}));
+
+        return Promise.resolve().
+          then(() => gPickBranch({returnOutput: false})).
+          then(() => expect(console.log).toHaveBeenCalledWith('foo')).
+          then(() => gPickBranch({returnOutput: true})).
+          then(result => expect(result).toBe('bar'));
+      }));
+    });
   });
 });

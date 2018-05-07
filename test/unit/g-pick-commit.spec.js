@@ -205,11 +205,29 @@ describe('gPickCommit()', () => {
       }));
     });
 
-    it('should log the selected commit (removing other info)', async(() => {
-      inquirer.prompt.and.returnValue(Promise.resolve({commit: 'f00ba2 (foo, origin/bar) This is the commit message'}));
+    describe('output', () => {
+      it('should log the selected commit SHA (removing other info)', async(() => {
+        inquirer.prompt.and.returnValues(
+          Promise.resolve({commit: 'f00ba2 (foo, origin/baz) This is the foo commit message'}),
+          Promise.resolve({commit: 'b4r9ux (bar, origin/qux) This is the bar commit message'}));
 
-      return gPickCommit({}).
-        then(() => expect(console.log).toHaveBeenCalledWith('f00ba2'));
-    }));
+        return Promise.resolve().
+          then(() => gPickCommit({})).
+          then(result => expect(result).toBeUndefined()).
+          then(() => expect(console.log).toHaveBeenCalledWith('f00ba2')).
+          then(() => gPickCommit({returnOutput: false})).
+          then(result => expect(result).toBeUndefined()).
+          then(() => expect(console.log).toHaveBeenCalledWith('b4r9ux'));
+      }));
+
+      it('should return the selected commit SHA (removing other info) if `returnOutput` is `true`', async(() => {
+        const commit = 'f00ba2 (foo, origin/baz) This is the commit message';
+        inquirer.prompt.and.returnValue(Promise.resolve({commit}));
+
+        return gPickCommit({returnOutput: true}).
+          then(result => expect(result).toBe('f00ba2')).
+          then(() => expect(console.log).not.toHaveBeenCalled());
+      }));
+    });
   });
 });
