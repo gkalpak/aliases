@@ -1,6 +1,7 @@
 'use strict';
 
 // Imports
+const chalk = require('chalk');
 const {EventEmitter} = require('events');
 const utils = require('../../lib/utils');
 const {async, reversePromise, tickAsPromised} = require('../test-utils');
@@ -288,9 +289,14 @@ describe('utils', () => {
       expect(onError).toEqual(jasmine.any(Function));
     });
 
-    it('should log the error', () => {
+    it('should log the error (in red)', () => {
       onError('foo');
-      expect(console.error).toHaveBeenCalledWith('Error:', 'foo');
+      expect(console.error).toHaveBeenCalledWith(chalk.red('Error: foo'));
+    });
+
+    it('should log the error\'s stacktrace (in red) if an `Error`', () => {
+      onError(Object.assign(new Error('bar'), {stack: 'bar'}));
+      expect(console.error).toHaveBeenCalledWith(chalk.red('bar'));
     });
 
     it('should exit the process with 1', () => {
