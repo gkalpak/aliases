@@ -8,7 +8,7 @@
   "main": "lib/index",
   "scripts": {
     "build": "node scripts/build",
-    "dev": "nodemon --exec \"npm run test\" --watch .",
+    "dev": "nodemon --exec \"npm run test\" --ignore bin --watch .",
     "preinstall": "npm run build",
     "prelint": "npm run build",
     "lint": "eslint .",
