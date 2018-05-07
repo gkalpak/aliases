@@ -65,7 +65,7 @@ describe('runner', () => {
     beforeEach(() => {
       spyOn(runner, '_expandCmd').and.callFake(cmd => Promise.resolve(`expanded:${cmd}`));
       spyOn(runner, '_spawnAsPromised').and.returnValue(Promise.resolve(''));
-      spyOn(utils, 'onError');
+      spyOn(utils, 'onError').and.callFake(err => Promise.reject(err));
 
       cmd = 'foo --bar';
       runtimeArgs = ['baz', '--qux'];
@@ -122,7 +122,7 @@ describe('runner', () => {
         all([
           run(cmd, runtimeArgs, config),
           run(cmd, runtimeArgs, config),
-        ]).
+        ].map(reversePromise)).
         then(() => {
           expect(runner._expandCmd).toHaveBeenCalledTimes(2);
           expect(runner._spawnAsPromised).toHaveBeenCalledTimes(1);

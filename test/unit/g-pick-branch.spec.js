@@ -5,15 +5,15 @@ const inquirer = require('inquirer');
 const gPickBranch = require('../../lib/g-pick-branch');
 const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
-const {async} = require('../test-utils');
+const {async, reversePromise} = require('../test-utils');
 
 // Tests
 describe('gPickBranch()', () => {
   beforeEach(() => {
     spyOn(console, 'log');
-    spyOn(inquirer, 'prompt').and.returnValue(Promise.resolve(''));
+    spyOn(inquirer, 'prompt').and.returnValue(Promise.resolve({branch: ''}));
     spyOn(runner, 'run').and.returnValue(Promise.resolve(''));
-    spyOn(utils, 'onError');
+    spyOn(utils, 'onError').and.callFake(err => Promise.reject(err));
   });
 
   it('should be a function', () => {
@@ -57,7 +57,7 @@ describe('gPickBranch()', () => {
     it('should handle errors', async(() => {
       runner.run.and.returnValue(Promise.reject('test'));
 
-      return gPickBranch({}).
+      return reversePromise(gPickBranch({})).
         then(() => expect(utils.onError).toHaveBeenCalledWith('test'));
     }));
 
@@ -155,7 +155,7 @@ describe('gPickBranch()', () => {
         inquirer.prompt.and.callFake(() => {
           expect(utils.doOnExit).toHaveBeenCalledWith(process, jasmine.any(Function));
           callback = utils.doOnExit.calls.mostRecent().args[1];
-          return Promise.resolve('');
+          return Promise.resolve({branch: ''});
         });
 
         return gPickBranch({}).then(() => {
@@ -181,7 +181,7 @@ describe('gPickBranch()', () => {
         inquirer.prompt.and.callFake(() => {
           expect(utils.doOnExit).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).not.toHaveBeenCalled();
-          return Promise.resolve('');
+          return Promise.resolve({branch: ''});
         });
 
         return gPickBranch({}).then(() => {
@@ -200,7 +200,7 @@ describe('gPickBranch()', () => {
           return Promise.reject('');
         });
 
-        return gPickBranch({}).then(() => {
+        return reversePromise(gPickBranch({})).then(() => {
           expect(inquirer.prompt).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });

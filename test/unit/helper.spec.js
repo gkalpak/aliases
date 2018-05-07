@@ -16,7 +16,7 @@ describe('helper', () => {
     beforeEach(() => {
       spyOn(console, 'log');
       spyOn(helper, '_helpForCategory').and.callThrough();
-      spyOn(utils, 'onError');
+      spyOn(utils, 'onError').and.callFake(err => Promise.reject(err));
     });
 
     it('should be a function', () => {

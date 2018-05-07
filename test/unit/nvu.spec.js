@@ -4,7 +4,7 @@
 const nvu = require('../../lib/nvu');
 const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
-const {async} = require('../test-utils');
+const {async, reversePromise} = require('../test-utils');
 
 // Tests
 describe('nvu()', () => {
@@ -26,7 +26,7 @@ describe('nvu()', () => {
 
     spyOn(console, 'log');
     spyOn(runner, 'run').and.callFake(fakeRun);
-    spyOn(utils, 'onError');
+    spyOn(utils, 'onError').and.callFake(err => Promise.reject(err));
   });
 
   it('should be a function', () => {
@@ -75,7 +75,7 @@ describe('nvu()', () => {
     it('should handle errors', async(() => {
       runner.run.and.returnValue(Promise.reject('test'));
 
-      return nvu(['333'], {}).
+      return reversePromise(nvu(['333'], {})).
         then(() => expect(utils.onError).toHaveBeenCalledWith('test'));
     }));
 
@@ -149,7 +149,7 @@ describe('nvu()', () => {
 
       it('should fail when requesting non-existent branch', async(() => {
         let count = 0;
-        const verifyBranch = branch => nvu([branch], {}).then(() => {
+        const verifyBranch = branch => reversePromise(nvu([branch], {})).then(() => {
           expect(utils.onError).toHaveBeenCalledWith(Error(`No installed Node version found for '${branch}'.`));
           count++;
         });
