@@ -4,7 +4,7 @@
 const childProcess = require('child_process');
 const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
-const {async, reversePromise, tickAsPromised} = require('../testUtils');
+const {async, reversePromise, tickAsPromised} = require('../test-utils');
 
 // Tests
 describe('runner', () => {

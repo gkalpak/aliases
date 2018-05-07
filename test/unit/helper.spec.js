@@ -4,7 +4,7 @@
 const constants = require('../../lib/constants');
 const helper = require('../../lib/helper');
 const utils = require('../../lib/utils');
-const {async} = require('../testUtils');
+const {async} = require('../test-utils');
 
 // Tests
 describe('helper', () => {

@@ -5,7 +5,7 @@ const inquirer = require('inquirer');
 const gPickCommit = require('../../lib/g-pick-commit');
 const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
-const {async} = require('../testUtils');
+const {async} = require('../test-utils');
 
 // Tests
 describe('gPickCommit()', () => {

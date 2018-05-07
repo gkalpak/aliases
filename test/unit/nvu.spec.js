@@ -4,7 +4,7 @@
 const nvu = require('../../lib/nvu');
 const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
-const {async} = require('../testUtils');
+const {async} = require('../test-utils');
 
 // Tests
 describe('nvu()', () => {
