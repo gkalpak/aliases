@@ -2,6 +2,7 @@
 
 // Imports
 const chalk = require('chalk');
+const rl = require('readline');
 const {EventEmitter} = require('events');
 const utils = require('../../lib/utils');
 const {async, reversePromise, tickAsPromised} = require('../test-utils');
@@ -277,6 +278,19 @@ describe('utils', () => {
     });
   });
 
+  describe('.noop()', () => {
+    const noop = utils.noop;
+
+    it('should be a function', () => {
+      expect(noop).toEqual(jasmine.any(Function));
+    });
+
+    it('should do nothing', () => {
+      expect(noop).not.toThrow();
+      expect(noop()).toBeUndefined();
+    });
+  });
+
   describe('.onError()', () => {
     const onError = utils.onError;
 
@@ -368,6 +382,77 @@ describe('utils', () => {
         '  world\n' +
         '\n' +
         '!');
+    });
+  });
+
+  describe('.suppressTerminateBatchJobConfirmation()', () => {
+    const suppressTerminateBatchJobConfirmation = utils.suppressTerminateBatchJobConfirmation;
+    let mockProc;
+    let mockRlInstance;
+    let createInterfaceSpy;
+
+    beforeEach(() => {
+      mockProc = Object.assign(new EventEmitter(), {
+        platform: 'win32',
+        stdin: {},
+        stdout: {},
+      });
+
+      mockRlInstance = Object.assign(new EventEmitter(), {
+        close: jasmine.createSpy('mockRlInstance.close'),
+      });
+
+      createInterfaceSpy = spyOn(rl, 'createInterface').and.returnValue(mockRlInstance);
+    });
+
+    it('should be a function', () => {
+      expect(suppressTerminateBatchJobConfirmation).toEqual(jasmine.any(Function));
+    });
+
+    it('should do nothing on non-Windows platforms', () => {
+      mockProc.platform = 'not-win32';
+      suppressTerminateBatchJobConfirmation(mockProc);
+
+      expect(createInterfaceSpy).not.toHaveBeenCalled();
+    });
+
+    it('should create a `readline` interface (delegating stdio to the specified process)', () => {
+      suppressTerminateBatchJobConfirmation(mockProc);
+      expect(createInterfaceSpy).toHaveBeenCalledTimes(1);
+
+      const options = createInterfaceSpy.calls.mostRecent().args[0];
+      expect(options.input).toBe(mockProc.stdin);
+      expect(options.output).toBe(mockProc.stdout);
+    });
+
+    it('should forward `SIGINT` to the specified process', () => {
+      const onSigintSpy = jasmine.createSpy('onSigint');
+      mockProc.on('SIGINT', onSigintSpy);
+
+      suppressTerminateBatchJobConfirmation(mockProc);
+      expect(onSigintSpy).not.toHaveBeenCalled();
+
+      mockRlInstance.emit('SIGINT');
+      expect(onSigintSpy).toHaveBeenCalledWith();
+    });
+
+    it('should return an `unsuppress` function', async(() => {
+      const unsuppressTbj = suppressTerminateBatchJobConfirmation(mockProc);
+
+      expect(unsuppressTbj).toEqual(jasmine.any(Function));
+      expect(mockRlInstance.close).not.toHaveBeenCalled();
+
+      unsuppressTbj();
+      expect(mockRlInstance.close).not.toHaveBeenCalled();
+
+      return tickAsPromised().then(() => expect(mockRlInstance.close).toHaveBeenCalledTimes(1));
+    }));
+
+    it('should still return a (no-op) `unsuppress` function on non-Windows platforms', () => {
+      mockProc.platform = 'not-win32';
+      const unsuppressTbj = suppressTerminateBatchJobConfirmation(mockProc);
+
+      expect(unsuppressTbj).toBe(utils.noop);
     });
   });
 
