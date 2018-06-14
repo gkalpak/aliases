@@ -241,6 +241,31 @@ describe('utils', () => {
     });
   });
 
+  describe('.getAliasSpec()', () => {
+    const getAliasSpec = utils.getAliasSpec;
+
+    it('should be a function', () => {
+      expect(getAliasSpec).toEqual(jasmine.any(Function));
+    });
+
+    it('should retrieve the spec by name', () => {
+      const obj = {foo: 'bar'};
+      expect(getAliasSpec(obj, 'foo')).toBe('bar');
+    });
+
+    it('should retrieve the OS-specific spec (if available)', () => {
+      const obj = {foo: {default: 'bar1'}};
+      obj.foo[process.platform] = 'bar2';
+
+      expect(getAliasSpec(obj, 'foo')).toBe('bar2');
+    });
+
+    it('should fall back to the default spec if non available for current OS', () => {
+      const obj = {foo: {default: 'bar1'}};
+      expect(getAliasSpec(obj, 'foo')).toBe('bar1');
+    });
+  });
+
   describe('.getPlatform()', () => {
     const getPlatform = utils.getPlatform;
 
@@ -250,31 +275,6 @@ describe('utils', () => {
 
     it('should return the current platform', () => {
       expect(getPlatform()).toBe(process.platform);
-    });
-  });
-
-  describe('.getSpec()', () => {
-    const getSpec = utils.getSpec;
-
-    it('should be a function', () => {
-      expect(getSpec).toEqual(jasmine.any(Function));
-    });
-
-    it('should retrieve the spec by name', () => {
-      const obj = {foo: 'bar'};
-      expect(getSpec(obj, 'foo')).toBe('bar');
-    });
-
-    it('should retrieve the OS-specific spec (if available)', () => {
-      const obj = {foo: {default: 'bar1'}};
-      obj.foo[process.platform] = 'bar2';
-
-      expect(getSpec(obj, 'foo')).toBe('bar2');
-    });
-
-    it('should fall back to the default spec if non available for current OS', () => {
-      const obj = {foo: {default: 'bar1'}};
-      expect(getSpec(obj, 'foo')).toBe('bar1');
     });
   });
 

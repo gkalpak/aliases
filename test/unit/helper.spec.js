@@ -185,20 +185,20 @@ describe('helper', () => {
       expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
     });
 
-    it('should use `utils.getSpec()` to retrieve the spec for each alias', () => {
-      spyOn(utils, 'getSpec').and.callThrough();
+    it('should use `utils.getAliasSpec()` to retrieve the spec for each alias', () => {
+      spyOn(utils, 'getAliasSpec').and.callThrough();
 
       const catName = 'test';
       const catSpec = {foo: 'bar', baz: 'qux'};
       const joiner = ' ~ ';
 
-      expect(utils.getSpec).not.toHaveBeenCalled();
+      expect(utils.getAliasSpec).not.toHaveBeenCalled();
 
       _helpForCategory(catName, catSpec, joiner);
 
-      expect(utils.getSpec).toHaveBeenCalledTimes(2);
-      expect(utils.getSpec).toHaveBeenCalledWith(catSpec, 'foo');
-      expect(utils.getSpec).toHaveBeenCalledWith(catSpec, 'baz');
+      expect(utils.getAliasSpec).toHaveBeenCalledTimes(2);
+      expect(utils.getAliasSpec).toHaveBeenCalledWith(catSpec, 'foo');
+      expect(utils.getAliasSpec).toHaveBeenCalledWith(catSpec, 'baz');
     });
 
     it('should use `spec.desc` if available', () => {
