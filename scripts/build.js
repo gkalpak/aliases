@@ -5,7 +5,7 @@
 const {mkdirSync, writeFileSync} = require('fs');
 const {join} = require('path');
 const {ALIASES, BIN_DIR, DEF_CODE} = require('../lib/constants');
-const {getAliasSpec, onError} = require('../lib/utils');
+const {getAliasCmd, getAliasSpec, onError} = require('../lib/utils');
 const {run} = require('../lib/runner');
 
 // Run
@@ -26,11 +26,22 @@ function _main() {
         Object.keys(category).forEach(aliasName => {
           const file = join(categoryDir, `${aliasName}.js`);
           const spec = getAliasSpec(category, aliasName);
-          const code = `${spec.code || DEF_CODE(spec)}\n`;
+          const code = `${getAliasCode(spec)}\n`;
 
           writeFileSync(file, code);
         });
       });
     }).
     catch(onError);
+}
+
+function getAliasCode(spec) {
+  if (spec.code) {
+    return spec.code;
+  }
+
+  const cmd = getAliasCmd(spec);
+  const cfg = spec.cfg || {};
+
+  return DEF_CODE(cmd, cfg);
 }

@@ -201,9 +201,32 @@ describe('helper', () => {
       expect(utils.getAliasSpec).toHaveBeenCalledWith(catSpec, 'baz');
     });
 
-    it('should use `spec.desc` if available', () => {
+    it('should use `utils.getAliasCmd()` to retrieve the command for each alias (to use as description)', () => {
+      spyOn(utils, 'getAliasCmd').and.callThrough();
+
       const catName = 'test';
-      const catSpec = {foo: 'bar', baz: {desc: 'qux'}};
+      const catSpec = {foo: 'bar', baz: {cmd: 'qux'}};
+      const joiner = ' ~ ';
+
+      const expected =
+        'Test aliases:\n' +
+        '\n' +
+        '  foo ~ bar\n' +
+        '  baz ~ qux\n';
+
+      const actual = _helpForCategory(catName, catSpec, joiner);
+
+      expect(actual).toBe(expected);
+      expect(utils.getAliasCmd).toHaveBeenCalledTimes(2);
+      expect(utils.getAliasCmd).toHaveBeenCalledWith(catSpec.foo);
+      expect(utils.getAliasCmd).toHaveBeenCalledWith(catSpec.baz);
+    });
+
+    it('should use `spec.desc` if available', () => {
+      spyOn(utils, 'getAliasCmd').and.callThrough();
+
+      const catName = 'test';
+      const catSpec = {foo: 'bar', baz: {desc: 'qux', cmd: 'quux'}};
       const joiner = ' ~ ';
 
       const expected =
@@ -213,6 +236,8 @@ describe('helper', () => {
         '  baz ~ qux\n';
 
       expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
+      expect(utils.getAliasCmd).toHaveBeenCalledTimes(1);
+      expect(utils.getAliasCmd).toHaveBeenCalledWith(catSpec.foo);
     });
 
     it('should replace certain strings in descriptions', () => {
@@ -220,9 +245,9 @@ describe('helper', () => {
       const catName = 'test';
       const catSpec = {
         foo: 'foo --test',
-        bar: 'test --bar-- test',
+        bar: {cmd: 'test --bar-- test'},
         baz: {desc: 'baz(test)'},
-        qux: {desc: '-test- qux -test-'},
+        qux: {desc: '-test- qux -test-', cmd: 'ignored'},
       };
       const joiner = ' ~ ';
 

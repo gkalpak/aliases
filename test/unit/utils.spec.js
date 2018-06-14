@@ -241,6 +241,24 @@ describe('utils', () => {
     });
   });
 
+  describe('.getAliasCmd()', () => {
+    const getAliasCmd = utils.getAliasCmd;
+
+    it('should be a function', () => {
+      expect(getAliasCmd).toEqual(jasmine.any(Function));
+    });
+
+    it('should retrieve the command when `spec` is an object', () => {
+      const spec = {cmd: 'foo'};
+      expect(getAliasCmd(spec)).toBe('foo');
+    });
+
+    it('should retrieve the command when `spec` is a string', () => {
+      const spec = 'bar';
+      expect(getAliasCmd(spec)).toBe('bar');
+    });
+  });
+
   describe('.getAliasSpec()', () => {
     const getAliasSpec = utils.getAliasSpec;
 

@@ -58,6 +58,12 @@ describe('constants', () => {
     it('should return code with escaped `\'` in the command', () => {
       expect(defCode('foo \'bar\'')).toContain('module.exports = \'foo \\\'bar\\\'\'');
     });
+
+    it('should support passing default config options', () => {
+      expect(defCode('')).toContain('Object.assign({}, config)');
+      expect(defCode('', {})).toContain('Object.assign({}, config)');
+      expect(defCode('', {foo: true})).toContain('Object.assign({"foo":true}, config)');
+    });
   });
 
   describe('.DESC_REPLACEMENTS', () => {
