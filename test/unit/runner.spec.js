@@ -478,12 +478,59 @@ describe('runner', () => {
         });
     }));
 
+    it('should register a clean-up callback', async(() => {
+      const doOnExitSpy = spyOn(utils, 'doOnExit').and.callThrough();
+
+      return Promise.resolve().
+        then(() => _spawnAsPromised(rawCmd, config)).
+        then(() => expect(doOnExitSpy).toHaveBeenCalledWith(process, jasmine.any(Function)));
+    }));
+
+    it('should suppress "Terminate batch job (Y/N)?" confirmation on Windows with `suppressTbj: true`', async(() => {
+      const suppressTbjConfirmationSpy = spyOn(utils, 'suppressTerminateBatchJobConfirmation').and.callThrough();
+
+      return Promise.resolve().
+        then(() => _spawnAsPromised(rawCmd, config)).
+        then(() => expect(suppressTbjConfirmationSpy).not.toHaveBeenCalled()).
+        then(() => _spawnAsPromised(rawCmd, {suppressTbj: false})).
+        then(() => expect(suppressTbjConfirmationSpy).not.toHaveBeenCalled()).
+        then(() => _spawnAsPromised(rawCmd, {suppressTbj: true})).
+        then(() => {
+          expect(suppressTbjConfirmationSpy).toHaveBeenCalledWith(process);
+          suppressTbjConfirmationSpy.calls.reset();
+        });
+    }));
+
     describe('returned promise', () => {
-      beforeEach(() => autoExitSpawned = false);
+      const expectNotToHaveCleanedUp = () => {
+        expect(cancelCleanUpSpy).not.toHaveBeenCalled();
+        expect(unsuppressTbjSpy).not.toHaveBeenCalled();
+      };
+      const expectToHaveCleanedUp = (times = 1) => {
+        // TODO(gkalpak): Verify that besides cancelling automatic clean-up, it does indeed clean up.
+        expect(cancelCleanUpSpy).toHaveBeenCalledTimes(times);
+        expect(unsuppressTbjSpy).toHaveBeenCalledTimes(times);
+
+        cancelCleanUpSpy.calls.reset();
+        unsuppressTbjSpy.calls.reset();
+      };
+      let cancelCleanUpSpy;
+      let unsuppressTbjSpy;
+
+      beforeEach(() => {
+        cancelCleanUpSpy = jasmine.createSpy('cancelCleanUp');
+        unsuppressTbjSpy = spyOn(utils, 'noop');
+
+        spyOn(utils, 'doOnExit').and.returnValue(cancelCleanUpSpy);
+
+        autoExitSpawned = false;
+      });
 
       it('should be rejected if a spawned process exits with error (single command)', async(() => {
-        const promise = reversePromise(_spawnAsPromised(rawCmd, config)).
-          then(err => expect(err).toBe(1));
+        const promise = reversePromise(_spawnAsPromised(rawCmd, config)).then(err => {
+          expect(err).toBe(1);
+          expectToHaveCleanedUp();
+        });
 
         spawned[0].emit('exit', 1);
 
@@ -491,8 +538,10 @@ describe('runner', () => {
       }));
 
       it('should be rejected if a spawned process errors (single command)', async(() => {
-        const promise = reversePromise(_spawnAsPromised(rawCmd, config)).
-          then(err => expect(err).toBe('Test'));
+        const promise = reversePromise(_spawnAsPromised(rawCmd, config)).then(err => {
+          expect(err).toBe('Test');
+          expectToHaveCleanedUp();
+        });
 
         spawned[0].emit('error', 'Test');
 
@@ -506,7 +555,10 @@ describe('runner', () => {
             reversePromise(_spawnAsPromised('foo | bar | baz', config)),
             reversePromise(_spawnAsPromised('foo | bar | baz', config)),
           ]).
-          then(values => expect(values).toEqual([1, 2, 'SIGNAL']));
+          then(values => {
+            expect(values).toEqual([1, 2, 'SIGNAL']);
+            expectToHaveCleanedUp(3);
+          });
 
         spawned[0].emit('exit', 1);
         spawned[4].emit('exit', 2);
@@ -522,7 +574,10 @@ describe('runner', () => {
             reversePromise(_spawnAsPromised('foo | bar | baz', config)),
             reversePromise(_spawnAsPromised('foo | bar | baz', config)),
           ]).
-          then(values => expect(values).toEqual(['Test0', 'Test1', 'Test2']));
+          then(values => {
+            expect(values).toEqual(['Test0', 'Test1', 'Test2']);
+            expectToHaveCleanedUp(3);
+          });
 
         spawned[0].emit('error', 'Test0');
         spawned[4].emit('error', 'Test1');
@@ -542,9 +597,13 @@ describe('runner', () => {
           then(() => {
             spawned[0].emit('exit', 0);
             expect(resolved).not.toHaveBeenCalled();
+            expectNotToHaveCleanedUp();
           }).
           then(tickAsPromised).
-          then(() => expect(resolved).toHaveBeenCalledWith(''));
+          then(() => {
+            expect(resolved).toHaveBeenCalledWith('');
+            expectToHaveCleanedUp();
+          });
       }));
 
       it('should be resolved when all spawned processes complete (piped commands)', async(() => {
@@ -562,9 +621,13 @@ describe('runner', () => {
           then(() => {
             spawned[2].emit('exit', 0);
             expect(resolved).not.toHaveBeenCalled();
+            expectNotToHaveCleanedUp();
           }).
           then(tickAsPromised).
-          then(() => expect(resolved).toHaveBeenCalledWith(''));
+          then(() => {
+            expect(resolved).toHaveBeenCalledWith('');
+            expectToHaveCleanedUp();
+          });
       }));
     });
   });
