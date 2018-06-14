@@ -12,5 +12,5 @@ cache:
     - "$HOME/.npm"
   yarn: false
 
-install: npm ci
+install: npm ci || npm install
 script: npm test
