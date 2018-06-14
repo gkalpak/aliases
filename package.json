@@ -107,7 +107,11 @@
     "nvlsa": "./bin/node/nvlsa.js",
     "nvu": "./bin/node/nvu.js",
     "salfup": "./bin/misc/salfup.js",
+    "yad": "./bin/node/yad.js",
+    "yap": "./bin/node/yap.js",
     "yr": "./bin/node/yr.js",
+    "yrd": "./bin/node/yrd.js",
+    "yrp": "./bin/node/yrp.js",
     "ys": "./bin/node/ys.js",
     "yt": "./bin/node/yt.js"
   },
