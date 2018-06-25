@@ -2,6 +2,7 @@
 
 // Imports
 const chalk = require('chalk');
+const childProcess = require('child_process');
 const rl = require('readline');
 const {EventEmitter} = require('events');
 const utils = require('../../lib/utils');
@@ -408,19 +409,22 @@ describe('utils', () => {
     let mockProc;
     let mockRlInstance;
     let createInterfaceSpy;
+    let execSpy;
 
     beforeEach(() => {
-      mockProc = Object.assign(new EventEmitter(), {
+      mockProc = {
+        pid: 42,
         platform: 'win32',
         stdin: {},
         stdout: {},
-      });
+      };
 
       mockRlInstance = Object.assign(new EventEmitter(), {
         close: jasmine.createSpy('mockRlInstance.close'),
       });
 
       createInterfaceSpy = spyOn(rl, 'createInterface').and.returnValue(mockRlInstance);
+      execSpy = spyOn(childProcess, 'exec');
     });
 
     it('should be a function', () => {
@@ -443,15 +447,12 @@ describe('utils', () => {
       expect(options.output).toBe(mockProc.stdout);
     });
 
-    it('should forward `SIGINT` to the specified process', () => {
-      const onSigintSpy = jasmine.createSpy('onSigint');
-      mockProc.on('SIGINT', onSigintSpy);
-
+    it('should kill the specified process on `SIGINT`', () => {
       suppressTerminateBatchJobConfirmation(mockProc);
-      expect(onSigintSpy).not.toHaveBeenCalled();
+      expect(execSpy).not.toHaveBeenCalled();
 
       mockRlInstance.emit('SIGINT');
-      expect(onSigintSpy).toHaveBeenCalledWith();
+      expect(execSpy).toHaveBeenCalledWith('taskkill /F /PID 42 /T');
     });
 
     it('should return an `unsuppress` function', async(() => {
