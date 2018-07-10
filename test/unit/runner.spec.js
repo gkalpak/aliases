@@ -398,7 +398,7 @@ describe('runner', () => {
         const proc = spawned[++spawnedIndex];
 
         if (!proc) {
-          throw Error('Ran out of pre-spawned MockChildProcesses.');
+          throw new Error('Ran out of pre-spawned MockChildProcesses.');
         } else if (autoExitSpawned) {
           Promise.resolve().then(() => proc.emit('exit', 0));
         }
