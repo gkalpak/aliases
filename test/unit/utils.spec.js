@@ -360,6 +360,86 @@ describe('utils', () => {
     });
   });
 
+  describe('.require()', () => {
+    const require_ = utils.require;
+
+    it('should be a function', () => {
+      expect(require_).toEqual(jasmine.any(Function));
+    });
+
+    it('should delegate to `require()`', () => {
+      expect(require_('path')).toBe(require('path'));
+    });
+  });
+
+  describe('.requireWithEnv()', () => {
+    const requireWithEnv = utils.requireWithEnv;
+    let requireSpy;
+
+    beforeEach(() => requireSpy = spyOn(utils, 'require'));
+
+    it('should be a function', () => {
+      expect(requireWithEnv).toEqual(jasmine.any(Function));
+    });
+
+    it('should load and return the specified dependency', () => {
+      const mockDep = {};
+      requireSpy.and.returnValue(mockDep);
+
+      const dep = requireWithEnv('foo', {}, {});
+
+      expect(dep).toBe(mockDep);
+      expect(requireSpy).toHaveBeenCalledWith('foo');
+    });
+
+    it('should augment the environment with the specified values before loading the dependency', () => {
+      const mockEnv = {foo: 'foo', bar: 'bar'};
+      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
+      requireSpy.and.callFake(() => expect(mockEnv).toEqual({
+        foo: 'foo',
+        bar: 'temp-bar',
+        baz: 'temp-baz',
+      }));
+
+      requireWithEnv('foo', mockEnv, tempEnv);
+
+      expect(requireSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should restore the environment after loading the dependency', () => {
+      const mockEnv = {foo: 'foo', bar: 'bar'};
+      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
+
+      requireWithEnv('foo', mockEnv, tempEnv);
+
+      expect(mockEnv).toEqual({foo: 'foo', bar: 'bar'});
+      expect(mockEnv.hasOwnProperty('baz')).toBe(false);
+    });
+
+    it('should restore the environment if loading the dependency errors', () => {
+      const mockEnv = {foo: 'foo', bar: 'bar'};
+      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
+      requireSpy.and.callFake(() => { throw new Error('test'); });
+
+      expect(() => requireWithEnv('foo', mockEnv, tempEnv)).toThrowError('test');
+      expect(mockEnv).toEqual({foo: 'foo', bar: 'bar'});
+      expect(mockEnv.hasOwnProperty('baz')).toBe(false);
+    });
+
+    it('should throw an error if a relative path is specified', () => {
+      const relativePaths = ['./foo', '../bar'];
+
+      relativePaths.forEach(p => {
+        const errorMessage =
+          `Unable to resolve '${p}'. Relative paths are not supported.\n` +
+          `(To load relative files use \`requireWithEnv(require.resolve('${p}'), ...)\`.)`;
+        expect(() => requireWithEnv(p, {}, {})).toThrowError(errorMessage);
+      });
+
+      expect(requireSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('.stripIndentation()', () => {
     const stripIndentation = utils.stripIndentation;
 
