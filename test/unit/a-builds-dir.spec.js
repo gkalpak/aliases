@@ -76,14 +76,32 @@ describe('aBuildsDir()', () => {
           then(() => expect(console.log).toHaveBeenCalledWith('/ng/3/aio/aio-builds-setup'));
       }));
 
+      it('should look at `../` next', async(() => {
+        path.resolve.and.callFake(p => (p === '..') ?
+          '/ng/4/aio/aio-builds-setup' : '/wrong/path');
+
+        return aBuildsDir({}).
+          then(() => expect(path.resolve).toHaveBeenCalledTimes(4)).
+          then(() => expect(console.log).toHaveBeenCalledWith('/ng/4/aio/aio-builds-setup'));
+      }));
+
+      it('should look at `../../` next', async(() => {
+        path.resolve.and.callFake(p => (p === '../..') ?
+          '/ng/5/aio/aio-builds-setup' : '/wrong/path');
+
+        return aBuildsDir({}).
+          then(() => expect(path.resolve).toHaveBeenCalledTimes(5)).
+          then(() => expect(console.log).toHaveBeenCalledWith('/ng/5/aio/aio-builds-setup'));
+      }));
+
       it('should fail (with an informative error) if unable to locate the directory', async(() => {
         path.resolve.and.returnValue('/wrong/path');
 
         return reversePromise(aBuildsDir({})).
           then(err => expect(err.message).toBe(
             'Unable to locate the \'.../aio/aio-setup-builds/\' directory.\n' +
-            'Make sure you run the command from within either \'angular/\', \'angular/aio/\', or ' +
-            '\'angular/aio/aio-builds-setup/\'.'));
+            'Make sure you are in a directory between \'angular/\' and ' +
+            '\'angular/aio/aio-builds-setup/dockerbuild/scripts-js/\'.'));
       }));
 
       it('should verify that the directory matches `.../aio/aio-builds-setup/`', async(() => {
@@ -137,10 +155,12 @@ describe('aBuildsDir()', () => {
             then(() => expect(console.log).not.toHaveBeenCalled()).
             then(() => reversePromise(aBuildsDir({debug: true}))).
             then(() => {
-              expect(console.log).toHaveBeenCalledTimes(3);
-              expect(console.log).toHaveBeenCalledWith(debugMsg(4, 'aio/aio-builds-setup'));
-              expect(console.log).toHaveBeenCalledWith(debugMsg(5, 'aio-builds-setup'));
-              expect(console.log).toHaveBeenCalledWith(debugMsg(6, ''));
+              expect(console.log).toHaveBeenCalledTimes(5);
+              expect(console.log).toHaveBeenCalledWith(debugMsg(6, 'aio/aio-builds-setup'));
+              expect(console.log).toHaveBeenCalledWith(debugMsg(7, 'aio-builds-setup'));
+              expect(console.log).toHaveBeenCalledWith(debugMsg(8, ''));
+              expect(console.log).toHaveBeenCalledWith(debugMsg(9, '..'));
+              expect(console.log).toHaveBeenCalledWith(debugMsg(10, '../..'));
             });
         }));
 
@@ -160,7 +180,7 @@ describe('aBuildsDir()', () => {
             // Directory found and in debug mode.
             then(() => aBuildsDir({debug: true})).
             then(() => {
-              const foundMsg = 'Target directory found: /absolute/5/aio/aio-builds-setup';
+              const foundMsg = 'Target directory found: /absolute/7/aio/aio-builds-setup';
               expect(foundMsg).toMatch(foundRe);
               expect(console.log).toHaveBeenCalledWith(foundMsg);
             });
