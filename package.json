@@ -7,20 +7,21 @@
   ],
   "scripts": {
     "build": "node scripts/build",
-    "dev": "nodemon --exec \"npm run test\" --ignore bin --watch .",
+    "dev": "nodemon --exec \"npm test\" --ignore bin --watch ./",
     "preinstall": "npm run build",
     "prelint": "npm run build",
-    "lint": "eslint .",
+    "lint": "npm run ~~lint",
     "prerelease": "npm test",
     "release": "node --eval \"require('./lib/runner').run('npm version ${*:patch}', process.argv.slice(1))\"",
     "postrelease": "npm publish",
-    "pretest": "npm run lint",
-    "test": "npm run ~~test-pkg && npm run ~~test-unit && npm run ~~test-e2e",
+    "pretest": "npm run build",
+    "test": "run-s ~~test-pkg ~~lint ~~test-unit ~~test-e2e",
     "pretest-e2e": "npm run build",
     "test-e2e": "npm run ~~test-e2e",
     "pretest-unit": "npm run build",
     "test-unit": "npm run ~~test-unit",
     "postversion": "git push && git push --tags",
+    "~~lint": "eslint ./",
     "~~test-e2e": "node --eval \"console.log('No e2e tests yet :(')\"",
     "~~test-pkg": "node scripts/test-pkg",
     "~~test-unit": "jasmine test/unit/**/*.spec.js"
@@ -132,6 +133,7 @@
     "eslint": "^4.19.1",
     "eslint-plugin-jasmine": "^2.10.1",
     "jasmine": "^3.1.0",
-    "nodemon": "^1.17.5"
+    "nodemon": "^1.17.5",
+    "npm-run-all": "^4.1.3"
   }
 }
