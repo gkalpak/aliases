@@ -68,7 +68,7 @@ Here is the list of all global dependencies with associated min. version (older 
 
 Things I want to (but won't necessarily) do:
 
-- Add e2e tests.
+- Add more e2e tests.
 - Add aliases for:
   - Updating to the latest Node version on a branch. E.g. `nvup 6` would:
     - Install the latest 6.x version.

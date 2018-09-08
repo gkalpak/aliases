@@ -22,7 +22,7 @@
     "test-unit": "npm run ~~test-unit",
     "postversion": "git push && git push --tags",
     "~~lint": "eslint ./",
-    "~~test-e2e": "node --eval \"console.log('No e2e tests yet :(')\"",
+    "~~test-e2e": "jasmine test/e2e/**/*.spec.js",
     "~~test-pkg": "node scripts/test-pkg",
     "~~test-unit": "jasmine test/unit/**/*.spec.js"
   },
