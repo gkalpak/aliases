@@ -6,7 +6,7 @@ const {green, red} = require('chalk');
 const {existsSync} = require('fs');
 const {join} = require('path');
 const {ALIASES, ROOT_DIR} = require('../lib/constants');
-const {bin} = require('../package.json');
+const {bin, main} = require('../package.json');
 
 // Constants
 const CHECK_MARK = green('\u2714');
@@ -17,8 +17,8 @@ _main();
 
 // Function - Definitions
 function _main() {
-  compareToAliases(bin, ALIASES);
-  compareToBinDir(bin, ROOT_DIR);
+  checkBin(bin || {}, ROOT_DIR, ALIASES);
+  checkMain(main || '', ROOT_DIR);
 }
 
 function aliasesToBin(aliases) {
@@ -31,6 +31,24 @@ function aliasesToBin(aliases) {
   );
 
   return bin;
+}
+
+function checkBin(bin, rootDir, aliases) {
+  compareToAliases(bin, aliases);
+  compareToBinDir(bin, rootDir);
+}
+
+function checkMain(main, rootDir) {
+  if (!main) return;
+
+  const absMainPath = join(rootDir, main);
+  const missingMain = !existsSync(absMainPath) && !existsSync(`${absMainPath}.js`);
+
+  reportResults(
+    'The script mentioned in the `main` property in `./package.json` exist.',
+    'The script mentioned in the `main` property in `./package.json` is missing.',
+    {'Missing script': missingMain ? [main] : []}
+  );
 }
 
 function compareToAliases(bin, aliases) {
@@ -81,7 +99,7 @@ function reportResults(successMessage, errorMessage, errors) {
         `${header}:`,
         ...errors[header].map(x => `  ${x}`),
       ], []).
-      map(line => `    ${line}`).
+      map(line => `     ${line}`).
       join('\n');
 
     console.error(errorSummary);

@@ -5,7 +5,6 @@
   "keywords": [
     "Utility"
   ],
-  "main": "lib/index",
   "scripts": {
     "build": "node scripts/build",
     "dev": "nodemon --exec \"npm run test\" --ignore bin --watch .",
@@ -16,14 +15,14 @@
     "release": "node --eval \"require('./lib/runner').run('npm version ${*:patch}', process.argv.slice(1))\"",
     "postrelease": "npm publish",
     "pretest": "npm run lint",
-    "test": "npm run ~~test-pkg-bin && npm run ~~test-unit && npm run ~~test-e2e",
+    "test": "npm run ~~test-pkg && npm run ~~test-unit && npm run ~~test-e2e",
     "pretest-e2e": "npm run build",
     "test-e2e": "npm run ~~test-e2e",
     "pretest-unit": "npm run build",
     "test-unit": "npm run ~~test-unit",
     "postversion": "git push && git push --tags",
     "~~test-e2e": "node --eval \"console.log('No e2e tests yet :(')\"",
-    "~~test-pkg-bin": "node scripts/test-pkg-bin",
+    "~~test-pkg": "node scripts/test-pkg",
     "~~test-unit": "jasmine test/unit/**/*.spec.js"
   },
   "bin": {
