@@ -1,7 +1,14 @@
 'use strict';
 
+// Imports
+const {resolve} = require('path');
+
+// Constants
+const ROOT_DIR = resolve(__dirname, '..');
+
 // Exports
 module.exports = {
+  ROOT_DIR,
   reversePromise: _reversePromise,
   tickAsPromised: _tickAsPromised,
 };

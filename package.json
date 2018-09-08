@@ -126,7 +126,7 @@
     "@gkalpak/ng-maintain": "~0.0.7"
   },
   "dependencies": {
-    "@gkalpak/cli-utils": "0.0.1",
+    "@gkalpak/cli-utils": "0.0.2",
     "chalk": "^2.4.1",
     "inquirer": "^6.2.0"
   },

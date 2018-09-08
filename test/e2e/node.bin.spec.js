@@ -1,16 +1,18 @@
 'use strict';
 
 // Imports
-const {testBinScriptFactory, testCmd, withJasmineTimeout} = require('./test-utils');
+const {testCmd, testScriptFactory, withJasmineTimeout} = require('@gkalpak/cli-utils').testingUtils;
+const {join} = require('path');
+const {ROOT_DIR} = require('../test-utils');
 
 // Constants
-const SCRIPT_NAMESPACE = 'node';
+const SCRIPT_DIR = 'bin/node/';
 
 // Tests
-describe(`bin/${SCRIPT_NAMESPACE}/`, withJasmineTimeout(30000, () => {
+describe(SCRIPT_DIR, withJasmineTimeout(30000, () => {
   describe('nls', () => {
     const alias = 'npm list --depth=0';
-    const testScript = testBinScriptFactory(SCRIPT_NAMESPACE, 'nls');
+    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nls'));
 
     it(`should be an alias for \`${alias}\``, async () => {
       // `npm list` fails due to missing peerDependency.
@@ -23,7 +25,7 @@ describe(`bin/${SCRIPT_NAMESPACE}/`, withJasmineTimeout(30000, () => {
 
   describe('nls1', () => {
     const alias = 'npm list --depth=1';
-    const testScript = testBinScriptFactory(SCRIPT_NAMESPACE, 'nls1');
+    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nls1'));
 
     it(`should be an alias for \`${alias}\``, async () => {
       // `npm list` fails due to missing peerDependency.
@@ -36,7 +38,7 @@ describe(`bin/${SCRIPT_NAMESPACE}/`, withJasmineTimeout(30000, () => {
 
   describe('nlsg', () => {
     const alias = 'npm list --depth=0 --global';
-    const testScript = testBinScriptFactory(SCRIPT_NAMESPACE, 'nlsg');
+    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nlsg'));
 
     it(`should be an alias for \`${alias}\``, async () => {
       const result1 = await testCmd(alias);
@@ -48,7 +50,7 @@ describe(`bin/${SCRIPT_NAMESPACE}/`, withJasmineTimeout(30000, () => {
 
   describe('nlsg1', () => {
     const alias = 'npm list --depth=1 --global';
-    const testScript = testBinScriptFactory(SCRIPT_NAMESPACE, 'nlsg1');
+    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nlsg1'));
 
     it(`should be an alias for \`${alias}\``, async () => {
       const result1 = await testCmd(alias);
@@ -59,7 +61,7 @@ describe(`bin/${SCRIPT_NAMESPACE}/`, withJasmineTimeout(30000, () => {
   });
 
   describe('nv', () => {
-    const testScript = testBinScriptFactory(SCRIPT_NAMESPACE, 'nv');
+    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nv'));
 
     it('should print the Node.js version', async () => {
       const result = await testScript();
