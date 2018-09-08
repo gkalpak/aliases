@@ -214,6 +214,21 @@ describe('utils', () => {
       expect(console.error).toHaveBeenCalledWith(chalk.red('Error: foo'));
     });
 
+    it('should log the error as exit code if a (non-zero) number', () => {
+      onError(42);
+      expect(console.error).toHaveBeenCalledWith(chalk.red('Exit code: 42'));
+
+      console.error.calls.reset();
+
+      onError('42');
+      expect(console.error).toHaveBeenCalledWith(chalk.red('Error: 42'));
+
+      console.error.calls.reset();
+
+      onError(0);
+      expect(console.error).toHaveBeenCalledWith(chalk.red('Error: 0'));
+    });
+
     it('should log the error\'s stacktrace (in red) if an `Error`', () => {
       onError(Object.assign(new Error('bar'), {stack: 'bar'}));
       expect(console.error).toHaveBeenCalledWith(chalk.red('bar'));
@@ -221,6 +236,17 @@ describe('utils', () => {
 
     it('should exit the process with 1', () => {
       onError('foo');
+      expect(process.exit).toHaveBeenCalledWith(1);
+    });
+
+    it('should exit the process with `error` if a (non-zero) number', () => {
+      onError(42);
+      expect(process.exit).toHaveBeenCalledWith(42);
+
+      onError('42');
+      expect(process.exit).toHaveBeenCalledWith(1);
+
+      onError(0);
       expect(process.exit).toHaveBeenCalledWith(1);
     });
   });
