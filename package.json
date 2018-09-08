@@ -12,7 +12,7 @@
     "prelint": "npm run build",
     "lint": "npm run ~~lint",
     "prerelease": "npm test",
-    "release": "node --eval \"require('./lib/runner').run('npm version ${*:patch}', process.argv.slice(1))\"",
+    "release": "gkcu-run \"npm version \\${*:patch}\"",
     "postrelease": "npm publish",
     "pretest": "npm run build",
     "test": "run-s ~~test-pkg ~~lint ~~test-unit ~~test-e2e",
@@ -126,6 +126,7 @@
     "@gkalpak/ng-maintain": "~0.0.7"
   },
   "dependencies": {
+    "@gkalpak/cli-utils": "0.0.1",
     "chalk": "^2.4.1",
     "inquirer": "^6.2.0"
   },

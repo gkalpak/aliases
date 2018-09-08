@@ -1,8 +1,8 @@
 'use strict';
 
 // Imports
+const {commandUtils} = require('@gkalpak/cli-utils');
 const nvu = require('../../lib/nvu');
-const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
 const {async, reversePromise} = require('../test-utils');
 
@@ -25,7 +25,7 @@ describe('nvu()', () => {
     };
 
     spyOn(console, 'log');
-    spyOn(runner, 'run').and.callFake(fakeRun);
+    spyOn(commandUtils, 'run').and.callFake(fakeRun);
     spyOn(utils, 'onError').and.callFake(err => Promise.reject(err));
   });
 
@@ -60,20 +60,20 @@ describe('nvu()', () => {
 
     it('should run `nvls` (and return the output)', async(() => {
       return nvu(['333'], {}).
-        then(() => expect(runner.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true}));
+        then(() => expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true}));
     }));
 
     it('should return `nvls` output even if `config.returnOutput` is false (but not affect `config`)', async(() => {
       const config = {returnOutput: false};
 
       return nvu(['333'], config).then(() => {
-        expect(runner.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
+        expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
         expect(config.returnOutput).toBe(false);
       });
     }));
 
     it('should handle errors', async(() => {
-      runner.run.and.returnValue(Promise.reject('test'));
+      commandUtils.run.and.returnValue(Promise.reject('test'));
 
       return reversePromise(nvu(['333'], {})).
         then(() => expect(utils.onError).toHaveBeenCalledWith('test'));
@@ -87,16 +87,16 @@ describe('nvu()', () => {
 
         return Promise.resolve().
           then(() => nvu(['333'], {})).
-          then(() => expect(runner.run.calls.mostRecent().args[0]).toMatch(warningRe)).
+          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(warningRe)).
           then(() => nvu(['333', 'foo', '"bar"'], {})).
-          then(() => expect(runner.run.calls.mostRecent().args[0]).toMatch(warningRe));
+          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(warningRe));
       }));
 
       it('should print no warning with chanined command', async(() => {
         const cmdStr = '. $NVM_DIR/nvm.sh && nvm use 333 $*';
 
         return nvu(['333', '&&', 'foo'], {}).
-          then(() => expect(runner.run.calls.mostRecent().args[0]).toBe(cmdStr));
+          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toBe(cmdStr));
       }));
 
       it('should run the appropriate `nvm` command (with or without warning)', async(() => {
@@ -104,9 +104,9 @@ describe('nvu()', () => {
 
         return Promise.resolve().
           then(() => nvu(['333'], {})).
-          then(() => expect(runner.run.calls.mostRecent().args[0]).toMatch(cmdRe)).
+          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(cmdRe)).
           then(() => nvu(['333', '&&', 'foo'], {})).
-          then(() => expect(runner.run.calls.mostRecent().args[0]).toMatch(cmdRe));
+          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(cmdRe));
       }));
 
       it('should pass appropriate runtime arguments', async(() => {
@@ -114,7 +114,7 @@ describe('nvu()', () => {
         const runtimeArgs = originalArgs.slice(1);
 
         return nvu(originalArgs, {}).then(() => {
-          expect(runner.run.calls.mostRecent().args[1]).toEqual(runtimeArgs);
+          expect(commandUtils.run.calls.mostRecent().args[1]).toEqual(runtimeArgs);
           expect(originalArgs.length).toBe(3);
         });
       }));
@@ -123,7 +123,7 @@ describe('nvu()', () => {
         const config = {foo: 'bar'};
 
         return nvu(['333'], config).
-          then(() => expect(runner.run.calls.mostRecent().args[2]).toBe(config));
+          then(() => expect(commandUtils.run.calls.mostRecent().args[2]).toBe(config));
       }));
     });
 
@@ -141,7 +141,7 @@ describe('nvu()', () => {
         };
         const chainBranchTest = (aggr, branch) => aggr.
           then(() => nvu([branch], {})).
-          then(() => expect(runner.run.calls.mostRecent().args[0]).toBe(branchToCmdMap[branch]));
+          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toBe(branchToCmdMap[branch]));
 
         return Object.keys(branchToCmdMap).
           reduce(chainBranchTest, Promise.resolve());
@@ -164,7 +164,7 @@ describe('nvu()', () => {
         const runtimeArgs = originalArgs.slice(1);
 
         return nvu(originalArgs, {}).then(() => {
-          expect(runner.run.calls.mostRecent().args[1]).toEqual(runtimeArgs);
+          expect(commandUtils.run.calls.mostRecent().args[1]).toEqual(runtimeArgs);
           expect(originalArgs.length).toBe(3);
         });
       }));
@@ -173,7 +173,7 @@ describe('nvu()', () => {
         const config = {foo: 'bar'};
 
         return nvu(['333'], config).
-          then(() => expect(runner.run.calls.mostRecent().args[2]).toBe(config));
+          then(() => expect(commandUtils.run.calls.mostRecent().args[2]).toBe(config));
       }));
     });
   });

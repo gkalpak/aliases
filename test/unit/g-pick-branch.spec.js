@@ -1,9 +1,9 @@
 'use strict';
 
 // Imports
+const {commandUtils, processUtils} = require('@gkalpak/cli-utils');
 const inquirer = require('inquirer');
 const gPickBranch = require('../../lib/g-pick-branch');
-const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
 const {async, reversePromise} = require('../test-utils');
 
@@ -12,7 +12,7 @@ describe('gPickBranch()', () => {
   beforeEach(() => {
     spyOn(console, 'log');
     spyOn(inquirer, 'prompt').and.returnValue(Promise.resolve({branch: ''}));
-    spyOn(runner, 'run').and.returnValue(Promise.resolve(''));
+    spyOn(commandUtils, 'run').and.returnValue(Promise.resolve(''));
     spyOn(utils, 'onError').and.callFake(err => Promise.reject(err));
   });
 
@@ -40,7 +40,7 @@ describe('gPickBranch()', () => {
 
     it('should run `git branch` (and return the output)', async(() => {
       return gPickBranch({}).
-        then(() => expect(runner.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true}));
+        then(() => expect(commandUtils.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true}));
     }));
 
     it('should return `git branch` output even if `config.returnOutput` is false (but not affect `config`)',
@@ -48,14 +48,14 @@ describe('gPickBranch()', () => {
         const config = {returnOutput: false};
 
         return gPickBranch(config).then(() => {
-          expect(runner.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
+          expect(commandUtils.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
           expect(config.returnOutput).toBe(false);
         });
       })
     );
 
     it('should handle errors', async(() => {
-      runner.run.and.returnValue(Promise.reject('test'));
+      commandUtils.run.and.returnValue(Promise.reject('test'));
 
       return reversePromise(gPickBranch({})).
         then(() => expect(utils.onError).toHaveBeenCalledWith('test'));
@@ -70,9 +70,9 @@ describe('gPickBranch()', () => {
 
       beforeEach(() => {
         branches = [];
-        runner.run.and.callFake(() => Promise.resolve(branches.join('\n')));
+        commandUtils.run.and.callFake(() => Promise.resolve(branches.join('\n')));
 
-        spyOn(utils, 'doOnExit').and.callThrough();
+        spyOn(processUtils, 'doOnExit').and.callThrough();
         spyOn(utils, 'finallyAsPromised').and.callThrough();
       });
 
@@ -153,8 +153,8 @@ describe('gPickBranch()', () => {
         let callback;
 
         inquirer.prompt.and.callFake(() => {
-          expect(utils.doOnExit).toHaveBeenCalledWith(process, jasmine.any(Function));
-          callback = utils.doOnExit.calls.mostRecent().args[1];
+          expect(processUtils.doOnExit).toHaveBeenCalledWith(process, jasmine.any(Function));
+          callback = processUtils.doOnExit.calls.mostRecent().args[1];
           return Promise.resolve({branch: ''});
         });
 
@@ -177,9 +177,9 @@ describe('gPickBranch()', () => {
       it('should unregister the `onExit` callback once prompting completes successfully', async(() => {
         const unlistenSpy = jasmine.createSpy('unlisten');
 
-        utils.doOnExit.and.returnValue(unlistenSpy);
+        processUtils.doOnExit.and.returnValue(unlistenSpy);
         inquirer.prompt.and.callFake(() => {
-          expect(utils.doOnExit).toHaveBeenCalledTimes(1);
+          expect(processUtils.doOnExit).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).not.toHaveBeenCalled();
           return Promise.resolve({branch: ''});
         });
@@ -193,9 +193,9 @@ describe('gPickBranch()', () => {
       it('should unregister the `onExit` callback once prompting completes with error', async(() => {
         const unlistenSpy = jasmine.createSpy('unlisten');
 
-        utils.doOnExit.and.returnValue(unlistenSpy);
+        processUtils.doOnExit.and.returnValue(unlistenSpy);
         inquirer.prompt.and.callFake(() => {
-          expect(utils.doOnExit).toHaveBeenCalledTimes(1);
+          expect(processUtils.doOnExit).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).not.toHaveBeenCalled();
           return Promise.reject('');
         });

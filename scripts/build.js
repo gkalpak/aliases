@@ -2,11 +2,11 @@
 'use strict';
 
 // Imports
+const {run} = require('@gkalpak/cli-utils').commandUtils;
 const {mkdirSync, writeFileSync} = require('fs');
 const {join} = require('path');
 const {ALIASES, BIN_DIR, DEF_CODE} = require('../lib/constants');
 const {getAliasCmd, getAliasSpec, onError} = require('../lib/utils');
-const {run} = require('../lib/runner');
 
 // Run
 _main();

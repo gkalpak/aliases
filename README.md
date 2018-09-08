@@ -29,12 +29,13 @@ My global aliases packaged as a node module for easy installation/update across 
     ```
 
 3. All aliases also accept the following arguments:
-    - `--al-debug`: Produce verbose, debug-friendly output.
-    - `--al-dryrun`*: Print the command instead of actually running it.
-    - `--al-suppressTbj`*: Suppress the "Terminate batch job (Y/N)?" confirmation on Windows.
+    - `--gkcu-debug`: Produce verbose, debug-friendly output.
+    - `--gkcu-dryrun`*: Print the command instead of actually running it.
+    - `--gkcu-suppressTbj`*: Suppress the "Terminate batch job (Y/N)?" confirmation on Windows.
 
+    See [cli-utils] for more details.
 
-    NOTE: All arguments starting with `--al-` will be ignored when substituting input arguments or
+    NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or
     determining their index.
 
     <sub>(*): This is still an experimental feature and not guaranteed to work as expected.</sub>
@@ -65,7 +66,8 @@ Here is the list of all global dependencies with associated min. version (older 
 
 ## TODO
 
-- Add more unit tests for `runner.spawnAsPromised()`.
+Things I want to (but won't necessarily) do:
+
 - Add e2e tests.
 - Add aliases for:
   - Updating to the latest Node version on a branch. E.g. `nvup 6` would:
@@ -79,6 +81,7 @@ Here is the list of all global dependencies with associated min. version (older 
 
 [build-status]: https://travis-ci.org/gkalpak/aliases
 [build-status-image]: https://travis-ci.org/gkalpak/aliases.svg?branch=master
+[cli-utils]: https://www.npmjs.com/package/@gkalpak/cli-utils
 [docker]: https://www.docker.com/
 [git]: https://git-scm.com/
 [git-win]: https://git-for-windows.github.io/

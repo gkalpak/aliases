@@ -1,9 +1,9 @@
 'use strict';
 
 // Imports
+const {commandUtils, processUtils} = require('@gkalpak/cli-utils');
 const inquirer = require('inquirer');
 const gPickCommit = require('../../lib/g-pick-commit');
-const runner = require('../../lib/runner');
 const utils = require('../../lib/utils');
 const {async, reversePromise} = require('../test-utils');
 
@@ -12,7 +12,7 @@ describe('gPickCommit()', () => {
   beforeEach(() => {
     spyOn(console, 'log');
     spyOn(inquirer, 'prompt').and.returnValue(Promise.resolve({commit: ''}));
-    spyOn(runner, 'run').and.returnValue(Promise.resolve(''));
+    spyOn(commandUtils, 'run').and.returnValue(Promise.resolve(''));
     spyOn(utils, 'onError').and.callFake(err => Promise.reject(err));
   });
 
@@ -40,7 +40,7 @@ describe('gPickCommit()', () => {
 
     it('should run `git log ...` (and return the output)', async(() => {
       return gPickCommit({}).
-        then(() => expect(runner.run).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true}));
+        then(() => expect(commandUtils.run).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true}));
     }));
 
     it('should return `git log ...` output even if `config.returnOutput` is false (but not affect `config`)',
@@ -48,14 +48,14 @@ describe('gPickCommit()', () => {
         const config = {returnOutput: false};
 
         return gPickCommit(config).then(() => {
-          expect(runner.run).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true});
+          expect(commandUtils.run).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true});
           expect(config.returnOutput).toBe(false);
         });
       })
     );
 
     it('should handle errors', async(() => {
-      runner.run.and.returnValue(Promise.reject('test'));
+      commandUtils.run.and.returnValue(Promise.reject('test'));
 
       return reversePromise(gPickCommit({})).
         then(() => expect(utils.onError).toHaveBeenCalledWith('test'));
@@ -70,9 +70,9 @@ describe('gPickCommit()', () => {
 
       beforeEach(() => {
         commits = [];
-        runner.run.and.callFake(() => Promise.resolve(commits.join('\n')));
+        commandUtils.run.and.callFake(() => Promise.resolve(commits.join('\n')));
 
-        spyOn(utils, 'doOnExit').and.callThrough();
+        spyOn(processUtils, 'doOnExit').and.callThrough();
         spyOn(utils, 'finallyAsPromised').and.callThrough();
       });
 
@@ -151,8 +151,8 @@ describe('gPickCommit()', () => {
         let callback;
 
         inquirer.prompt.and.callFake(() => {
-          expect(utils.doOnExit).toHaveBeenCalledWith(process, jasmine.any(Function));
-          callback = utils.doOnExit.calls.mostRecent().args[1];
+          expect(processUtils.doOnExit).toHaveBeenCalledWith(process, jasmine.any(Function));
+          callback = processUtils.doOnExit.calls.mostRecent().args[1];
           return Promise.resolve({commit: ''});
         });
 
@@ -175,9 +175,9 @@ describe('gPickCommit()', () => {
       it('should unregister the `onExit` callback once prompting completes successfully', async(() => {
         const unlistenSpy = jasmine.createSpy('unlisten');
 
-        utils.doOnExit.and.returnValue(unlistenSpy);
+        processUtils.doOnExit.and.returnValue(unlistenSpy);
         inquirer.prompt.and.callFake(() => {
-          expect(utils.doOnExit).toHaveBeenCalledTimes(1);
+          expect(processUtils.doOnExit).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).not.toHaveBeenCalled();
           return Promise.resolve({commit: ''});
         });
@@ -191,9 +191,9 @@ describe('gPickCommit()', () => {
       it('should unregister the `onExit` callback once prompting completes with error', async(() => {
         const unlistenSpy = jasmine.createSpy('unlisten');
 
-        utils.doOnExit.and.returnValue(unlistenSpy);
+        processUtils.doOnExit.and.returnValue(unlistenSpy);
         inquirer.prompt.and.callFake(() => {
-          expect(utils.doOnExit).toHaveBeenCalledTimes(1);
+          expect(processUtils.doOnExit).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).not.toHaveBeenCalled();
           return Promise.reject('');
         });

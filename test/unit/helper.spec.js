@@ -45,14 +45,15 @@ describe('helper', () => {
         it('should mention "universal" arguments', async(() => {
           return getHelpMessage().
             then(msg => {
-              expect(msg).toContain('--al-debug');
-              expect(msg).toContain('--al-dryrun');
+              expect(msg).toContain('--gkcu-debug');
+              expect(msg).toContain('--gkcu-dryrun');
+              expect(msg).toContain('--gkcu-suppressTbj');
             });
         }));
 
-        it('should mention ignoring `--al-` arguments', async(() => {
+        it('should mention ignoring `--gkcu-` arguments', async(() => {
           const expected = utils.wrapLine(
-            '(NOTE: All arguments starting with `--al-` will be ignored when substituting input arguments or ' +
+            '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
             'determining their index.)', 0);
 
           return getHelpMessage().
