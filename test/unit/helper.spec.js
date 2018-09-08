@@ -4,7 +4,6 @@
 const constants = require('../../lib/constants');
 const helper = require('../../lib/helper');
 const utils = require('../../lib/utils');
-const {async} = require('../test-utils');
 
 // Tests
 describe('helper', () => {
@@ -25,76 +24,88 @@ describe('helper', () => {
 
     [null, 'misc'].forEach(category => {
       describe(category ? '(for specific category)' : '(for all categories)', () => {
-        const getHelpMessage = () => help(category).then(() => console.log.calls.mostRecent().args[0]);
+        const getHelpMessage = async () => {
+          await help(category);
+          return console.log.calls.mostRecent().args[0];
+        };
 
-        it('should return a promise', async(() => {
-          return help(category);
-        }));
+        it('should return a promise', async () => {
+          const promise = help(category);
+          expect(promise).toEqual(jasmine.any(Promise));
 
-        it('should log a help message', async(() => {
+          await promise;
+        });
+
+        it('should log a help message', async () => {
           expect(console.log).not.toHaveBeenCalled();
-          return help(category).
-            then(() => expect(console.log).toHaveBeenCalledTimes(1));
-        }));
 
-        it('should display the version stamp', async(() => {
-          return getHelpMessage().
-            then(msg => expect(msg).toContain(constants.VERSION_STAMP));
-        }));
+          await help(category);
+          expect(console.log).toHaveBeenCalledTimes(1);
+        });
 
-        it('should mention "universal" arguments', async(() => {
-          return getHelpMessage().
-            then(msg => {
-              expect(msg).toContain('--gkcu-debug');
-              expect(msg).toContain('--gkcu-dryrun');
-              expect(msg).toContain('--gkcu-suppressTbj');
-            });
-        }));
+        it('should display the version stamp', async () => {
+          const msg = await getHelpMessage();
+          expect(msg).toContain(constants.VERSION_STAMP);
+        });
 
-        it('should mention ignoring `--gkcu-` arguments', async(() => {
+        it('should mention "universal" arguments', async () => {
+          const msg = await getHelpMessage();
+
+          expect(msg).toContain('--gkcu-debug');
+          expect(msg).toContain('--gkcu-dryrun');
+          expect(msg).toContain('--gkcu-suppressTbj');
+        });
+
+        it('should mention ignoring `--gkcu-` arguments', async () => {
           const expected = utils.wrapLine(
             '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
             'determining their index.)', 0);
+          const msg = await getHelpMessage();
 
-          return getHelpMessage().
-            then(msg => expect(msg).toContain(expected));
-        }));
+          expect(msg).toContain(expected);
+        });
       });
     });
 
     describe('(for all categories)', () => {
-      const getHelpMessage = () => help().then(() => console.log.calls.mostRecent().args[0]);
+      const getHelpMessage = async () => {
+        await help();
+        return console.log.calls.mostRecent().args[0];
+      };
 
-      it('should contain "Available aliases"', async(() => {
-        return getHelpMessage().
-          then(msg => expect(msg).toContain('Available aliases'));
-      }));
+      it('should contain "Available aliases"', async () => {
+        const msg = await getHelpMessage();
+        expect(msg).toContain('Available aliases');
+      });
 
-      it('should contain all aliases', async(() => {
-        return getHelpMessage().
-          then(msg => categories.forEach(cat => expect(msg).toContain(categoryToHeading(cat))));
-      }));
+      it('should contain all aliases', async () => {
+        const msg = await getHelpMessage();
+        categories.forEach(cat => expect(msg).toContain(categoryToHeading(cat)));
+      });
 
-      it('should contain help for each category', async(() => {
+      it('should contain help for each category', async () => {
         helper._helpForCategory.and.callFake(catName => `_helpForCategory(${catName})`);
+        const msg = await getHelpMessage();
 
-        return getHelpMessage().
-          then(msg => categories.forEach(cat => {
-            expect(helper._helpForCategory).toHaveBeenCalledWith(cat, constants.ALIASES[cat], jasmine.any(String));
-            expect(msg).toContain(`_helpForCategory(${cat})`);
-          }));
-      }));
+        categories.forEach(cat => {
+          expect(helper._helpForCategory).toHaveBeenCalledWith(cat, constants.ALIASES[cat], jasmine.any(String));
+          expect(msg).toContain(`_helpForCategory(${cat})`);
+        });
+      });
     });
 
     describe('(for specific category)', () => {
-      const getHelpMessage = cat => help(cat).then(() => console.log.calls.mostRecent().args[0]);
+      const getHelpMessage = async cat => {
+        await help(cat);
+        return console.log.calls.mostRecent().args[0];
+      };
 
-      it('should not contain "Available aliases"', async(() => {
-        return getHelpMessage('foo').
-          then(msg => expect(msg).not.toContain('Available aliases'));
-      }));
+      it('should not contain "Available aliases"', async () => {
+        const msg = await getHelpMessage('foo');
+        expect(msg).not.toContain('Available aliases');
+      });
 
-      it('should only contain aliases for the specified category', async(() => {
+      it('should only contain aliases for the specified category', async () => {
         const expectToOnlyContain = (msg, cat) => categories.forEach(c => {
           const heading = categoryToHeading(c);
           if (c === cat) {
@@ -103,15 +114,16 @@ describe('helper', () => {
             expect(msg).not.toContain(heading);
           }
         });
-        const chainCategoryTest = (aggr, cat) => aggr.
-          then(() => getHelpMessage(cat)).
-          then(msg => expectToOnlyContain(msg, cat));
+        const chainCategoryTest = async (prev, cat) => {
+          await prev;
+          const msg = await getHelpMessage(cat);
+          expectToOnlyContain(msg, cat);
+        };
 
-        return categories.
-          reduce(chainCategoryTest, Promise.resolve());
-      }));
+        await categories.reduce(chainCategoryTest, Promise.resolve());
+      });
 
-      it('should only contain help for the specified category', async(() => {
+      it('should only contain help for the specified category', async () => {
         helper._helpForCategory.and.callFake(catName => `_helpForCategory(${catName})`);
 
         const expectToOnlyContain = (msg, cat) => categories.forEach(c => {
@@ -124,14 +136,15 @@ describe('helper', () => {
             expect(msg).not.toContain(message);
           }
         });
-        const chainCategoryTest = (aggr, cat) => aggr.
-          then(() => getHelpMessage(cat)).
-          then(msg => expectToOnlyContain(msg, cat)).
-          then(() => helper._helpForCategory.calls.reset());
+        const chainCategoryTest = async (prev, cat) => {
+          await prev;
+          const msg = await getHelpMessage(cat);
+          expectToOnlyContain(msg, cat);
+          helper._helpForCategory.calls.reset();
+        };
 
-        return categories.
-          reduce(chainCategoryTest, Promise.resolve());
-      }));
+        await categories.reduce(chainCategoryTest, Promise.resolve());
+      });
     });
   });
 

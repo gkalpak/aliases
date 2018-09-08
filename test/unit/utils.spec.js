@@ -3,7 +3,7 @@
 // Imports
 const chalk = require('chalk');
 const utils = require('../../lib/utils');
-const {async, reversePromise, tickAsPromised} = require('../test-utils');
+const {reversePromise, tickAsPromised} = require('../test-utils');
 
 // Tests
 describe('utils', () => {
@@ -38,107 +38,117 @@ describe('utils', () => {
     });
 
     describe('when the original promise is resolved', () => {
-      it('should call the callback afterwards', async(() => {
+      it('should call the callback afterwards', async () => {
         const promiseSpy = jasmine.createSpy('promiseSpy').and.callFake(() => expect(callback).not.toHaveBeenCalled());
         const promise = Promise.resolve().then(promiseSpy);
 
-        return finallyAsPromised(promise, callback).then(() => {
-          expect(promiseSpy).toHaveBeenCalledTimes(1);
-          expect(callback).toHaveBeenCalledTimes(1);
-        });
-      }));
+        await finallyAsPromised(promise, callback);
 
-      it('should wait if callback returns a promise', async(() => {
+        expect(promiseSpy).toHaveBeenCalledTimes(1);
+        expect(callback).toHaveBeenCalledTimes(1);
+      });
+
+      it('should wait if callback returns a promise', async () => {
         const callbackSpy = jasmine.createSpy('callbackSpy');
         callback.and.callFake(() => tickAsPromised().then(callbackSpy));
 
-        return finallyAsPromised(Promise.resolve(), callback).
-          then(() => expect(callbackSpy).toHaveBeenCalledTimes(1));
-      }));
+        await finallyAsPromised(Promise.resolve(), callback);
 
-      it('should ignore the return result of callback', async(() => {
+        expect(callbackSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it('should ignore the return result of callback', async () => {
         const promise = Promise.resolve('foo');
         callback.and.returnValue('bar');
 
-        return finallyAsPromised(promise, callback).
-          then(val => expect(val).toBe('foo'));
-      }));
+        const val = await finallyAsPromised(promise, callback);
 
-      it('should ignore the resolved value of callback (if it returns a promise)', async(() => {
+        expect(val).toBe('foo');
+      });
+
+      it('should ignore the resolved value of callback (if it returns a promise)', async () => {
         const promise = Promise.resolve('foo');
         callback.and.returnValue(Promise.resolve('bar'));
 
-        return finallyAsPromised(promise, callback).
-          then(val => expect(val).toBe('foo'));
-      }));
+        const val = await finallyAsPromised(promise, callback);
 
-      it('should reject with the value thrown by callback', async(() => {
+        expect(val).toBe('foo');
+      });
+
+      it('should reject with the value thrown by callback', async () => {
         const promise = Promise.resolve('foo');
         callback.and.callFake(() => { throw 'bar'; });
 
-        return reversePromise(finallyAsPromised(promise, callback)).
-          then(err => expect(err).toBe('bar'));
-      }));
+        const err = await reversePromise(finallyAsPromised(promise, callback));
 
-      it('should reject with the rejected value of callback (if it returns a promise)', async(() => {
+        expect(err).toBe('bar');
+      });
+
+      it('should reject with the rejected value of callback (if it returns a promise)', async () => {
         const promise = Promise.resolve('foo');
         callback.and.callFake(() => Promise.reject('bar'));
 
-        return reversePromise(finallyAsPromised(promise, callback)).
-          then(err => expect(err).toBe('bar'));
-      }));
+        const err = await reversePromise(finallyAsPromised(promise, callback));
+
+        expect(err).toBe('bar');
+      });
     });
 
     describe('when the original promise is rejected', () => {
-      it('should call the callback afterwards', async(() => {
+      it('should call the callback afterwards', async () => {
         const promiseSpy = jasmine.createSpy('promiseSpy').and.callFake(() => expect(callback).not.toHaveBeenCalled());
         const promise = Promise.resolve().then(promiseSpy).then(() => Promise.reject());
 
-        return reversePromise(finallyAsPromised(promise, callback)).then(() => {
-          expect(promiseSpy).toHaveBeenCalledTimes(1);
-          expect(callback).toHaveBeenCalledTimes(1);
-        });
-      }));
+        await reversePromise(finallyAsPromised(promise, callback));
 
-      it('should wait if callback returns a promise', async(() => {
+        expect(promiseSpy).toHaveBeenCalledTimes(1);
+        expect(callback).toHaveBeenCalledTimes(1);
+      });
+
+      it('should wait if callback returns a promise', async () => {
         const callbackSpy = jasmine.createSpy('callbackSpy');
         callback.and.callFake(() => tickAsPromised().then(callbackSpy));
 
-        return reversePromise(finallyAsPromised(Promise.reject(), callback)).
-          then(() => expect(callbackSpy).toHaveBeenCalledTimes(1));
-      }));
+        await reversePromise(finallyAsPromised(Promise.reject(), callback));
 
-      it('should ignore the return result of callback', async(() => {
+        expect(callbackSpy).toHaveBeenCalledTimes(1);
+      });
+
+      it('should ignore the return result of callback', async () => {
         const promise = Promise.reject('foo');
         callback.and.returnValue('bar');
 
-        return reversePromise(finallyAsPromised(promise, callback)).
-          then(err => expect(err).toBe('foo'));
-      }));
+        const err = await reversePromise(finallyAsPromised(promise, callback));
 
-      it('should ignore the resolved value of callback (if it returns a promise)', async(() => {
+        expect(err).toBe('foo');
+      });
+
+      it('should ignore the resolved value of callback (if it returns a promise)', async () => {
         const promise = Promise.reject('foo');
         callback.and.returnValue(Promise.resolve('bar'));
 
-        return reversePromise(finallyAsPromised(promise, callback)).
-          then(err => expect(err).toBe('foo'));
-      }));
+        const err = await reversePromise(finallyAsPromised(promise, callback));
 
-      it('should reject with the value thrown by callback', async(() => {
+        expect(err).toBe('foo');
+      });
+
+      it('should reject with the value thrown by callback', async () => {
         const promise = Promise.reject('foo');
         callback.and.callFake(() => { throw 'bar'; });
 
-        return reversePromise(finallyAsPromised(promise, callback)).
-          then(err => expect(err).toBe('bar'));
-      }));
+        const err = await reversePromise(finallyAsPromised(promise, callback));
 
-      it('should reject with the rejected value of callback (if it returns a promise)', async(() => {
+        expect(err).toBe('bar');
+      });
+
+      it('should reject with the rejected value of callback (if it returns a promise)', async () => {
         const promise = Promise.reject('foo');
         callback.and.callFake(() => Promise.reject('bar'));
 
-        return reversePromise(finallyAsPromised(promise, callback)).
-          then(err => expect(err).toBe('bar'));
-      }));
+        const err = await reversePromise(finallyAsPromised(promise, callback));
+
+        expect(err).toBe('bar');
+      });
     });
   });
 

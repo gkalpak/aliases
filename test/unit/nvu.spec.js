@@ -4,7 +4,7 @@
 const {commandUtils} = require('@gkalpak/cli-utils');
 const nvu = require('../../lib/nvu');
 const utils = require('../../lib/utils');
-const {async, reversePromise} = require('../test-utils');
+const {reversePromise} = require('../test-utils');
 
 // Tests
 describe('nvu()', () => {
@@ -34,103 +34,108 @@ describe('nvu()', () => {
   });
 
   describe('(dryrun)', () => {
-    it('should return a resolved promise', async(() => {
-      return nvu(['333'], {dryrun: true});
-    }));
+    it('should return a resolved promise', async () => {
+      const promise = nvu(['333'], {dryrun: true});
+      expect(promise).toEqual(jasmine.any(Promise));
 
-    it('should log the intended command', async(() => {
+      await promise;
+    });
+
+    it('should log the intended command', async () => {
       const cmdStr = 'nvm use {{getVersion(\'333\',{{nvls}})}}';
+      await nvu(['333'], {dryrun: true});
 
-      return nvu(['333'], {dryrun: true}).
-        then(() => expect(console.log).toHaveBeenCalledWith(cmdStr));
-    }));
+      expect(console.log).toHaveBeenCalledWith(cmdStr);
+    });
 
-    it('should include any extra arguments', async(() => {
+    it('should include any extra arguments', async () => {
       const cmdStr = 'nvm use {{getVersion(\'333\',{{nvls}})}} --foo && bar --baz';
+      await nvu(['333', '--foo', '&&', 'bar', '--baz'], {dryrun: true});
 
-      return nvu(['333', '--foo', '&&', 'bar', '--baz'], {dryrun: true}).
-        then(() => expect(console.log).toHaveBeenCalledWith(cmdStr));
-    }));
+      expect(console.log).toHaveBeenCalledWith(cmdStr);
+    });
   });
 
   describe('(no dryrun)', () => {
-    it('should return a promise', async(() => {
-      return nvu(['333'], {});
-    }));
+    it('should return a promise', async () => {
+      const promise = nvu(['333'], {});
+      expect(promise).toEqual(jasmine.any(Promise));
 
-    it('should run `nvls` (and return the output)', async(() => {
-      return nvu(['333'], {}).
-        then(() => expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true}));
-    }));
+      await promise;
+    });
 
-    it('should return `nvls` output even if `config.returnOutput` is false (but not affect `config`)', async(() => {
+    it('should run `nvls` (and return the output)', async () => {
+      await nvu(['333'], {});
+      expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
+    });
+
+    it('should return `nvls` output even if `config.returnOutput` is false (but not affect `config`)', async () => {
       const config = {returnOutput: false};
+      await nvu(['333'], config);
 
-      return nvu(['333'], config).then(() => {
-        expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
-        expect(config.returnOutput).toBe(false);
-      });
-    }));
+      expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
+      expect(config.returnOutput).toBe(false);
+    });
 
-    it('should handle errors', async(() => {
+    it('should handle errors', async () => {
       commandUtils.run.and.returnValue(Promise.reject('test'));
+      await reversePromise(nvu(['333'], {}));
 
-      return reversePromise(nvu(['333'], {})).
-        then(() => expect(utils.onError).toHaveBeenCalledWith('test'));
-    }));
+      expect(utils.onError).toHaveBeenCalledWith('test');
+    });
 
     describe('on *nix', () => {
       beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('*nix'));
 
-      it('should print a warning', async(() => {
+      it('should print a warning', async () => {
         const warningRe = /^node -e "console.warn\(\\".*WARNING/;
 
-        return Promise.resolve().
-          then(() => nvu(['333'], {})).
-          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(warningRe)).
-          then(() => nvu(['333', 'foo', '"bar"'], {})).
-          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(warningRe));
-      }));
+        await nvu(['333'], {});
+        expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(warningRe);
 
-      it('should print no warning with chanined command', async(() => {
+        await nvu(['333', 'foo', '"bar"'], {});
+        expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(warningRe);
+      });
+
+      it('should print no warning with chanined command', async () => {
         const cmdStr = '. $NVM_DIR/nvm.sh && nvm use 333 $*';
+        await nvu(['333', '&&', 'foo'], {});
 
-        return nvu(['333', '&&', 'foo'], {}).
-          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toBe(cmdStr));
-      }));
+        expect(commandUtils.run.calls.mostRecent().args[0]).toBe(cmdStr);
+      });
 
-      it('should run the appropriate `nvm` command (with or without warning)', async(() => {
+      it('should run the appropriate `nvm` command (with or without warning)', async () => {
         const cmdRe = /\. \$NVM_DIR\/nvm\.sh && nvm use 333 \$\*$/;
 
-        return Promise.resolve().
-          then(() => nvu(['333'], {})).
-          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(cmdRe)).
-          then(() => nvu(['333', '&&', 'foo'], {})).
-          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(cmdRe));
-      }));
+        await nvu(['333'], {});
+        expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(cmdRe);
 
-      it('should pass appropriate runtime arguments', async(() => {
+        await nvu(['333', '&&', 'foo'], {});
+        expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(cmdRe);
+      });
+
+      it('should pass appropriate runtime arguments', async () => {
         const originalArgs = ['333', 'foo', '"bar"'];
         const runtimeArgs = originalArgs.slice(1);
 
-        return nvu(originalArgs, {}).then(() => {
-          expect(commandUtils.run.calls.mostRecent().args[1]).toEqual(runtimeArgs);
-          expect(originalArgs.length).toBe(3);
-        });
-      }));
+        await nvu(originalArgs, {});
 
-      it('should pass appropriate config', async(() => {
+        expect(commandUtils.run.calls.mostRecent().args[1]).toEqual(runtimeArgs);
+        expect(originalArgs.length).toBe(3);
+      });
+
+      it('should pass appropriate config', async () => {
         const config = {foo: 'bar'};
+        await nvu(['333'], config);
 
-        return nvu(['333'], config).
-          then(() => expect(commandUtils.run.calls.mostRecent().args[2]).toBe(config));
-      }));
+        expect(commandUtils.run.calls.mostRecent().args[2]).toBe(config);
+      });
     });
 
     describe('on Windows', () => {
       beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('win32'));
 
-      it('should run the appropriate `nvm` command for the branch', async(() => {
+      it('should run the appropriate `nvm` command for the branch', async () => {
         const branchToCmdMap = {
           '333': 'nvm use 333.99.1 $*',
           '333.99': 'nvm use 333.99.1 $*',
@@ -139,42 +144,44 @@ describe('nvu()', () => {
           '0': 'nvm use 0.0.7 $*',
           '1': 'nvm use 1.22.333 $*',
         };
-        const chainBranchTest = (aggr, branch) => aggr.
-          then(() => nvu([branch], {})).
-          then(() => expect(commandUtils.run.calls.mostRecent().args[0]).toBe(branchToCmdMap[branch]));
+        const chainBranchTest = async (prev, branch) => {
+          await prev;
+          await nvu([branch], {});
+          expect(commandUtils.run.calls.mostRecent().args[0]).toBe(branchToCmdMap[branch]);
+        };
 
-        return Object.keys(branchToCmdMap).
-          reduce(chainBranchTest, Promise.resolve());
-      }));
+        await Object.keys(branchToCmdMap).reduce(chainBranchTest, Promise.resolve());
+      });
 
-      it('should fail when requesting non-existent branch', async(() => {
+      it('should fail when requesting non-existent branch', async () => {
         let count = 0;
-        const verifyBranch = branch => reversePromise(nvu([branch], {})).then(() => {
+        const verifyBranch = async branch => {
+          await reversePromise(nvu([branch], {}));
           expect(utils.onError).toHaveBeenCalledWith(Error(`No installed Node version found for '${branch}'.`));
-          count++;
-        });
+          ++count;
+        };
 
-        return Promise.
-          all(['2', '333.2'].map(verifyBranch)).
-          then(() => expect(count).toBe(2));
-      }));
+        await Promise.all(['2', '333.2'].map(verifyBranch));
 
-      it('should pass appropriate runtime arguments', async(() => {
+        expect(count).toBe(2);
+      });
+
+      it('should pass appropriate runtime arguments', async () => {
         const originalArgs = ['333', 'foo', '"bar"'];
         const runtimeArgs = originalArgs.slice(1);
 
-        return nvu(originalArgs, {}).then(() => {
-          expect(commandUtils.run.calls.mostRecent().args[1]).toEqual(runtimeArgs);
-          expect(originalArgs.length).toBe(3);
-        });
-      }));
+        await nvu(originalArgs, {});
 
-      it('should pass appropriate config', async(() => {
+        expect(commandUtils.run.calls.mostRecent().args[1]).toEqual(runtimeArgs);
+        expect(originalArgs.length).toBe(3);
+      });
+
+      it('should pass appropriate config', async () => {
         const config = {foo: 'bar'};
+        await nvu(['333'], config);
 
-        return nvu(['333'], config).
-          then(() => expect(commandUtils.run.calls.mostRecent().args[2]).toBe(config));
-      }));
+        expect(commandUtils.run.calls.mostRecent().args[2]).toBe(config);
+      });
     });
   });
 });

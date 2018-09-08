@@ -47,7 +47,7 @@ function checkMain(main, rootDir) {
   reportResults(
     'The script mentioned in the `main` property in `./package.json` exist.',
     'The script mentioned in the `main` property in `./package.json` is missing.',
-    {'Missing script': missingMain ? [main] : []}
+    {'Missing script': missingMain ? [main] : []},
   );
 }
 
@@ -63,7 +63,7 @@ function compareToAliases(bin, aliases) {
     {
       'Missing aliases': missing,
       'Extra aliases': extra,
-    }
+    },
   );
 }
 
@@ -75,7 +75,7 @@ function compareToBinDir(bin, rootDir) {
   reportResults(
     'All scripts mentioned in the `bin` property in `./package.json` exist.',
     'Some scripts mentioned in the `bin` property in `./package.json` are missing.',
-    {'Missing scripts': missingScripts}
+    {'Missing scripts': missingScripts},
   );
 }
 
