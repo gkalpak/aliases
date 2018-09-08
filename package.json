@@ -8,9 +8,9 @@
   "scripts": {
     "build": "node scripts/build",
     "dev": "watch \"npm test\" lib/ scripts/ test/ --wait 1",
-    "preinstall": "npm run build",
     "prelint": "npm run build",
     "lint": "npm run ~~lint",
+    "prepublishOnly": "npm run build",
     "prerelease": "npm test",
     "release": "gkcu-run \"npm version \\${*:patch}\"",
     "postrelease": "npm publish",
@@ -135,6 +135,7 @@
     "eslint-plugin-jasmine": "^2.10.1",
     "jasmine": "^3.2.0",
     "npm-run-all": "^4.1.3",
+    "shelljs": "^0.8.2",
     "watch": "^1.0.2"
   }
 }
