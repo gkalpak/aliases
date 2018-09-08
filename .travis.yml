@@ -3,14 +3,17 @@ sudo: false
 
 language: node_js
 node_js:
-  - 6
   - 8
+  - 10
   - node
 
 cache:
   directories:
     - "$HOME/.npm"
-  yarn: false
 
-install: npm ci || npm install
-script: npm test
+install:
+  # Run `npm install`, if `npm ci` fails, to work around old npm versions' not supporting `npm ci`.
+  - npm ci || npm install;
+
+script:
+  - npm test;
