@@ -1,7 +1,7 @@
 'use strict';
 
 // Imports
-const {testScriptFactory, withJasmineTimeout} = require('@gkalpak/cli-utils').testingUtils;
+const {testingUtils} = require('@gkalpak/cli-utils');
 const {join} = require('path');
 const {version} = require('../../package.json');
 const {ROOT_DIR} = require('../test-utils');
@@ -10,9 +10,9 @@ const {ROOT_DIR} = require('../test-utils');
 const SCRIPT_DIR = 'bin/misc/';
 
 // Tests
-describe(SCRIPT_DIR, withJasmineTimeout(30000, () => {
+describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
   describe('alv', () => {
-    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'alv'));
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'alv'));
 
     it('should print the current version stamp', async () => {
       const result = await testScript();
@@ -21,7 +21,7 @@ describe(SCRIPT_DIR, withJasmineTimeout(30000, () => {
   });
 
   describe('halp', () => {
-    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'halp'));
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'halp'));
 
     it('should print the current version stamp', async () => {
       const result1 = await testScript();
@@ -89,7 +89,7 @@ describe(SCRIPT_DIR, withJasmineTimeout(30000, () => {
   });
 
   describe('ll', () => {
-    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'll'));
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'll'));
 
     it('should list the specified directory\'s files', async () => {
       const result = await testScript(ROOT_DIR);
@@ -127,7 +127,7 @@ describe(SCRIPT_DIR, withJasmineTimeout(30000, () => {
   });
 
   describe('lla', () => {
-    const testScript = testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'lla'));
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'lla'));
 
     it('should list the specified directory\'s files', async () => {
       const result = await testScript(ROOT_DIR);
