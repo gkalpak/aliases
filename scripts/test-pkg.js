@@ -4,9 +4,9 @@
 // Imports
 const {green, red} = require('chalk');
 const {existsSync} = require('fs');
-const {join} = require('path');
+const {resolve} = require('path');
 const {ALIASES, ROOT_DIR} = require('../lib/constants');
-const {bin, main} = require('../package.json');
+const {bin, main, types, typings} = require('../package.json');
 
 // Constants
 const CHECK_MARK = green('\u2714');
@@ -18,7 +18,9 @@ _main();
 // Function - Definitions
 function _main() {
   checkBin(bin || {}, ROOT_DIR, ALIASES);
-  checkMain(main || '', ROOT_DIR);
+  checkFile('main', main || '', ROOT_DIR);
+  checkFile('types', types || '', ROOT_DIR);
+  checkFile('typings', typings || '', ROOT_DIR);
 }
 
 function aliasesToBin(aliases) {
@@ -38,17 +40,15 @@ function checkBin(bin, rootDir, aliases) {
   compareToBinDir(bin, rootDir);
 }
 
-function checkMain(main, rootDir) {
-  if (!main) return;
+function checkFile(propName, filePath, rootDir) {
+  if (!filePath) return;
 
-  const absMainPath = join(rootDir, main);
-  const missingMain = !existsSync(absMainPath) && !existsSync(`${absMainPath}.js`);
+  const missingFile = !existsSync(resolve(rootDir, filePath));
 
   reportResults(
-    'The script mentioned in the `main` property in `./package.json` exist.',
-    'The script mentioned in the `main` property in `./package.json` is missing.',
-    {'Missing script': missingMain ? [main] : []},
-  );
+    `The file mentioned in \`package.json > ${propName}\` exists.`,
+    `The file mentioned in \`package.json > ${propName}\` is missing.`,
+    {'Missing script': missingFile ? [filePath] : []});
 }
 
 function compareToAliases(bin, aliases) {
@@ -58,25 +58,23 @@ function compareToAliases(bin, aliases) {
   const {missing, extra} = diff(expected, actual);
 
   reportResults(
-    'The `bin` property in `./package.json` is in-sync with the aliases in `./lib/constants.js`.',
-    'The `bin` property in `./package.json` is out-of-sync with the aliases in `./lib/constants.js`.',
+    'Aliases in `lib/constants.js` are in-sync with `package.json > bin`.',
+    'Aliases in `lib/constants.js` are not in-sync with `package.json > bin`.',
     {
-      'Missing aliases': missing,
-      'Extra aliases': extra,
-    },
-  );
+      'Missing from `package.json > bin`': missing,
+      'Missing from `lib/constants.js`': extra,
+    });
 }
 
 function compareToBinDir(bin, rootDir) {
   const missingScripts = Object.keys(bin).
-    map(key => join(rootDir, bin[key])).
+    map(key => resolve(rootDir, bin[key])).
     filter(path => !existsSync(path));
 
   reportResults(
-    'All scripts mentioned in the `bin` property in `./package.json` exist.',
-    'Some scripts mentioned in the `bin` property in `./package.json` are missing.',
-    {'Missing scripts': missingScripts},
-  );
+    'All scripts mentioned in `package.json > bin` exist.',
+    'Some scripts mentioned in `package.json > bin` are missing.',
+    {'Missing scripts': missingScripts});
 }
 
 function diff(arr1, arr2) {
