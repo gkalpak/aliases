@@ -55,6 +55,8 @@ Here is the list of all global dependencies with associated min. version (older 
 
 - `git`: [git] >=1.8
 - `docker`: [docker] >= 17
+- `grep`: [grep] >=3 (could come through a bash emulation environment on Windows, such as [git for
+    Windows][git-win]' `Git BASH`)
 - `ls`: [ls] >=8 (could come through a bash emulation environment on Windows, such as [git for
     Windows][git-win]' `Git BASH`)
 - `ngm-diff-wh`: `ngm-diff-wh` >=0.0.4 (part of the [ng-maintain] suite)
@@ -85,6 +87,7 @@ Things I want to (but won't necessarily) do:
 [docker]: https://www.docker.com/
 [git]: https://git-scm.com/
 [git-win]: https://git-for-windows.github.io/
+[grep]: https://en.wikipedia.org/wiki/Grep
 [ls]: https://en.wikipedia.org/wiki/Ls
 [ng-maintain]: https://www.npmjs.com/package/@gkalpak/ng-maintain
 [node]: https://nodejs.org/en/

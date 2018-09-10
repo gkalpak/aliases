@@ -63,6 +63,7 @@
     "gdh": "./bin/git/gdh.js",
     "gl": "./bin/git/gl.js",
     "gl1": "./bin/git/gl1.js",
+    "gl1g": "./bin/git/gl1g.js",
     "gmt": "./bin/git/gmt.js",
     "gngprh": "./bin/git/gngprh.js",
     "gngprm": "./bin/git/gngprm.js",
