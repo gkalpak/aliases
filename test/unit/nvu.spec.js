@@ -10,11 +10,12 @@ const {reversePromise} = require('../test-utils');
 describe('nvu()', () => {
   const runOutputs = {
     nvls:
-      '    0.0.7 (Obsolete version)\n' +
-      '  * 1.22.333 (Very nice version)\n' +
-      '    333.22.1 (Even nicer version)\n' +
+      '    333.100.0 (Version variation 3)\n' +
+      '    333.99.1 (Version variation 2)\n' +
       '    333.22.9 (Version variation 1)\n' +
-      '    333.99.1 (Version variation 2)\n',
+      '    333.22.1 (Even nicer version)\n' +
+      '  * 1.22.333 (Very nice version)\n' +
+      '    0.0.7 (Obsolete version)\n',
     nvm: '',
   };
 
@@ -137,7 +138,7 @@ describe('nvu()', () => {
 
       it('should run the appropriate `nvm` command for the branch', async () => {
         const branchToCmdMap = {
-          '333': 'nvm use 333.99.1 $*',
+          '333': 'nvm use 333.100.0 $*',
           '333.99': 'nvm use 333.99.1 $*',
           '333.22': 'nvm use 333.22.9 $*',
           '333.22.1': 'nvm use 333.22.1 $*',
