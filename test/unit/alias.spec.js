@@ -25,6 +25,21 @@ describe('alias', () => {
       });
     });
 
+    describe('.getAdditionalPlatforms()', () => {
+      it('should return all additional platforms defined for the alias', () => {
+        const alias = new Alias({default: {}, foo: {}, bar: {}});
+        expect(alias.getAdditionalPlatforms()).toEqual(['foo', 'bar']);
+      });
+
+      it('should return an empty array if not additional platforms', () => {
+        const alias1 = new Alias({default: {}});
+        expect(alias1.getAdditionalPlatforms()).toEqual([]);
+
+        const alias2 = new Alias(new AliasSpec());
+        expect(alias2.getAdditionalPlatforms()).toEqual([]);
+      });
+    });
+
     describe('.getSpec()', () => {
       it('should return the `AliasSpec` for the specified platform', () => {
         const mockSpecMap = {default: {}, foo: {}};
