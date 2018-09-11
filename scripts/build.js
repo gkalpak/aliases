@@ -1,6 +1,8 @@
 #!/usr/bin/env/ node
 'use strict';
 
+// NOTE: This script has to run on the host machine, so that the correct platform is used.
+
 // Imports
 const {mkdirSync, writeFileSync} = require('fs');
 const {join} = require('path');

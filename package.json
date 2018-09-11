@@ -8,9 +8,9 @@
   "scripts": {
     "build": "node scripts/build",
     "dev": "watch \"npm test\" lib/ scripts/ test/ --wait 1",
+    "postinstall": "npm run build",
     "prelint": "npm run build",
     "lint": "npm run ~~lint",
-    "prepublishOnly": "npm run build",
     "prerelease": "npm test",
     "release": "gkcu-run \"npm version \\${*:patch}\"",
     "postrelease": "npm publish",
