@@ -111,16 +111,24 @@ describe('nvu()', () => {
       beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('*nix'));
 
       it('should print a warning', async () => {
-        const warningRe = /^node -e "console.warn\(\\".*WARNING/;
+        const warningRe1 = /^node --print "\\".*WARNING/;
+        const warningRe2 = /'nvu 333 \\\\\\"&&\\\\\\" <some-command>'/;  // Escaped `\"` --> `\\\"`.
+        let actualCmd;
 
         await nvu(['333'], {});
-        expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(warningRe);
+        actualCmd = commandUtils.run.calls.mostRecent().args[0];
+
+        expect(actualCmd).toMatch(warningRe1);
+        expect(actualCmd).toMatch(warningRe2);
 
         await nvu(['333', 'foo', '"bar"'], {});
-        expect(commandUtils.run.calls.mostRecent().args[0]).toMatch(warningRe);
+        actualCmd = commandUtils.run.calls.mostRecent().args[0];
+
+        expect(actualCmd).toMatch(warningRe1);
+        expect(actualCmd).toMatch(warningRe1);
       });
 
-      it('should print no warning with chanined command', async () => {
+      it('should print no warning with chained command', async () => {
         const cmdStr = '. $NVM_DIR/nvm.sh && nvm use 333 $*';
         await nvu(['333', '&&', 'foo'], {});
 
