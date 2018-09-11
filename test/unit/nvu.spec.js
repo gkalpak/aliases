@@ -35,25 +35,47 @@ describe('nvu()', () => {
   });
 
   describe('(dryrun)', () => {
-    it('should return a resolved promise', async () => {
+    it('should return a promise', async () => {
       const promise = nvu(['333'], {dryrun: true});
       expect(promise).toEqual(jasmine.any(Promise));
 
       await promise;
     });
 
-    it('should log the intended command', async () => {
-      const cmdStr = 'nvm use {{getVersion(\'333\',{{nvls}})}}';
-      await nvu(['333'], {dryrun: true});
+    describe('on *nix', () => {
+      beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('*nix'));
 
-      expect(console.log).toHaveBeenCalledWith(cmdStr);
+      it('should log the intended command', async () => {
+        const cmdStr = 'nvm use {{getVersion(333)}}';
+        await nvu(['333'], {dryrun: true});
+
+        expect(console.log).toHaveBeenCalledWith(cmdStr);
+      });
+
+      it('should include any extra arguments', async () => {
+        const cmdStr = 'nvm use {{getVersion(333)}} --foo && bar --baz';
+        await nvu(['333', '--foo', '&&', 'bar', '--baz'], {dryrun: true});
+
+        expect(console.log).toHaveBeenCalledWith(cmdStr);
+      });
     });
 
-    it('should include any extra arguments', async () => {
-      const cmdStr = 'nvm use {{getVersion(\'333\',{{nvls}})}} --foo && bar --baz';
-      await nvu(['333', '--foo', '&&', 'bar', '--baz'], {dryrun: true});
+    describe('on Windows', () => {
+      beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('win32'));
 
-      expect(console.log).toHaveBeenCalledWith(cmdStr);
+      it('should log the intended command', async () => {
+        const cmdStr = 'nvm use {{getVersion(333, {{nvls}})}}';
+        await nvu(['333'], {dryrun: true});
+
+        expect(console.log).toHaveBeenCalledWith(cmdStr);
+      });
+
+      it('should include any extra arguments', async () => {
+        const cmdStr = 'nvm use {{getVersion(333, {{nvls}})}} --foo && bar --baz';
+        await nvu(['333', '--foo', '&&', 'bar', '--baz'], {dryrun: true});
+
+        expect(console.log).toHaveBeenCalledWith(cmdStr);
+      });
     });
   });
 
