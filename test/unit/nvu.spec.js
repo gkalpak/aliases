@@ -87,19 +87,6 @@ describe('nvu()', () => {
       await promise;
     });
 
-    it('should run `nvls` (and return the output)', async () => {
-      await nvu(['333'], {});
-      expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
-    });
-
-    it('should return `nvls` output even if `config.returnOutput` is false (but not affect `config`)', async () => {
-      const config = {returnOutput: false};
-      await nvu(['333'], config);
-
-      expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
-      expect(config.returnOutput).toBe(false);
-    });
-
     it('should handle errors', async () => {
       commandUtils.run.and.returnValue(Promise.reject('test'));
       await reversePromise(nvu(['333'], {}));
@@ -109,6 +96,11 @@ describe('nvu()', () => {
 
     describe('on *nix', () => {
       beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('*nix'));
+
+      it('should not run `nvls`', async () => {
+        await nvu(['333'], {});
+        expect(commandUtils.run).not.toHaveBeenCalledWith('nvls', jasmine.anything(), jasmine.anything());
+      });
 
       it('should print a warning', async () => {
         const warningRe1 = /^node --print "\\".*WARNING/;
@@ -165,6 +157,19 @@ describe('nvu()', () => {
 
     describe('on Windows', () => {
       beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('win32'));
+
+      it('should first run `nvls` (and return the output)', async () => {
+        await nvu(['333'], {});
+        expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
+      });
+
+      it('should return `nvls` output even if `config.returnOutput` is false (but not affect `config`)', async () => {
+        const config = {returnOutput: false};
+        await nvu(['333'], config);
+
+        expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
+        expect(config.returnOutput).toBe(false);
+      });
 
       it('should run the appropriate `nvm` command for the branch', async () => {
         const branchToCmdMap = {
