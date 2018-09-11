@@ -201,7 +201,7 @@ describe('nvu()', () => {
         let count = 0;
         const verifyBranch = async branch => {
           await reversePromise(nvu([branch], {}));
-          expect(utils.onError).toHaveBeenCalledWith(Error(`No installed Node version found for '${branch}'.`));
+          expect(utils.onError).toHaveBeenCalledWith(Error(`No installed Node.js version found for '${branch}'.`));
           ++count;
         };
 
