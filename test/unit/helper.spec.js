@@ -151,6 +151,10 @@ describe('helper', () => {
   describe('._helpForCategory()', () => {
     const _helpForCategory = helper._helpForCategory;
     const originalDescReplacements = constants.DESC_REPLACEMENTS;
+    const mockAlias = description => {
+      const mockSpec = {code: '', description};
+      return {getSpec: () => mockSpec};
+    };
 
     afterEach(() => constants.DESC_REPLACEMENTS = originalDescReplacements);
 
@@ -160,7 +164,7 @@ describe('helper', () => {
 
     it('should return help for the specified category', () => {
       const catName = 'test';
-      const catSpec = {foo: 'bar', baz: 'qux'};
+      const catSpec = {foo: mockAlias('bar'), baz: mockAlias('qux')};
       const joiner = ' ~ ';
 
       const expected =
@@ -174,7 +178,7 @@ describe('helper', () => {
 
     it('should pad all alias names to the same length', () => {
       const catName = 'test';
-      const catSpec = {foo: 'bar', bazzz: 'qux'};
+      const catSpec = {foo: mockAlias('bar'), bazzz: mockAlias('qux')};
       const joiner = ' ~ ';
 
       const expected =
@@ -188,7 +192,7 @@ describe('helper', () => {
 
     it('should ignore `__`-prefixed (private) aliases', () => {
       const catName = 'test';
-      const catSpec = {foo: 'bar', __baz: 'qux'};
+      const catSpec = {foo: mockAlias('bar'), __baz: mockAlias('qux')};
       const joiner = ' ~ ';
 
       const expected =
@@ -199,69 +203,14 @@ describe('helper', () => {
       expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
     });
 
-    it('should use `utils.getAliasSpec()` to retrieve the spec for each alias', () => {
-      spyOn(utils, 'getAliasSpec').and.callThrough();
-
-      const catName = 'test';
-      const catSpec = {foo: 'bar', baz: 'qux'};
-      const joiner = ' ~ ';
-
-      expect(utils.getAliasSpec).not.toHaveBeenCalled();
-
-      _helpForCategory(catName, catSpec, joiner);
-
-      expect(utils.getAliasSpec).toHaveBeenCalledTimes(2);
-      expect(utils.getAliasSpec).toHaveBeenCalledWith(catSpec, 'foo');
-      expect(utils.getAliasSpec).toHaveBeenCalledWith(catSpec, 'baz');
-    });
-
-    it('should use `utils.getAliasCmd()` to retrieve the command for each alias (to use as description)', () => {
-      spyOn(utils, 'getAliasCmd').and.callThrough();
-
-      const catName = 'test';
-      const catSpec = {foo: 'bar', baz: {cmd: 'qux'}};
-      const joiner = ' ~ ';
-
-      const expected =
-        'Test aliases:\n' +
-        '\n' +
-        '  foo ~ bar\n' +
-        '  baz ~ qux\n';
-
-      const actual = _helpForCategory(catName, catSpec, joiner);
-
-      expect(actual).toBe(expected);
-      expect(utils.getAliasCmd).toHaveBeenCalledTimes(2);
-      expect(utils.getAliasCmd).toHaveBeenCalledWith(catSpec.foo);
-      expect(utils.getAliasCmd).toHaveBeenCalledWith(catSpec.baz);
-    });
-
-    it('should use `spec.desc` if available', () => {
-      spyOn(utils, 'getAliasCmd').and.callThrough();
-
-      const catName = 'test';
-      const catSpec = {foo: 'bar', baz: {desc: 'qux', cmd: 'quux'}};
-      const joiner = ' ~ ';
-
-      const expected =
-        'Test aliases:\n' +
-        '\n' +
-        '  foo ~ bar\n' +
-        '  baz ~ qux\n';
-
-      expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
-      expect(utils.getAliasCmd).toHaveBeenCalledTimes(1);
-      expect(utils.getAliasCmd).toHaveBeenCalledWith(catSpec.foo);
-    });
-
     it('should replace certain strings in descriptions', () => {
       constants.DESC_REPLACEMENTS = {test: '~TeSt~'};
       const catName = 'test';
       const catSpec = {
-        foo: 'foo --test',
-        bar: {cmd: 'test --bar-- test'},
-        baz: {desc: 'baz(test)'},
-        qux: {desc: '-test- qux -test-', cmd: 'ignored'},
+        foo: mockAlias('foo --test'),
+        bar: mockAlias('test --bar-- test'),
+        baz: mockAlias('baz(test)'),
+        qux: mockAlias('-test- qux -test-'),
       };
       const joiner = ' ~ ';
 
@@ -280,7 +229,7 @@ describe('helper', () => {
       spyOn(utils, 'wrapLine').and.callThrough();
 
       const catName = 'test';
-      const catSpec = {foo: 'bar', bazzz: 'qux'};
+      const catSpec = {foo: mockAlias('bar'), bazzz: mockAlias('qux')};
       const joiner = ' ~ ';
 
       expect(utils.wrapLine).not.toHaveBeenCalled();

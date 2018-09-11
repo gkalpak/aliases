@@ -152,49 +152,6 @@ describe('utils', () => {
     });
   });
 
-  describe('.getAliasCmd()', () => {
-    const getAliasCmd = utils.getAliasCmd;
-
-    it('should be a function', () => {
-      expect(getAliasCmd).toEqual(jasmine.any(Function));
-    });
-
-    it('should retrieve the command when `spec` is an object', () => {
-      const spec = {cmd: 'foo'};
-      expect(getAliasCmd(spec)).toBe('foo');
-    });
-
-    it('should retrieve the command when `spec` is a string', () => {
-      const spec = 'bar';
-      expect(getAliasCmd(spec)).toBe('bar');
-    });
-  });
-
-  describe('.getAliasSpec()', () => {
-    const getAliasSpec = utils.getAliasSpec;
-
-    it('should be a function', () => {
-      expect(getAliasSpec).toEqual(jasmine.any(Function));
-    });
-
-    it('should retrieve the spec by name', () => {
-      const obj = {foo: 'bar'};
-      expect(getAliasSpec(obj, 'foo')).toBe('bar');
-    });
-
-    it('should retrieve the OS-specific spec (if available)', () => {
-      const obj = {foo: {default: 'bar1'}};
-      obj.foo[process.platform] = 'bar2';
-
-      expect(getAliasSpec(obj, 'foo')).toBe('bar2');
-    });
-
-    it('should fall back to the default spec if non available for current OS', () => {
-      const obj = {foo: {default: 'bar1'}};
-      expect(getAliasSpec(obj, 'foo')).toBe('bar1');
-    });
-  });
-
   describe('.getPlatform()', () => {
     const getPlatform = utils.getPlatform;
 

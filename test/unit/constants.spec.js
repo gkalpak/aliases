@@ -3,19 +3,31 @@
 // Imports
 const {statSync} = require('fs');
 const {basename, normalize} = require('path');
+const {Alias, AliasSpecDefault} = require('../../lib/alias');
 const constants = require('../../lib/constants');
 
 // Tests
 describe('constants', () => {
   describe('.ALIASES', () => {
     const aliases = constants.ALIASES;
+    const getObjectValues = obj => Object.keys(obj).map(key => obj[key]);
 
     it('should be an object', () => {
       expect(aliases).toEqual(jasmine.any(Object));
     });
 
     it('should contain aliases grouped by category', () => {
-      expect(Object.keys(aliases)).toContain('git', 'node', 'misc');
+      expect(Object.keys(aliases)).toEqual(['git', 'node', 'aio', 'misc']);
+    });
+
+    it('should only contain `Alias` instances in each category', () => {
+      const categorySpecs = getObjectValues(aliases);
+      const allAliases = categorySpecs.
+        map(categorySpec => getObjectValues(categorySpec)).
+        reduce((aggr, categoryAliases) => aggr.concat(categoryAliases));
+
+      expect(allAliases.length).toBeGreaterThan(10);
+      allAliases.forEach(alias => expect(alias).toEqual(jasmine.any(Alias)));
     });
   });
 
@@ -37,6 +49,10 @@ describe('constants', () => {
 
     it('should be a function', () => {
       expect(defCode).toEqual(jasmine.any(Function));
+    });
+
+    it('should be set as `AliasSpecDefault.DEF_CODE`', () => {
+      expect(AliasSpecDefault.DEF_CODE.toString()).toBe(defCode.toString());
     });
 
     it('should return the code as string', () => {

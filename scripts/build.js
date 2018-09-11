@@ -7,8 +7,8 @@
 const {mkdirSync, writeFileSync} = require('fs');
 const {join} = require('path');
 const {rm, set} = require('shelljs');
-const {ALIASES, BIN_DIR, DEF_CODE} = require('../lib/constants');
-const {getAliasCmd, getAliasSpec, onError} = require('../lib/utils');
+const {ALIASES, BIN_DIR} = require('../lib/constants');
+const {onError} = require('../lib/utils');
 
 // Run
 _main();
@@ -17,35 +17,30 @@ _main();
 function _main() {
   try {
     set('-e');
+
+    // Clean up `bin/`.
     rm('-rf', BIN_DIR);
     mkdirSync(BIN_DIR);
 
+    // For each alias category...
     Object.keys(ALIASES).forEach(categoryName => {
-      const category = ALIASES[categoryName];
       const categoryDir = join(BIN_DIR, categoryName);
+      const categorySpec = ALIASES[categoryName];
 
+      // ...create the category directory.
       mkdirSync(categoryDir);
 
-      Object.keys(category).forEach(aliasName => {
-        const file = join(categoryDir, `${aliasName}.js`);
-        const spec = getAliasSpec(category, aliasName);
-        const code = `${getAliasCode(spec)}\n`;
+      // ...for each alias in the category...
+      Object.keys(categorySpec).forEach(aliasName => {
+        const outputPath = join(categoryDir, `${aliasName}.js`);
+        const alias = categorySpec[aliasName];
+        const aliasCode = `${alias.getSpec('default').code}\n`;
 
-        writeFileSync(file, code);
+        // ...create the alias script file.
+        writeFileSync(outputPath, aliasCode);
       });
     });
   } catch (err) {
     onError(err);
   }
-}
-
-function getAliasCode(spec) {
-  if (spec.code) {
-    return spec.code;
-  }
-
-  const cmd = getAliasCmd(spec);
-  const cfg = spec.cfg || {};
-
-  return DEF_CODE(cmd, cfg);
 }

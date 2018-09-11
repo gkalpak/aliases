@@ -9,7 +9,8 @@ const {reversePromise} = require('../test-utils');
 
 // Tests
 describe('nvu()', () => {
-  const nvlsCmdWin = utils.getAliasCmd(ALIASES.node.nvls.win32);
+  const nvlsCmdNix = ALIASES.node.nvls.getSpec('*nix').command;
+  const nvlsCmdWin = ALIASES.node.nvls.getSpec('win32').command;
   const runOutputs = {
     [nvlsCmdWin]:
       '    333.100.0 (Version variation 3)\n' +
@@ -93,16 +94,11 @@ describe('nvu()', () => {
     });
 
     describe('on *nix', () => {
-      let nvlsCmd;
-
-      beforeEach(() => {
-        spyOn(utils, 'getPlatform').and.returnValue('*nix');
-        nvlsCmd = utils.getAliasCmd(utils.getAliasSpec(ALIASES.node, 'nvls'));
-      });
+      beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('*nix'));
 
       it('should not run `nvls`', async () => {
         await nvu(['333'], {});
-        expect(commandUtils.run).not.toHaveBeenCalledWith(nvlsCmd, jasmine.anything(), jasmine.anything());
+        expect(commandUtils.run).not.toHaveBeenCalledWith(nvlsCmdNix, jasmine.anything(), jasmine.anything());
       });
 
       it('should print a warning', async () => {
@@ -159,23 +155,18 @@ describe('nvu()', () => {
     });
 
     describe('on Windows', () => {
-      let nvlsCmd;
-
-      beforeEach(() => {
-        spyOn(utils, 'getPlatform').and.returnValue('win32');
-        nvlsCmd = utils.getAliasCmd(utils.getAliasSpec(ALIASES.node, 'nvls'));
-      });
+      beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('win32'));
 
       it('should first run `nvls` (and return the output)', async () => {
         await nvu(['333'], {});
-        expect(commandUtils.run).toHaveBeenCalledWith(nvlsCmd, [], {returnOutput: true});
+        expect(commandUtils.run).toHaveBeenCalledWith(nvlsCmdWin, [], {returnOutput: true});
       });
 
       it('should return `nvls` output even if `config.returnOutput` is false (but not affect `config`)', async () => {
         const config = {returnOutput: false};
         await nvu(['333'], config);
 
-        expect(commandUtils.run).toHaveBeenCalledWith(nvlsCmd, [], {returnOutput: true});
+        expect(commandUtils.run).toHaveBeenCalledWith(nvlsCmdWin, [], {returnOutput: true});
         expect(config.returnOutput).toBe(false);
       });
 
