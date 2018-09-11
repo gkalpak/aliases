@@ -2,28 +2,26 @@
 
 // Imports
 const {commandUtils} = require('@gkalpak/cli-utils');
+const {ALIASES} = require('../../lib/constants');
 const nvu = require('../../lib/nvu');
 const utils = require('../../lib/utils');
 const {reversePromise} = require('../test-utils');
 
 // Tests
 describe('nvu()', () => {
+  const nvlsCmdWin = utils.getAliasCmd(ALIASES.node.nvls.win32);
   const runOutputs = {
-    nvls:
+    [nvlsCmdWin]:
       '    333.100.0 (Version variation 3)\n' +
       '    333.99.1 (Version variation 2)\n' +
       '    333.22.9 (Version variation 1)\n' +
       '    333.22.1 (Even nicer version)\n' +
       '  * 1.22.333 (Very nice version)\n' +
       '    0.0.7 (Obsolete version)\n',
-    nvm: '',
   };
 
   beforeEach(() => {
-    const fakeRun = cmd => {
-      const executable = cmd.split(' ', 1).pop();
-      return Promise.resolve(runOutputs[executable]);
-    };
+    const fakeRun = cmd => Promise.resolve(runOutputs[cmd] || '');
 
     spyOn(console, 'log');
     spyOn(commandUtils, 'run').and.callFake(fakeRun);
@@ -95,11 +93,16 @@ describe('nvu()', () => {
     });
 
     describe('on *nix', () => {
-      beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('*nix'));
+      let nvlsCmd;
+
+      beforeEach(() => {
+        spyOn(utils, 'getPlatform').and.returnValue('*nix');
+        nvlsCmd = utils.getAliasCmd(utils.getAliasSpec(ALIASES.node, 'nvls'));
+      });
 
       it('should not run `nvls`', async () => {
         await nvu(['333'], {});
-        expect(commandUtils.run).not.toHaveBeenCalledWith('nvls', jasmine.anything(), jasmine.anything());
+        expect(commandUtils.run).not.toHaveBeenCalledWith(nvlsCmd, jasmine.anything(), jasmine.anything());
       });
 
       it('should print a warning', async () => {
@@ -156,18 +159,23 @@ describe('nvu()', () => {
     });
 
     describe('on Windows', () => {
-      beforeEach(() => spyOn(utils, 'getPlatform').and.returnValue('win32'));
+      let nvlsCmd;
+
+      beforeEach(() => {
+        spyOn(utils, 'getPlatform').and.returnValue('win32');
+        nvlsCmd = utils.getAliasCmd(utils.getAliasSpec(ALIASES.node, 'nvls'));
+      });
 
       it('should first run `nvls` (and return the output)', async () => {
         await nvu(['333'], {});
-        expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
+        expect(commandUtils.run).toHaveBeenCalledWith(nvlsCmd, [], {returnOutput: true});
       });
 
       it('should return `nvls` output even if `config.returnOutput` is false (but not affect `config`)', async () => {
         const config = {returnOutput: false};
         await nvu(['333'], config);
 
-        expect(commandUtils.run).toHaveBeenCalledWith('nvls', [], {returnOutput: true});
+        expect(commandUtils.run).toHaveBeenCalledWith(nvlsCmd, [], {returnOutput: true});
         expect(config.returnOutput).toBe(false);
       });
 
