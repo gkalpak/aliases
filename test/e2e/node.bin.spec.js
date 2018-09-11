@@ -68,4 +68,39 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
       expect(result).toBe(process.version);
     });
   });
+
+  // `nvm` is being funny on non-Windows platforms,
+  // giving errors when run during tests (but not directly in the terminal).
+  describe('nvls', onlyOnWindows(() => {
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nvls'));
+
+    it('should at least list (pun intended) the current Node.js version', async () => {
+      const result = await testScript();
+      expect(result).toContain(process.version.replace(/^v/, ''));
+    });
+  }));
+
+  // `nvm` is being funny on non-Windows platforms,
+  // giving errors when run during tests (but not directly in the terminal).
+  describe('nvlsa', onlyOnWindows(() => {
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nvlsa'));
+
+    it('should list some Node.js versions', async () => {
+      const versionRe = /\d+\.\d+\.\d+/;
+      const result = await testScript();
+      const linesWithVersions = result.split('\n').filter(line => versionRe.test(line));
+
+      expect(linesWithVersions.length).toBeGreaterThan(5);
+    });
+
+    it('should include the current Node.js version', async () => {
+      const result = await testScript();
+      expect(result).toContain(process.version.replace(/^v/, ''));
+    });
+  }));
 }));
+
+// Helpers
+function onlyOnWindows(testSuite) {
+  return (process.platform === 'win32') ? testSuite : () => undefined;
+}
