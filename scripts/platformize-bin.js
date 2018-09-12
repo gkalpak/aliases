@@ -2,7 +2,7 @@
 'use strict';
 
 // Imports
-const {readdirSync, readFileSync, renameSync, statSync, writeFileSync} = require('fs');
+const {existsSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync} = require('fs');
 const {join} = require('path');
 const {BIN_DIR} = require('../lib/constants');
 
@@ -12,6 +12,9 @@ _main();
 // Function - Definitions
 function _main() {
   try {
+    // Nothing to do if `bin/` does not exist (e.g. first local `npm install`).
+    if (!existsSync(BIN_DIR)) return;
+
     // Restore any "deactivated" default scripts.
     const defaultExtRe = /\.default\.js$/;
     const defaultScripts = findFiles(BIN_DIR).filter(x => defaultExtRe.test(x));
