@@ -2,9 +2,9 @@
 'use strict';
 
 // Imports
-const {cp, find, mv, set} = require('shelljs');
+const {readdirSync, readFileSync, renameSync, statSync, writeFileSync} = require('fs');
+const {join} = require('path');
 const {BIN_DIR} = require('../lib/constants');
-const {getPlatform, onError} = require('../lib/utils');
 
 // Run
 _main();
@@ -12,30 +12,55 @@ _main();
 // Function - Definitions
 function _main() {
   try {
-    set('-e');
-
     // Restore any "deactivated" default scripts.
     const defaultExtRe = /\.default\.js$/;
-    const defaultScripts = find(BIN_DIR).filter(x => defaultExtRe.test(x));
+    const defaultScripts = findFiles(BIN_DIR).filter(x => defaultExtRe.test(x));
     defaultScripts.forEach(defaultScriptPath => {
       const activeScriptPath = defaultScriptPath.replace(defaultExtRe, '.js');
-      mv(defaultScriptPath, activeScriptPath);
+      moveFile(defaultScriptPath, activeScriptPath);
     });
 
     // "Activate" any platform-specific scripts.
-    const platformExtRe = new RegExp(`\\.${getPlatform()}\\.js$`);
-    const platformScripts = find(BIN_DIR).filter(x => platformExtRe.test(x));
+    const platformExtRe = new RegExp(`\\.${process.platform}\\.js$`);
+    const platformScripts = findFiles(BIN_DIR).filter(x => platformExtRe.test(x));
     platformScripts.forEach(platformScriptPath => {
       const activeScriptPath = platformScriptPath.replace(platformExtRe, '.js');
       const defaultScriptPath = platformScriptPath.replace(platformExtRe, '.default.js');
 
       // Back up the default script for future restoration.
-      mv(activeScriptPath, defaultScriptPath);
+      moveFile(activeScriptPath, defaultScriptPath);
 
       // Copy the platform-specific script (not move just in case).
-      cp(platformScriptPath, activeScriptPath);
+      copyFile(platformScriptPath, activeScriptPath);
     });
   } catch (err) {
-    onError(err);
+    console.error(err);
+    process.exit(1);
   }
+}
+
+function copyFile(fromPath, toPath) {
+  writeFileSync(toPath, readFileSync(fromPath));
+}
+
+function findFiles(rootDir) {
+  const unvisitedDirectories = [rootDir];
+  const files = [];
+
+  while (unvisitedDirectories.length) {
+    const currentDir = unvisitedDirectories.pop();
+    readdirSync(currentDir).forEach(name => {
+      const path = join(currentDir, name);
+      const info = statSync(path);
+      const targetList = info.isDirectory() ? unvisitedDirectories : files;
+
+      targetList.push(path);
+    });
+  }
+
+  return files;
+}
+
+function moveFile(fromPath, toPath) {
+  renameSync(fromPath, toPath);
 }
