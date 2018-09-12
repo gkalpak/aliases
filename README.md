@@ -21,16 +21,17 @@ My global aliases packaged as a node module for easy installation/update across 
 2. Use from anywhere. For example:
 
     ```shell
-    gs    // git status
-    gl1   // git log --decorate --oneline
-    lla   // ls -ahl
-    nv    // node --version
-    nls   // npm list --depth=0
+    gs   // git status
+    gl1  // git log --decorate --oneline
+    lla  // ls -ahl
+    nv   // node --version
+    nls  // npm list --depth=0
     ```
 
 3. All aliases also accept the following arguments:
     - `--gkcu-debug`: Produce verbose, debug-friendly output.
     - `--gkcu-dryrun`*: Print the command instead of actually running it.
+    - `--gkcu-sapVersion`: Choose a different implementation for the command runner. (Default: 2)
     - `--gkcu-suppressTbj`*: Suppress the "Terminate batch job (Y/N)?" confirmation on Windows.
 
     See [cli-utils] for more details.

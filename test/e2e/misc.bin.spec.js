@@ -35,11 +35,13 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
       const result1 = await testScript();
       expect(result1).toContain('--gkcu-debug');
       expect(result1).toContain('--gkcu-dryrun');
+      expect(result1).toContain('--gkcu-sapVersion');
       expect(result1).toContain('--gkcu-suppressTbj');
 
       const result2 = await testScript('misc');
       expect(result2).toContain('--gkcu-debug');
       expect(result2).toContain('--gkcu-dryrun');
+      expect(result2).toContain('--gkcu-sapVersion');
       expect(result2).toContain('--gkcu-suppressTbj');
     });
 
