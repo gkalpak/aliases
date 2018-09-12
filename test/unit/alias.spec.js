@@ -84,8 +84,9 @@ describe('alias', () => {
       const alias = new AliasDefault('foo', {bar: 'baz'});
       const spec = alias.getSpec();
 
+      expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', jasmine.objectContaining({bar: 'baz'}));
       expect(spec).toEqual(jasmine.any(AliasSpecDefault));
-      expect(spec.code).toBe('MOCK_DEF_CODE(foo, {"bar":"baz"})');
+      expect(spec.code).toBe('MOCK_DEF_CODE');
       expect(spec.command).toBe('foo');
       expect(spec.description).toBe('foo');
     });
@@ -111,7 +112,22 @@ describe('alias', () => {
 
     it('should use the command and config to generate code (with `AliasSpecDefault.DEF_CODE()`)', () => {
       const spec = new AliasSpecDefault('foo', {bar: 'baz'});
-      expect(spec.code).toBe('MOCK_DEF_CODE(foo, {"bar":"baz"})');
+
+      expect(spec.code).toBe('MOCK_DEF_CODE');
+      expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', jasmine.objectContaining({bar: 'baz'}));
+    });
+
+    it('should default to `sapVersion: 2`', () => {
+      new AliasSpecDefault('foo');
+      expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', {sapVersion: 2});
+
+      new AliasSpecDefault('foo', {bar: 'baz'});
+      expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', {bar: 'baz', sapVersion: 2});
+    });
+
+    it('should allow overwriting `sapVersion`', () => {
+      new AliasSpecDefault('foo', {bar: 'baz', sapVersion: 3});
+      expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', {bar: 'baz', sapVersion: 3});
     });
 
     it('should use the command as description', () => {
@@ -127,13 +143,14 @@ describe('alias', () => {
 });
 
 // Helpers
-function mockDefCode(defCode = (cmd, cfg = {}) => `MOCK_DEF_CODE(${cmd}, ` + JSON.stringify(cfg) + ')') {
+function mockDefCode(defCode = () => 'MOCK_DEF_CODE') {
   let originalDefCode;
 
   // Use `global` to prevent `jasmine/no-global-setup` ESLint error.
   global.beforeEach(() => {
     originalDefCode = AliasSpecDefault.DEF_CODE;
-    AliasSpecDefault.DEF_CODE = defCode;
+    // eslint-disable-next-line jasmine/no-unsafe-spy
+    AliasSpecDefault.DEF_CODE = jasmine.createSpy('DEF_CODE').and.callFake(defCode);
   });
 
   // Use `global` to prevent `jasmine/no-global-setup` ESLint error.
