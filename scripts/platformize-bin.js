@@ -11,35 +11,30 @@ _main();
 
 // Function - Definitions
 function _main() {
-  try {
-    // Nothing to do if `bin/` does not exist (e.g. first local `npm install`).
-    if (!existsSync(BIN_DIR)) return;
+  // Nothing to do if `bin/` does not exist (e.g. first local `npm install`).
+  if (!existsSync(BIN_DIR)) return;
 
-    // Restore any "deactivated" default scripts.
-    const defaultExtRe = /\.default\.js$/;
-    const defaultScripts = findFiles(BIN_DIR).filter(x => defaultExtRe.test(x));
-    defaultScripts.forEach(defaultScriptPath => {
-      const activeScriptPath = defaultScriptPath.replace(defaultExtRe, '.js');
-      moveFile(defaultScriptPath, activeScriptPath);
-    });
+  // Restore any "deactivated" default scripts.
+  const defaultExtRe = /\.default\.js$/;
+  const defaultScripts = findFiles(BIN_DIR).filter(x => defaultExtRe.test(x));
+  defaultScripts.forEach(defaultScriptPath => {
+    const activeScriptPath = defaultScriptPath.replace(defaultExtRe, '.js');
+    moveFile(defaultScriptPath, activeScriptPath);
+  });
 
-    // "Activate" any platform-specific scripts.
-    const platformExtRe = new RegExp(`\\.${process.platform}\\.js$`);
-    const platformScripts = findFiles(BIN_DIR).filter(x => platformExtRe.test(x));
-    platformScripts.forEach(platformScriptPath => {
-      const activeScriptPath = platformScriptPath.replace(platformExtRe, '.js');
-      const defaultScriptPath = platformScriptPath.replace(platformExtRe, '.default.js');
+  // "Activate" any platform-specific scripts.
+  const platformExtRe = new RegExp(`\\.${process.platform}\\.js$`);
+  const platformScripts = findFiles(BIN_DIR).filter(x => platformExtRe.test(x));
+  platformScripts.forEach(platformScriptPath => {
+    const activeScriptPath = platformScriptPath.replace(platformExtRe, '.js');
+    const defaultScriptPath = platformScriptPath.replace(platformExtRe, '.default.js');
 
-      // Back up the default script for future restoration.
-      moveFile(activeScriptPath, defaultScriptPath);
+    // Back up the default script for future restoration.
+    moveFile(activeScriptPath, defaultScriptPath);
 
-      // Copy the platform-specific script (not move just in case).
-      copyFile(platformScriptPath, activeScriptPath);
-    });
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
-  }
+    // Copy the platform-specific script (not move just in case).
+    copyFile(platformScriptPath, activeScriptPath);
+  });
 }
 
 function copyFile(fromPath, toPath) {
