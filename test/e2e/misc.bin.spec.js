@@ -145,6 +145,13 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
       expect(result).not.toContain('Unknown aliases');
       expect(result).not.toContain('xyz');
     });
+
+    it('should replace private aliases in descriptions', async () => {
+      const result = await testScript();
+      expect(result).not.toContain('__');
+      expect(result).toContain('(interactively pick a branch)');
+      expect(result).toContain('(interactively pick a commit)');
+    });
   });
 
   describe('ll', () => {
