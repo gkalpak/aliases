@@ -67,6 +67,28 @@ Here is the list of all global dependencies with associated min. version (older 
 - `nvm`: [nvm] >=0.30 (on *nix) / [nvm-windows][nvm-win] >=1 (on Windows)
 - `yarn`: [yarn] >=0.24
 
+## Testing
+
+The following test-types/modes are available:
+
+- **Code-linting:** `npm run lint`
+  _Lint JavaScript files using ESLint._
+
+- **Unit tests:** `npm run test-unit`
+  _Run all the unit tests once. These tests are quick and suitable to be run on every change._
+
+- **E2E tests:** `npm run test-e2e`
+  _Run all the end-to-end tests once. These test may hit actual API endpoints or perform expensive
+  I/O operations and are considerably slower than unit tests._
+
+- **All tests:** `npm test` / `npm run test`
+  _Run all of the above tests (code-linting, unit tests, e2e tests). This command is automatically
+  run before every release (via `npm run release`)._
+
+- **"Dev" mode:** `npm run dev`
+  _Watch all files and rerun linting and the unit tests whenever something changes. For performance
+  reasons, e2e tests are omitted._
+
 ## TODO
 
 Things I want to (but won't necessarily) do:

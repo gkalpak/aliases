@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "build": "node scripts/build",
-    "dev": "watch \"npm test\" lib/ scripts/ test/ --wait 1",
+    "dev": "watch \"run-s ~~lint ~~test-unit\" lib/ test/ --wait 1",
     "postinstall": "npm run ~~platformize-bin",
     "prelint": "npm run prepare-bin-local",
     "lint": "npm run ~~lint",
