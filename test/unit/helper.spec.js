@@ -1,6 +1,7 @@
 'use strict';
 
 // Imports
+const stripAnsi = require('strip-ansi');
 const constants = require('../../lib/constants');
 const helper = require('../../lib/helper');
 const utils = require('../../lib/utils');
@@ -13,7 +14,7 @@ describe('helper', () => {
     const categoryToHeading = cat => `${utils.capitalize(cat.name)} aliases`;
     const getHelpMessage = async (...args) => {
       await help(...args);
-      return console.log.calls.mostRecent().args[0];
+      return stripAnsi(console.log.calls.mostRecent().args[0]);
     };
 
     beforeEach(() => {
@@ -304,7 +305,7 @@ describe('helper', () => {
           baz${joiner}qux
       `);
 
-      expect(_helpForCategory(category, joiner)).toBe(expected);
+      expect(stripAnsi(_helpForCategory(category, joiner))).toBe(expected);
     });
 
     it('should pad all alias names to the same length', () => {
@@ -319,7 +320,7 @@ describe('helper', () => {
           bazzz${joiner}qux
       `);
 
-      expect(_helpForCategory(category, joiner)).toBe(expected);
+      expect(stripAnsi(_helpForCategory(category, joiner))).toBe(expected);
     });
 
     it('should ignore `__`-prefixed (private) aliases', () => {
@@ -338,7 +339,7 @@ describe('helper', () => {
           bazz${joiner}quux
       `);
 
-      expect(_helpForCategory(category, joiner)).toBe(expected);
+      expect(stripAnsi(_helpForCategory(category, joiner))).toBe(expected);
     });
 
     it('should replace certain strings in descriptions', () => {
@@ -362,7 +363,7 @@ describe('helper', () => {
           qux${joiner}-~TeSt~- qux -~TeSt~-
       `);
 
-      expect(_helpForCategory(category, joiner)).toBe(expected);
+      expect(stripAnsi(_helpForCategory(category, joiner))).toBe(expected);
     });
 
     it('should wrap long descriptions (using `utils.wrapLine()`)', () => {
