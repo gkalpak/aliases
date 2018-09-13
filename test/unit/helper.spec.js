@@ -192,13 +192,14 @@ describe('helper', () => {
 
     it('should ignore `__`-prefixed (private) aliases', () => {
       const catName = 'test';
-      const catSpec = {foo: mockAlias('bar'), __baz: mockAlias('qux')};
+      const catSpec = {foo: mockAlias('bar'), __baz: mockAlias('qux'), bazz: mockAlias('baz')};
       const joiner = ' ~ ';
 
       const expected =
         'Test aliases:\n' +
         '\n' +
-        '  foo   ~ bar\n';
+        '  foo  ~ bar\n' +
+        '  bazz ~ baz\n';
 
       expect(_helpForCategory(catName, catSpec, joiner)).toBe(expected);
     });
