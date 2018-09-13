@@ -1,7 +1,7 @@
 'use strict';
 
 // Imports
-const {Alias, AliasDefault, AliasSpec, AliasSpecDefault} = require('../../lib/alias');
+const {Alias, AliasDefault, AliasSpec, AliasSpecDefault, AliasUnknown} = require('../../lib/alias');
 const utils = require('../../lib/utils');
 
 // Tests
@@ -138,6 +138,24 @@ describe('alias', () => {
     it('should expose the specified command', () => {
       const spec = new AliasSpecDefault('foo', {bar: 'baz'});
       expect(spec.command).toBe('foo');
+    });
+  });
+
+  describe('AliasUnknown', () => {
+    it('should extend `Alias`', () => {
+      const alias = new AliasUnknown();
+      expect(alias).toEqual(jasmine.any(Alias));
+    });
+
+    it('should use an `AliasSpec` as spec (with empty code and a default description)', () => {
+      const alias = new AliasUnknown();
+      const spec = alias.getSpec();
+
+      expect(spec).toEqual(jasmine.any(AliasSpec));
+      expect(spec.code).toBe('');
+      expect(spec.command).toBeUndefined();
+      expect(spec.description).toBeDefined();
+      expect(spec.description).toBe(AliasUnknown.DESCRIPTION);
     });
   });
 });

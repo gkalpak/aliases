@@ -45,48 +45,105 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
       expect(result2).toContain('--gkcu-suppressTbj');
     });
 
-    it('should print all available aliases when called without an argument', async () => {
+    it('should print all available aliases, when called without an argument', async () => {
       const result = await testScript();
 
       expect(result).toContain('Available aliases');
 
       expect(result).toContain('Aio aliases');
-      expect(result).toContain(' aioall ');
-      expect(result).toContain(' aiorm ');
+      expect(result).toContain('  aioall  ');
+      expect(result).toContain('  aiorm  ');
 
       expect(result).toContain('Git aliases');
-      expect(result).toContain(' gaa ');
-      expect(result).toContain(' gsync ');
+      expect(result).toContain('  gaa  ');
+      expect(result).toContain('  gsync  ');
 
       expect(result).toContain('Misc aliases');
-      expect(result).toContain(' alv ');
-      expect(result).toContain(' salfup ');
+      expect(result).toContain('  alv  ');
+      expect(result).toContain('  salfup  ');
 
       expect(result).toContain('Node aliases');
-      expect(result).toContain(' nad ');
-      expect(result).toContain(' yt ');
+      expect(result).toContain('  nad  ');
+      expect(result).toContain('  yt  ');
     });
 
-    it('should print help for the specified category only when called with an argument', async () => {
+    it('should print help for the specified category only, when called with an argument', async () => {
       const result = await testScript('misc');
 
       expect(result).not.toContain('Available aliases');
 
       expect(result).not.toContain('Aio aliases');
-      expect(result).not.toContain(' aioall ');
-      expect(result).not.toContain(' aiorm ');
+      expect(result).not.toContain('  aioall  ');
+      expect(result).not.toContain('  aiorm  ');
 
       expect(result).not.toContain('Git aliases');
-      expect(result).not.toContain(' gaa ');
-      expect(result).not.toContain(' gsync ');
+      expect(result).not.toContain('  gaa  ');
+      expect(result).not.toContain('  gsync  ');
 
       expect(result).toContain('Misc aliases');
-      expect(result).toContain(' alv ');
-      expect(result).toContain(' salfup ');
+      expect(result).toContain('  alv  ');
+      expect(result).toContain('  salfup  ');
 
       expect(result).not.toContain('Node aliases');
-      expect(result).not.toContain(' nad ');
-      expect(result).not.toContain(' yt ');
+      expect(result).not.toContain('  nad  ');
+      expect(result).not.toContain('  yt  ');
+    });
+
+    it('should print help for the specified aliases only, when called with multiple arguments', async () => {
+      const result = await testScript('aioall yt xyz');
+
+      expect(result).not.toContain('Available aliases');
+
+      expect(result).not.toContain('Aio aliases');
+      expect(result).not.toContain('  aiorm  ');
+
+      expect(result).not.toContain('Git aliases');
+      expect(result).not.toContain('  gaa  ');
+      expect(result).not.toContain('  gsync  ');
+
+      expect(result).not.toContain('Misc aliases');
+      expect(result).not.toContain('  alv  ');
+      expect(result).not.toContain('  salfup  ');
+
+      expect(result).not.toContain('Node aliases');
+      expect(result).not.toContain('  nad  ');
+
+      expect(result).toContain('Matched aliases');
+      expect(result).toContain('  aioall  ');
+      expect(result).toContain('  yt  ');
+
+      expect(result).toContain('Unknown aliases');
+      expect(result).toContain('  xyz  ');
+    });
+
+    it('should support alias name wildcards', async () => {
+      const result = await testScript('aio* yt xyz*');
+
+      expect(result).not.toContain('Available aliases');
+
+      expect(result).not.toContain('Aio aliases');
+
+      expect(result).not.toContain('Git aliases');
+      expect(result).not.toContain('  gaa  ');
+      expect(result).not.toContain('  gsync  ');
+
+      expect(result).not.toContain('Misc aliases');
+      expect(result).not.toContain('  alv  ');
+      expect(result).not.toContain('  salfup  ');
+
+      expect(result).not.toContain('Node aliases');
+      expect(result).not.toContain('  nad  ');
+
+      expect(result).toContain('Matched aliases');
+      expect(result).toContain('  aiorm  ');
+      expect(result).toContain('  aiobd  ');
+      expect(result).toContain('  aiord  ');
+      expect(result).toContain('  aioatt  ');
+      expect(result).toContain('  aioall  ');
+      expect(result).toContain('  yt  ');
+
+      expect(result).not.toContain('Unknown aliases');
+      expect(result).not.toContain('xyz');
     });
   });
 

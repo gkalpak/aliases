@@ -3,7 +3,7 @@
 // Imports
 const {statSync} = require('fs');
 const {basename, normalize} = require('path');
-const {Alias, AliasSpecDefault} = require('../../lib/alias');
+const {Alias, AliasSpecDefault, AliasUnknown} = require('../../lib/alias');
 const constants = require('../../lib/constants');
 
 // Tests
@@ -95,6 +95,10 @@ describe('constants', () => {
         filter(type => type !== 'string');
 
       expect(nonStringValueTypes.length).toBe(0);
+    });
+
+    it('should have a replacement for `AliasUnknown.DESCRIPTION`', () => {
+      expect(Object.keys(descReplacements)).toContain(AliasUnknown.DESCRIPTION);
     });
   });
 
