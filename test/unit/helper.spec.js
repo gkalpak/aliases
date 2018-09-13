@@ -11,7 +11,7 @@ describe('helper', () => {
   describe('.help()', () => {
     const help = helper.help;
     const categories = Object.keys(constants.ALIASES).map(name => ({name, spec: constants.ALIASES[name]}));
-    const categoryToHeading = cat => `${utils.capitalize(cat.name)} aliases`;
+    const categoryToHeading = (cat, partial) => utils.capitalize(`${cat.name} aliases${partial ? ' subset' : ''}`);
     const getHelpMessage = async (...args) => {
       await help(...args);
       return stripAnsi(console.log.calls.mostRecent().args[0]);
@@ -175,92 +175,108 @@ describe('helper', () => {
         expect(msg3).not.toContain('Available aliases');
       });
 
-      it('should not contain category info', async () => {
-        const headings = categories.map(categoryToHeading);
-
-        const msg1 = await getHelpMessage('gs', 'foo');
-        headings.forEach(h => expect(msg1).not.toContain(h));
-
-        const msg2 = await getHelpMessage('gs');
-        headings.forEach(h => expect(msg2).not.toContain(h));
-
-        const msg3 = await getHelpMessage('foo');
-        headings.forEach(h => expect(msg3).not.toContain(h));
-      });
-
-      it('should contain a "matched" section (with found aliases)', async () => {
+      it('should contain "subset" category sections for found aliases', async () => {
         const msg1 = await getHelpMessage('gs', 'nv');
-        expect(msg1).toContain(categoryToHeading({name: 'matched'}));
+
+        expect(msg1).toContain(categoryToHeading({name: 'git', partial: true}));
+        expect(msg1).toContain(categoryToHeading({name: 'node', partial: true}));
+        expect(msg1).not.toContain(categoryToHeading({name: 'aio'}));
+        expect(msg1).not.toContain(categoryToHeading({name: 'misc'}));
         expect(msg1).not.toContain(categoryToHeading({name: 'unknown'}));
 
         const msg2 = await getHelpMessage('gs');
-        expect(msg2).toContain(categoryToHeading({name: 'matched'}));
+
+        expect(msg2).toContain(categoryToHeading({name: 'git', partial: true}));
+        expect(msg2).not.toContain(categoryToHeading({name: 'node'}));
+        expect(msg2).not.toContain(categoryToHeading({name: 'aio'}));
+        expect(msg2).not.toContain(categoryToHeading({name: 'misc'}));
         expect(msg2).not.toContain(categoryToHeading({name: 'unknown'}));
       });
 
-      it('should contain an "unknown" section (with missing aliases)', async () => {
+      it('should contain an "unknown" section for missing aliases', async () => {
         const msg1 = await getHelpMessage('xgs', 'xnv');
-        expect(msg1).not.toContain(categoryToHeading({name: 'matched'}));
         expect(msg1).toContain(categoryToHeading({name: 'unknown'}));
+        categories.forEach(cat => expect(msg1).not.toContain(categoryToHeading(cat)));
 
         const msg2 = await getHelpMessage('xgs');
-        expect(msg2).not.toContain(categoryToHeading({name: 'matched'}));
         expect(msg2).toContain(categoryToHeading({name: 'unknown'}));
+        categories.forEach(cat => expect(msg1).not.toContain(categoryToHeading(cat)));
       });
 
-      it('should contain both "matched" and "unknown" section (if necessary)', async () => {
+      it('should contain both category-subset and "unknown" sections (if necessary)', async () => {
         const msg1 = await getHelpMessage('gs', 'xgs', 'nv', 'xnv');
-        expect(msg1).toContain(categoryToHeading({name: 'matched'}));
+
+        expect(msg1).toContain(categoryToHeading({name: 'git', partial: true}));
+        expect(msg1).toContain(categoryToHeading({name: 'node', partial: true}));
         expect(msg1).toContain(categoryToHeading({name: 'unknown'}));
+        expect(msg1).not.toContain(categoryToHeading({name: 'aio'}));
+        expect(msg1).not.toContain(categoryToHeading({name: 'misc'}));
 
         const msg2 = await getHelpMessage('gs', 'xgs');
-        expect(msg2).toContain(categoryToHeading({name: 'matched'}));
+
+        expect(msg2).toContain(categoryToHeading({name: 'git', partial: true}));
         expect(msg2).toContain(categoryToHeading({name: 'unknown'}));
+        expect(msg2).not.toContain(categoryToHeading({name: 'node'}));
+        expect(msg2).not.toContain(categoryToHeading({name: 'aio'}));
+        expect(msg2).not.toContain(categoryToHeading({name: 'misc'}));
       });
 
       it('should support wildcards', async () => {
+        // Multiple arguments.
         const msg1 = await getHelpMessage('gd*', 'nv');
-        expect(msg1).toContain(categoryToHeading({name: 'matched'}));
-        expect(msg1).not.toContain(categoryToHeading({name: 'unknown'}));
+
+        expect(msg1).toContain(categoryToHeading({name: 'git', partial: true}));
         expect(msg1).toMatch(/\bgd\b/);
         expect(msg1).toMatch(/\bgdn\b/);
         expect(msg1).toMatch(/\bgd1\b/);
         expect(msg1).toMatch(/\bgdn1\b/);
         expect(msg1).toMatch(/\bgdh\b/);
         expect(msg1).toMatch(/\bgdnh\b/);
+
+        expect(msg1).toContain(categoryToHeading({name: 'node', partial: true}));
         expect(msg1).toMatch(/\bnv\b/);
 
+        expect(msg1).not.toContain(categoryToHeading({name: 'unknown'}));
+
+        // Single argument.
         const msg2 = await getHelpMessage('gdn*');
-        expect(msg2).toContain(categoryToHeading({name: 'matched'}));
-        expect(msg2).not.toContain(categoryToHeading({name: 'unknown'}));
+
+        expect(msg1).toContain(categoryToHeading({name: 'git', partial: true}));
         expect(msg2).toMatch(/\bgdn\b/);
         expect(msg2).toMatch(/\bgdn1\b/);
         expect(msg2).toMatch(/\bgdnh\b/);
         expect(msg2).not.toMatch(/\bgd\b/);
         expect(msg2).not.toMatch(/\bgd1\b/);
         expect(msg2).not.toMatch(/\bgdh\b/);
+
+        expect(msg2).not.toContain(categoryToHeading({name: 'unknown'}));
       });
 
       it('should not contain an "unknown" section if only wildcards are missing', async () => {
         const msg1 = await getHelpMessage('xgd*', 'nv');
-        expect(msg1).toContain(categoryToHeading({name: 'matched'}));
-        expect(msg1).not.toContain(categoryToHeading({name: 'unknown'}));
+
+        expect(msg1).toContain(categoryToHeading({name: 'node', partial: true}));
         expect(msg1).toMatch(/\bnv\b/);
+        expect(msg1).not.toContain(categoryToHeading({name: 'git'}));
+        expect(msg1).not.toContain(categoryToHeading({name: 'unknown'}));
         expect(msg1).not.toMatch(/\bxgd\b/);
 
         const msg2 = await getHelpMessage('xgd*', 'xnv');
-        expect(msg2).not.toContain(categoryToHeading({name: 'matched'}));
+
         expect(msg2).toContain(categoryToHeading({name: 'unknown'}));
+        expect(msg2).not.toContain(categoryToHeading({name: 'git'}));
+        expect(msg2).not.toContain(categoryToHeading({name: 'node'}));
+        expect(msg1).not.toMatch(/\bxgd\b/);
       });
 
       it('should handle not matching anything', async () => {
         const msg1 = await getHelpMessage('xgd*', 'xnv*');
-        expect(msg1).not.toContain(categoryToHeading({name: 'matched'}));
+        categories.forEach(cat => expect(msg1).not.toContain(categoryToHeading(cat)));
         expect(msg1).not.toContain(categoryToHeading({name: 'unknown'}));
         expect(msg1).toContain('Nothing to see here');
 
         const msg2 = await getHelpMessage('xgd*');
-        expect(msg2).not.toContain(categoryToHeading({name: 'matched'}));
+        categories.forEach(cat => expect(msg1).not.toContain(categoryToHeading(cat)));
         expect(msg2).not.toContain(categoryToHeading({name: 'unknown'}));
         expect(msg2).toContain('Nothing to see here');
       });
@@ -272,8 +288,11 @@ describe('helper', () => {
         const msg2 = await getHelpMessage('gs');
         expect(msg2).not.toContain('--gkcu-');
 
-        const msg3 = await getHelpMessage('foo');
+        const msg3 = await getHelpMessage('gs*');
         expect(msg3).not.toContain('--gkcu-');
+
+        const msg4 = await getHelpMessage('foo');
+        expect(msg4).not.toContain('--gkcu-');
       });
     });
   });

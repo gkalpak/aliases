@@ -94,7 +94,8 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
 
       expect(result).not.toContain('Available aliases');
 
-      expect(result).not.toContain('Aio aliases');
+      expect(result).toContain('Aio aliases subset');
+      expect(result).toContain('  aioall  ');
       expect(result).not.toContain('  aiorm  ');
 
       expect(result).not.toContain('Git aliases');
@@ -105,12 +106,9 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
       expect(result).not.toContain('  alv  ');
       expect(result).not.toContain('  salfup  ');
 
-      expect(result).not.toContain('Node aliases');
-      expect(result).not.toContain('  nad  ');
-
-      expect(result).toContain('Matched aliases');
-      expect(result).toContain('  aioall  ');
+      expect(result).toContain('Node aliases subset');
       expect(result).toContain('  yt  ');
+      expect(result).not.toContain('  nad  ');
 
       expect(result).toContain('Unknown aliases');
       expect(result).toContain('  xyz  ');
@@ -121,7 +119,12 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
 
       expect(result).not.toContain('Available aliases');
 
-      expect(result).not.toContain('Aio aliases');
+      expect(result).toContain('Aio aliases subset');
+      expect(result).toContain('  aiorm  ');
+      expect(result).toContain('  aiobd  ');
+      expect(result).toContain('  aiord  ');
+      expect(result).toContain('  aioatt  ');
+      expect(result).toContain('  aioall  ');
 
       expect(result).not.toContain('Git aliases');
       expect(result).not.toContain('  gaa  ');
@@ -131,16 +134,9 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
       expect(result).not.toContain('  alv  ');
       expect(result).not.toContain('  salfup  ');
 
-      expect(result).not.toContain('Node aliases');
-      expect(result).not.toContain('  nad  ');
-
-      expect(result).toContain('Matched aliases');
-      expect(result).toContain('  aiorm  ');
-      expect(result).toContain('  aiobd  ');
-      expect(result).toContain('  aiord  ');
-      expect(result).toContain('  aioatt  ');
-      expect(result).toContain('  aioall  ');
+      expect(result).toContain('Node aliases subset');
       expect(result).toContain('  yt  ');
+      expect(result).not.toContain('  nad  ');
 
       expect(result).not.toContain('Unknown aliases');
       expect(result).not.toContain('xyz');
