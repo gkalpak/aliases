@@ -3,8 +3,8 @@
 // Imports
 const {commandUtils, processUtils} = require('@gkalpak/cli-utils');
 const inquirer = require('inquirer');
-const gPickBranchExps = require('../../lib/g-pick-branch');
-const {reversePromise} = require('../test-utils');
+const gPickBranchExps = require('../../../lib/alias-scripts/g-pick-branch');
+const {reversePromise} = require('../../test-utils');
 
 const {gPickBranch, main} = gPickBranchExps;
 

@@ -2,10 +2,10 @@
 
 // Imports
 const {commandUtils} = require('@gkalpak/cli-utils');
-const {ALIASES} = require('../../lib/constants');
-const nvuExps = require('../../lib/nvu');
-const utils = require('../../lib/utils');
-const {reversePromise} = require('../test-utils');
+const nvuExps = require('../../../lib/alias-scripts/nvu');
+const {ALIASES} = require('../../../lib/constants');
+const utils = require('../../../lib/utils');
+const {reversePromise} = require('../../test-utils');
 
 const {nvu, main} = nvuExps;
 

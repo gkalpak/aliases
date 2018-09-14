@@ -3,8 +3,8 @@
 // Imports
 const fs = require('fs');
 const path = require('path');
-const aBuildsDirExps = require('../../lib/a-builds-dir');
-const {reversePromise} = require('../test-utils');
+const aBuildsDirExps = require('../../../lib/alias-scripts/a-builds-dir');
+const {reversePromise} = require('../../test-utils');
 
 const {aBuildsDir, main} = aBuildsDirExps;
 

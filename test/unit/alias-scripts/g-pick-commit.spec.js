@@ -3,8 +3,8 @@
 // Imports
 const {commandUtils, processUtils} = require('@gkalpak/cli-utils');
 const inquirer = require('inquirer');
-const gPickCommitExps = require('../../lib/g-pick-commit');
-const {reversePromise} = require('../test-utils');
+const gPickCommitExps = require('../../../lib/alias-scripts/g-pick-commit');
+const {reversePromise} = require('../../test-utils');
 
 const {gPickCommit, main} = gPickCommitExps;
 
