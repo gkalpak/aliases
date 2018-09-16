@@ -57,6 +57,7 @@
     "gcmifc": "./bin/git/gcmifc.js",
     "gcmifs": "./bin/git/gcmifs.js",
     "gco": "./bin/git/gco.js",
+    "gcoghpr": "./bin/git/gcoghpr.js",
     "gcom": "./bin/git/gcom.js",
     "gcopr": "./bin/git/gcopr.js",
     "gcp": "./bin/git/gcp.js",
