@@ -48,31 +48,6 @@ class MockExecutor {
 MockExecutor.definitions = {};
 MockExecutor.instances = [];
 
-class MockGitHubUtils {
-  constructor(logger, lazyLoader) {
-    this.logger = logger;
-    this.lazyLoader = lazyLoader;
-    this.requests = [];
-  }
-
-  get(path) {
-    if (!MockGitHubUtils.definitions.hasOwnProperty(path)) {
-      const expectedUrls = Object.keys(MockGitHubUtils.definitions).map(d => `\n  ${d}\n`).join('');
-      throw new Error(`Unexpected URL: ${path}\nExpecting one of: ${expectedUrls}`);
-    }
-
-    const response = MockGitHubUtils.definitions[path];
-    this.requests.push({path, response});
-
-    return Promise.resolve(response);
-  }
-
-  getPr({user: upstreamUser, repo: upstreamRepo}, prNumber) {
-    return this.get(`repos/${upstreamUser}/${upstreamRepo}/pulls/${prNumber}`);
-  }
-}
-MockGitHubUtils.definitions = {};
-
 class MockHttps {
   constructor() {
     this.reset();
@@ -232,7 +207,6 @@ class MockLogger {
 // Exports
 module.exports = {
   MockExecutor,
-  MockGitHubUtils,
   MockHttps,
   MockLazyLoader,
   MockLogger,
