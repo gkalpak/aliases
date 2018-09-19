@@ -30,6 +30,7 @@ describe('gcoghpr', () => {
 
       if (prCommits) {
         const cmd =
+          'withStyle(reset): ' +
           `node --print "'PR commits (${prCommits})\\n---'" && ` +
           `git log --decorate --oneline -${prCommits} || true`;
         MockExecutor.definitions[cmd] = '';
@@ -198,11 +199,9 @@ describe('gcoghpr', () => {
         expect(didLogCommits(executor2)).toBe(false);
       });
 
-      it('should force the logger color to gray during execution (but not when logging commits)', async () => {
-        const execSpy = spyOn(MockExecutor.prototype, 'execDouble').and.callFake(cmd => {
-          const expectedColor = cmd.includes('git log') ? 'reset' : 'gray';
-          expect(gcoghpr._logger.color).toBe(expectedColor);
-        });
+      it('should force the logger color to gray during execution', async () => {
+        const execSpy = spyOn(MockExecutor.prototype, 'execDouble').and.
+          callFake(() => expect(gcoghpr._logger.color).toBe('gray'));
 
         expect(gcoghpr._logger.color).toBe('reset');
 
