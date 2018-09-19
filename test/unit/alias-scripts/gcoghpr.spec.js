@@ -107,7 +107,7 @@ describe('gcoghpr', () => {
         await gcoghpr.run([]);
         const executor = MockExecutor.instances[0];
 
-        expect(gcoghpr._logger.logs.log).toEqual(['Usage: gcoghpr @(<pr-number>|<author>:<branch>)']);
+        expect(gcoghpr._logger.logs.log).toEqual(['\nUsage: gcoghpr @(<pr-number>|<author>:<branch>)\n']);
         expect(executor.executions).toEqual([]);
       });
 
@@ -122,7 +122,7 @@ describe('gcoghpr', () => {
         const executor = MockExecutor.instances[0];
 
         expect(gcoghpr._logger.logs.error).toEqual(['Expected 1 argument, found: 1, 3, 3, 7']);
-        expect(gcoghpr._logger.logs.log).toEqual(['Usage: gcoghpr @(<pr-number>|<author>:<branch>)']);
+        expect(gcoghpr._logger.logs.log).toEqual(['\nUsage: gcoghpr @(<pr-number>|<author>:<branch>)\n']);
         expect(executor.executions).toEqual([]);
         expect(error).toEqual(new Error('Invalid input.'));
       });
@@ -138,7 +138,7 @@ describe('gcoghpr', () => {
         const executor = MockExecutor.instances[0];
 
         expect(gcoghpr._logger.logs.error).toEqual(['Unexpected PR identifier: baz/qux']);
-        expect(gcoghpr._logger.logs.log).toEqual(['Usage: gcoghpr @(<pr-number>|<author>:<branch>)']);
+        expect(gcoghpr._logger.logs.log).toEqual(['\nUsage: gcoghpr @(<pr-number>|<author>:<branch>)\n']);
         expect(executor.executions).toEqual([]);
         expect(error).toEqual(new Error('Invalid input.'));
       });
