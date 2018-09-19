@@ -341,6 +341,51 @@ describe('gcoghpr', () => {
         ]);
       });
     });
+
+    describe('.execWithStyle()', () => {
+      let executor;
+      let execSpy;
+      let stdoutWriteSpy;
+
+      beforeEach(() => {
+        executor = new _Executor(mockLogger);
+        execSpy = spyOn(executor, 'exec').and.returnValue(Promise.resolve('ok'));
+        stdoutWriteSpy = spyOn(process.stdout, 'write');
+      });
+
+      it('should delegate to `exec()`', async () => {
+        const result = await executor.execWithStyle('foo', 'bar', {baz: 'qux'});
+
+        expect(execSpy).toHaveBeenCalledWith(jasmine.any(String), {baz: 'qux'});
+        expect(result).toBe('ok');
+      });
+
+      it('should prefix the command with style', async () => {
+        await executor.execWithStyle('red', 'foo --bar', {});
+        expect(execSpy).toHaveBeenCalledWith('node --print "\'\\bswitchColor(reset --> red)\'" && foo --bar', {});
+
+        await executor.execWithStyle(null, 'foo --bar', {});
+        expect(execSpy).toHaveBeenCalledWith('node --print "\'\\bswitchColor(reset --> reset)\'" && foo --bar', {});
+
+        executor._logger.forceColor('cyan');
+
+        await executor.execWithStyle('red', 'foo --bar', {});
+        expect(execSpy).toHaveBeenCalledWith('node --print "\'\\bswitchColor(cyan --> red)\'" && foo --bar', {});
+
+        await executor.execWithStyle('reset', 'foo --bar', {});
+        expect(execSpy).toHaveBeenCalledWith('node --print "\'\\bswitchColor(cyan --> reset)\'" && foo --bar', {});
+      });
+
+      it('should reset the style after the command has executed', async () => {
+        await executor.execWithStyle('cyan', 'foo --bar');
+        expect(stdoutWriteSpy).toHaveBeenCalledWith('switchColor(cyan --> reset)');
+
+        execSpy.and.callFake(() => Promise.reject('not ok'));
+
+        await reversePromise(executor.execWithStyle('cyan', 'foo --bar'));
+        expect(stdoutWriteSpy).toHaveBeenCalledWith('switchColor(cyan --> reset)');
+      });
+    });
   });
 
   describe('_GitHubUtils', () => {
@@ -565,6 +610,24 @@ describe('gcoghpr', () => {
 
         cyanLogger.log('aha!');
         expect(consoleSpies.log).toHaveBeenCalledWith('aha!');
+      });
+    });
+
+    describe('.getTempStyle()', () => {
+      it('should return an appropriate style to switch from current color to specified one and back', () => {
+        const noneToRedStyle = logger.getTempStyle('red');
+        const noneToNoneStyle = logger.getTempStyle(null);
+
+        expect(noneToRedStyle).toEqual({color: 'reset --> red', open: '<red>', close: '</red>'});
+        expect(noneToNoneStyle).toEqual({color: 'reset --> reset', open: '', close: ''});
+
+        const cyanToRedStyle = cyanLogger.getTempStyle('red');
+        const cyanToCyanStyle = cyanLogger.getTempStyle('cyan');
+        const cyanToNoneStyle = cyanLogger.getTempStyle('reset');
+
+        expect(cyanToRedStyle).toEqual({color: 'cyan --> red', open: '</cyan><red>', close: '</red><cyan>'});
+        expect(cyanToCyanStyle).toEqual({color: 'cyan --> cyan', open: '', close: ''});
+        expect(cyanToNoneStyle).toEqual({color: 'cyan --> reset', open: '</cyan>', close: '<cyan>'});
       });
     });
 

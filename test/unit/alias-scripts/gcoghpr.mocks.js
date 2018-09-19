@@ -41,6 +41,10 @@ class MockExecutor {
     // while keeping original behavior.
   }
 
+  execWithStyle(color, command, config) {
+    return this.exec(`withStyle(${color || 'reset'}): ${command}`, config);
+  }
+
   getExecutedCommands() {
     return this.executions.map(({command}) => command);
   }
@@ -195,6 +199,16 @@ class MockLogger {
 
   forceColor(color) {
     this.color = color || 'reset';
+  }
+
+  getTempStyle(color) {
+    color = color || 'reset';
+
+    return {
+      color: `${this.color} --> ${color}`,
+      open: `switchColor(${this.color} --> ${color})`,
+      close: `switchColor(${color} --> ${this.color})`,
+    };
   }
 
   debug(msg) { this.logs.debug.push(stripAnsi(msg)); }
