@@ -320,15 +320,24 @@ describe('gcoghpr', () => {
         expect(mockLogger.logs.info).toEqual(['RUN: foo --bar']);
       });
 
+      it('should filter out `echo`/`node -p` commands from the command log', () => {
+        executor.exec('echo foo && foo --bar && node --print "42" && baz --qux && node -p "`success`"');
+        expect(mockLogger.logs.info).toEqual(['RUN: foo --bar && baz --qux']);
+      });
+
       it('should log more in debug mode', () => {
-        executor.exec('foo --bar');
+        executor.exec('foo --bar && echo test');
+        expect(mockLogger.logs.info).toEqual(['RUN: foo --bar']);
         expect(mockLogger.logs.debug).toEqual([]);
 
-        executor = new _Executor(mockLogger, {foo: 'bar'}, true);
-        executor.exec('foo --bar', {baz: 'qux'});
+        mockLogger.logs.info = [];
 
+        executor = new _Executor(mockLogger, {foo: 'bar'}, true);
+        executor.exec('foo --bar && echo test', {baz: 'qux'});
+
+        expect(mockLogger.logs.info).toEqual(['RUN: foo --bar']);
         expect(mockLogger.logs.debug).toEqual([
-          'Running command \'foo --bar\' (config: {"foo":"bar","baz":"qux"})...',
+          'Running command \'foo --bar && echo test\' (config: {"foo":"bar","baz":"qux"})...',
         ]);
       });
     });
