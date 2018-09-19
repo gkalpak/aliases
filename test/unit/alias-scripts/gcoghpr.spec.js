@@ -111,36 +111,24 @@ describe('gcoghpr', () => {
         expect(executor.executions).toEqual([]);
       });
 
-      it('should print usage information and exit (with error) when more than 1 arguments', () => {
-        let error;
-        try {
-          gcoghpr.run(['1', '3', '3', '7']);
-        } catch (err) {
-          error = err;
-        }
-
+      it('should print usage information and exit (with error) when more than 1 arguments', async () => {
+        const err = await reversePromise(gcoghpr.run(['1', '3', '3', '7']));
         const executor = MockExecutor.instances[0];
 
         expect(gcoghpr._logger.logs.error).toEqual(['Expected 1 argument, found: 1, 3, 3, 7']);
         expect(gcoghpr._logger.logs.log).toEqual(['\nUsage: gcoghpr @(<pr-number>|<author>:<branch>)\n']);
         expect(executor.executions).toEqual([]);
-        expect(error).toEqual(new Error('Invalid input.'));
+        expect(err).toEqual(new Error('Invalid input.'));
       });
 
       it('should print usage information and exit (with error) when invalid PR identifier format', async () => {
-        let error;
-        try {
-          gcoghpr.run(['baz/qux']);
-        } catch (err) {
-          error = err;
-        }
-
+        const err = await reversePromise(gcoghpr.run(['baz/qux']));
         const executor = MockExecutor.instances[0];
 
         expect(gcoghpr._logger.logs.error).toEqual(['Unexpected PR identifier: baz/qux']);
         expect(gcoghpr._logger.logs.log).toEqual(['\nUsage: gcoghpr @(<pr-number>|<author>:<branch>)\n']);
         expect(executor.executions).toEqual([]);
-        expect(error).toEqual(new Error('Invalid input.'));
+        expect(err).toEqual(new Error('Invalid input.'));
       });
 
       it('should accept the PR identifier in `<author>:<branch>` format', async () => {
