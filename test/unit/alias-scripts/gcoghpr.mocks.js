@@ -20,7 +20,8 @@ class MockExecutor {
     this.execDouble(command, config);
 
     if (!MockExecutor.definitions.hasOwnProperty(command)) {
-      throw new Error(`Unexpected command: ${command}`);
+      const expectedCmds = Object.keys(MockExecutor.definitions).map(d => `\n  ${d}`).join('');
+      throw new Error(`Unexpected command: ${command}\nExpecting one of: ${expectedCmds}`);
     }
 
     let result = MockExecutor.definitions[command];
