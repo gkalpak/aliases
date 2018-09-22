@@ -22,6 +22,18 @@ describe('gcoghpr', () => {
     let gcoghpr;
 
     const addDefinitions = (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0) => {
+      const reportSuccessCmd = !prCommits ?
+        'withStyle(reset): ' +
+          'node --print "\'\'" && ' +
+          `node --print "'Fetched PR into local branch \\'${prBranch}\\'.'"` :
+        'withStyle(reset): ' +
+          'node --print "\'\'" && ' +
+          `node --print "'Fetched PR into local branch \\'${prBranch}\\' ` +
+            `(and also branch range \\'${_PR_LOCAL_BRANCH_BASE}..${_PR_LOCAL_BRANCH_TOP}\\').'" && ` +
+          'node --print "\'\'" && ' +
+          `node --print "'PR commits (${prCommits})\\n---'" && ` +
+          `git log --decorate --oneline -${prCommits + 1} || true`;
+
       Object.assign(MockExecutor.definitions, {
         'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git`,
         [`git show-ref --heads --quiet ${prBranch}`]: 'error:',
@@ -33,15 +45,8 @@ describe('gcoghpr', () => {
         [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${prBranch}`]: '',
         [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${prBranch}~${prCommits}`]: '',
         [`git checkout ${prBranch}`]: '',
+        [reportSuccessCmd]: '',
       });
-
-      if (prCommits) {
-        const cmd =
-          'withStyle(reset): ' +
-          `node --print "'PR commits (${prCommits})\\n---'" && ` +
-          `git log --decorate --oneline -${prCommits + 1} || true`;
-        MockExecutor.definitions[cmd] = '';
-      }
 
       if (prNumber) {
         mockHttps.

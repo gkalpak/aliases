@@ -17,6 +17,7 @@ class MockExecutor {
   }
 
   exec(command, config) {
+    command = stripAnsi(command);
     this.execDouble(command, config);
 
     if (!MockExecutor.definitions.hasOwnProperty(command)) {
