@@ -10,7 +10,7 @@ const {version} = require('../../../package.json');
 const {reversePromise} = require('../../test-utils');
 const {MockExecutor, MockHttps, MockLazyLoader, MockLogger} = require('./gcoghpr.mocks');
 
-const {Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, _GH_TOKEN_NAME} = gcoghprExps;
+const {Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, _GH_TOKEN_NAME, _PR_REMOTE_ALIAS} = gcoghprExps;
 
 // Tests
 describe('gcoghpr', () => {
@@ -23,9 +23,11 @@ describe('gcoghpr', () => {
         'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git`,
         [`git show-ref --heads --quiet ${prBranch}`]: 'error:',
         'git checkout master': '',
-        [`git fetch --no-tags https://github.com/${prAuthor}/${upRepo}.git ${prBranch}:${prBranch}`]: '',
+        [`git remote remove ${_PR_REMOTE_ALIAS} || true`]: '',
+        [`git remote add ${_PR_REMOTE_ALIAS} https://github.com/${prAuthor}/${upRepo}.git`]: '',
+        [`git fetch --no-tags ${_PR_REMOTE_ALIAS} ${prBranch}`]: '',
+        [`git branch --force --track ${prBranch} ${_PR_REMOTE_ALIAS}/${prBranch}`]: '',
         [`git checkout ${prBranch}`]: '',
-        [`git push --set-upstream https://github.com/${prAuthor}/${upRepo}.git`]: '',
       });
 
       if (prCommits) {
@@ -208,7 +210,7 @@ describe('gcoghpr', () => {
         await gcoghpr.run(['1337']);
 
         expect(gcoghpr._logger.color).toBe('reset');
-        expect(execSpy).toHaveBeenCalledTimes(7);
+        expect(execSpy).toHaveBeenCalledTimes(9);
       });
     });
 
