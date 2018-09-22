@@ -10,7 +10,10 @@ const {version} = require('../../../package.json');
 const {reversePromise} = require('../../test-utils');
 const {MockExecutor, MockHttps, MockLazyLoader, MockLogger} = require('./gcoghpr.mocks');
 
-const {Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, _GH_TOKEN_NAME, _PR_REMOTE_ALIAS} = gcoghprExps;
+const {
+  Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, _GH_TOKEN_NAME, _PR_LOCAL_BRANCH_BASE,
+  _PR_LOCAL_BRANCH_TOP, _PR_REMOTE_ALIAS,
+} = gcoghprExps;
 
 // Tests
 describe('gcoghpr', () => {
@@ -27,6 +30,8 @@ describe('gcoghpr', () => {
         [`git remote add ${_PR_REMOTE_ALIAS} https://github.com/${prAuthor}/${upRepo}.git`]: '',
         [`git fetch --no-tags ${_PR_REMOTE_ALIAS} ${prBranch}`]: '',
         [`git branch --force --track ${prBranch} ${_PR_REMOTE_ALIAS}/${prBranch}`]: '',
+        [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${prBranch}`]: '',
+        [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${prBranch}~${prCommits}`]: '',
         [`git checkout ${prBranch}`]: '',
       });
 
@@ -34,7 +39,7 @@ describe('gcoghpr', () => {
         const cmd =
           'withStyle(reset): ' +
           `node --print "'PR commits (${prCommits})\\n---'" && ` +
-          `git log --decorate --oneline -${prCommits} || true`;
+          `git log --decorate --oneline -${prCommits + 1} || true`;
         MockExecutor.definitions[cmd] = '';
       }
 
@@ -191,14 +196,13 @@ describe('gcoghpr', () => {
           getExecutedCommands().
           some(cmd => cmd.includes('git log'));
 
-        await Promise.all([
-          gcoghpr.run(['1337']),
-          gcoghpr.run(['some-author:some-branch']),
-        ]);
-        const [executor1, executor2] = MockExecutor.instances;
+        await gcoghpr.run(['1337']);
+        expect(didLogCommits(MockExecutor.instances.pop())).toBe(true);
 
-        expect(didLogCommits(executor1)).toBe(true);
-        expect(didLogCommits(executor2)).toBe(false);
+        overwriteDefinitions('gkalpak', 'aliases', 'foo-author', 'bar-branch');
+
+        await gcoghpr.run(['foo-author:bar-branch']);
+        expect(didLogCommits(MockExecutor.instances.pop())).toBe(false);
       });
 
       it('should force the logger color to gray during execution', async () => {
@@ -210,7 +214,7 @@ describe('gcoghpr', () => {
         await gcoghpr.run(['1337']);
 
         expect(gcoghpr._logger.color).toBe('reset');
-        expect(execSpy).toHaveBeenCalledTimes(9);
+        expect(execSpy).toHaveBeenCalledTimes(11);
       });
     });
 
