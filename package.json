@@ -122,6 +122,8 @@
     "nvlsa": "./bin/node/nvlsa.js",
     "nvu": "./bin/node/nvu.js",
     "salfup": "./bin/misc/salfup.js",
+    "srv": "./bin/node/srv.js",
+    "srvw": "./bin/node/srvw.js",
     "yad": "./bin/node/yad.js",
     "yap": "./bin/node/yap.js",
     "yr": "./bin/node/yr.js",
