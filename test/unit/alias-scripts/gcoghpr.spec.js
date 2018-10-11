@@ -516,14 +516,29 @@ describe('gcoghpr', () => {
         const httpsGetSpy = spyOn(mockHttps, 'get').and.callThrough();
         await request('status-200', {bar: 'baz'});
 
-        expect(httpsGetSpy).toHaveBeenCalledWith(`${baseUrl}/status-200`, {bar: 'baz'}, jasmine.any(Function));
+        const expectedOptions = jasmine.objectContaining({
+          protocol: 'https:',
+          hostname: 'example.com',
+          port: null,
+          path: '/status-200',
+          bar: 'baz',
+        });
+
+        expect(httpsGetSpy).toHaveBeenCalledWith(expectedOptions, jasmine.any(Function));
       });
 
       it('should default to `{}` for `options`', async () => {
         const httpsGetSpy = spyOn(mockHttps, 'get').and.callThrough();
         await request('status-200');
 
-        expect(httpsGetSpy).toHaveBeenCalledWith(`${baseUrl}/status-200`, {}, jasmine.any(Function));
+        const expectedOptions = jasmine.objectContaining({
+          protocol: 'https:',
+          hostname: 'example.com',
+          port: null,
+          path: '/status-200',
+        });
+
+        expect(httpsGetSpy).toHaveBeenCalledWith(expectedOptions, jasmine.any(Function));
       });
 
       it('should log the request (but not option values)', async () => {

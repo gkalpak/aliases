@@ -3,6 +3,7 @@
 // Imports
 const {EventEmitter} = require('events');
 const stripAnsi = require('strip-ansi');
+const {format} = require('url');
 const {_LazyLoader} = require('../../../lib/alias-scripts/gcoghpr');
 
 // Classes
@@ -66,7 +67,10 @@ class MockHttps {
     return definition;
   }
 
-  get(url, _options, cb) {
+  get(url, options, cb) {
+    url = format(url);
+    cb = cb  || options;
+
     const definition = this._definitions.find(d => d.$match(url));
 
     if (!definition) {
