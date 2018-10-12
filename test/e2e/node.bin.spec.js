@@ -11,7 +11,7 @@ const SCRIPT_DIR = 'bin/node/';
 const NVM_EXISTS = !!which('nvm');
 
 // Tests
-describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
+describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
   describe('nls', () => {
     const alias = 'npm list --depth=0';
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nls'));
