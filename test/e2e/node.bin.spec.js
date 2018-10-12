@@ -3,10 +3,12 @@
 // Imports
 const {testingUtils} = require('@gkalpak/cli-utils');
 const {join} = require('path');
+const {which} = require('shelljs');
 const {ROOT_DIR} = require('../test-utils');
 
 // Constants
 const SCRIPT_DIR = 'bin/node/';
+const NVM_EXISTS = !!which('nvm');
 
 // Tests
 describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
@@ -69,20 +71,22 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
     });
   });
 
-  // `nvm` is being funny on non-Windows platforms,
-  // giving errors when run during tests (but not directly in the terminal).
-  describe('nvls', onlyOnWindows(() => {
+  // - `nvm` might not be available on some environments; e.g. Windows on Travis.
+  // - `nvm` is being funny on non-Windows platforms, giving errors when run during tests
+  //   (but not directly in the terminal).
+  describe('nvls', onlyWithNvm(onlyOnWindows(() => {
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nvls'));
 
     it('should at least list (pun intended) the current Node.js version', async () => {
       const result = await testScript();
       expect(result).toContain(process.version.replace(/^v/, ''));
     });
-  }));
+  })));
 
-  // `nvm` is being funny on non-Windows platforms,
-  // giving errors when run during tests (but not directly in the terminal).
-  describe('nvlsa', onlyOnWindows(() => {
+  // - `nvm` might not be available on some environments; e.g. Windows on Travis.
+  // - `nvm` is being funny on non-Windows platforms, giving errors when run during tests
+  //   (but not directly in the terminal).
+  describe('nvlsa', onlyWithNvm(onlyOnWindows(() => {
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nvlsa'));
 
     it('should list some Node.js versions', async () => {
@@ -97,10 +101,18 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
       const result = await testScript();
       expect(result).toContain(process.version.replace(/^v/, ''));
     });
-  }));
+  })));
 }));
 
 // Helpers
+function onlyIf(condition, testSuite) {
+  return condition ? testSuite : () => undefined;
+}
+
 function onlyOnWindows(testSuite) {
-  return (process.platform === 'win32') ? testSuite : () => undefined;
+  return onlyIf(process.platform === 'win32', testSuite);
+}
+
+function onlyWithNvm(testSuite) {
+  return onlyIf(NVM_EXISTS, testSuite);
 }
