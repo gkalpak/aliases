@@ -91,6 +91,26 @@ describe('gcoghpr', () => {
         expect(executor.getExecutedCommands()).toEqual(Object.keys(MockExecutor.definitions));
       });
 
+      it('should correctly handle upstream repository names with a `.`', async () => {
+        overwriteDefinitions('gkalpak', 'aliases.js', 'some-author', 'some-branch', 42, 1337);
+
+        await gcoghpr.run(['1337']);
+        const executor = MockExecutor.instances[0];
+
+        expect(executor.getExecutedCommands()).toEqual(Object.keys(MockExecutor.definitions));
+      });
+
+      it('should correctly handle upstream repository URLs without a trailing `.git`', async () => {
+        overwriteDefinitions('gkalpak', 'aliases.js', 'some-author', 'some-branch', 42, 1337);
+        MockExecutor.definitions['git remote get-url upstream || git remote get-url origin'] =
+          'https://github.com/gkalpak/aliases.js';
+
+        await gcoghpr.run(['1337']);
+        const executor = MockExecutor.instances[0];
+
+        expect(executor.getExecutedCommands()).toEqual(Object.keys(MockExecutor.definitions));
+      });
+
       it('should log a message and exit when `dryrun: true`', async () => {
         await gcoghpr.run(['1337'], {dryrun: true});
 
