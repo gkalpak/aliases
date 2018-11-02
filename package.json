@@ -78,6 +78,7 @@
     "gngprh": "./bin/git/gngprh.js",
     "gngprm": "./bin/git/gngprm.js",
     "gp": "./bin/git/gp.js",
+    "gp1": "./bin/git/gp1.js",
     "gpf": "./bin/git/gpf.js",
     "gpr": "./bin/git/gpr.js",
     "gpro": "./bin/git/gpro.js",
