@@ -17,7 +17,7 @@ describe('constants', () => {
     });
 
     it('should contain aliases grouped by category', () => {
-      expect(Object.keys(aliases)).toEqual(['git', 'node', 'aio', 'misc']);
+      expect(Object.keys(aliases)).toEqual(['git', 'node', 'aio', 'config', 'misc']);
     });
 
     it('should only contain `Alias` instances in each category', () => {
