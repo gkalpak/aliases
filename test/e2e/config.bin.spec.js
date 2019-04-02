@@ -38,7 +38,7 @@ describe(SCRIPT_DIR, () => {
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'cfgvim'));
 
     it('should print configuration instructions for `vim`', async () => {
-      const vimrcContent = readFileSync(VIMRC_PATH, 'utf8').trim();
+      const vimrcContent = readFileSync(VIMRC_PATH, 'utf8').trim().replace(/\r\n/g, '\n');
       const result = await testScript();
 
       expect(result).toMatch(/^""" Copy the following into '~\/\.vimrc':/);
