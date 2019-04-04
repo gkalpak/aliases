@@ -4,7 +4,6 @@
 const {testingUtils} = require('@gkalpak/cli-utils');
 const {readFileSync} = require('fs');
 const {join} = require('path');
-const {VIMRC_PATH} = require('../../lib/constants');
 const {ROOT_DIR} = require('../test-utils');
 
 // Constants
@@ -38,7 +37,7 @@ describe(SCRIPT_DIR, () => {
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'cfgvim'));
 
     it('should print configuration instructions for `vim`', async () => {
-      const vimrcContent = readFileSync(VIMRC_PATH, 'utf8').trim().replace(/\r\n/g, '\n');
+      const vimrcContent = readFileSync(join(ROOT_DIR, 'lib/assets/vimrc.txt'), 'utf8').trim().replace(/\r\n/g, '\n');
       const result = await testScript();
 
       expect(result).toMatch(/^""" Copy the following into '~\/\.vimrc':/);
