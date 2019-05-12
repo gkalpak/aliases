@@ -29,7 +29,7 @@ describe(SCRIPT_DIR, () => {
       const result = await testScript();
 
       expect(result).toMatch(/^### Run the following commands:/);
-      expect(result).toMatch(/git config --global mergetool\.kdiff3\.trustExitCode false$/);
+      expect(result).toMatch(/git config --global user\.name "George Kalpakas"$/);
     });
   });
 
