@@ -87,7 +87,7 @@ describe('helper', () => {
       it('should mention ignoring `--gkcu-` arguments', async () => {
         const expectedNote = utils.wrapLine(
           '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
-          'determining their index.)', 0);
+          'determining their index.)');
         const msg = await getHelpMessage();
 
         expect(msg).toContain(expectedNote);
@@ -154,7 +154,7 @@ describe('helper', () => {
       it('should mention ignoring `--gkcu-` arguments', async () => {
         const expectedNote = utils.wrapLine(
           '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
-          'determining their index.)', 0);
+          'determining their index.)');
 
         const runAssertions = msg => expect(msg).toContain(expectedNote);
         const chainCategoryTest = chainCategoryTestFactory(runAssertions);
@@ -388,6 +388,7 @@ describe('helper', () => {
     it('should wrap long descriptions (using `utils.wrapLine()`)', () => {
       spyOn(utils, 'wrapLine').and.callThrough();
 
+      const wrapIndent = ' '.repeat(10);
       const category = {
         name: 'test',
         spec: {foo: mockAlias('bar'), bazzz: mockAlias('qux')},
@@ -398,8 +399,8 @@ describe('helper', () => {
       _helpForCategory(category, joiner);
 
       expect(utils.wrapLine).toHaveBeenCalledTimes(2);
-      expect(utils.wrapLine).toHaveBeenCalledWith('bar', 10);
-      expect(utils.wrapLine).toHaveBeenCalledWith('qux', 10);
+      expect(utils.wrapLine).toHaveBeenCalledWith('bar', wrapIndent);
+      expect(utils.wrapLine).toHaveBeenCalledWith('qux', wrapIndent);
     });
   });
 });
