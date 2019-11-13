@@ -130,6 +130,7 @@
     "nvls": "./bin/node/nvls.js",
     "nvlsa": "./bin/node/nvlsa.js",
     "nvu": "./bin/node/nvu.js",
+    "osv": "./bin/misc/osv.js",
     "salfup": "./bin/misc/salfup.js",
     "srv": "./bin/node/srv.js",
     "srvw": "./bin/node/srvw.js",
