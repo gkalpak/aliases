@@ -600,6 +600,8 @@ describe('gcoghpr', () => {
 
   describe('_Logger', () => {
     const spiedColors = ['cyan', 'gray', 'red', 'yellow'];
+    const originalColorStyles = spiedColors.map(color => ({...chalk[color]._styler}));
+    const chalkLevel = chalk.level;
     let consoleSpies;
     let stdoutWriteSpy;
     let logger;
@@ -610,23 +612,28 @@ describe('gcoghpr', () => {
       ['debug', 'error', 'info', 'log', 'warn'].forEach(method =>
         consoleSpies[method] = spyOn(console, method));
 
-      // Color methods are defined at some point up the prototype chain and are not writable.
-      // Overwrite on the instance.
-      spiedColors.forEach(color => Object.defineProperty(chalk, color, {
-        value: text => `<${color}>${text}</${color}>`,
-        configurable: true,
-        enumerable: true,
-        writable: true,
+      stdoutWriteSpy = spyOn(process.stdout, 'write');
+
+      // Ugly hack, because `chalk` makes it really hard to mock colors :(
+      spiedColors.forEach(color => Object.assign(chalk[color]._styler, {
+        open: `<${color}>`,
+        close: `</${color}>`,
+        openAll: `<${color}>`,
+        closeAll: `</${color}>`,
       }));
 
-      stdoutWriteSpy = spyOn(process.stdout, 'write');
+      // In some environments (e.g. Windows on Travis), `chalk.level` is `0`.
+      chalk.level = chalkLevel || chalk.Level.Basic;
 
       logger = new _Logger();
       cyanLogger = new _Logger();
       cyanLogger.forceColor('cyan');
     });
 
-    afterEach(() => spiedColors.forEach(color => delete chalk[color]));
+    afterEach(() => {
+      spiedColors.forEach((color, i) => Object.assign(chalk[color]._styler, originalColorStyles[i]));
+      chalk.level = chalkLevel;
+    });
 
     describe('.forceColor()', () => {
       it('should close the previous style and open the new one', () => {
