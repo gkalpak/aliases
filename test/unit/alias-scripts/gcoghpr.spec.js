@@ -12,7 +12,7 @@ const {MockExecutor, MockHttps, MockLazyLoader, MockLogger} = require('./gcoghpr
 
 const {
   Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, _GH_TOKEN_NAME, _PR_LOCAL_BRANCH_BASE,
-  _PR_LOCAL_BRANCH_TOP, _PR_REMOTE_ALIAS,
+  _PR_LOCAL_BRANCH_PREFIX, _PR_LOCAL_BRANCH_TOP, _PR_REMOTE_ALIAS,
 } = gcoghprExps;
 
 // Tests
@@ -22,13 +22,14 @@ describe('gcoghpr', () => {
     let gcoghpr;
 
     const addDefinitions = (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0) => {
+      const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
       const reportSuccessCmd = !prCommits ?
         'withStyle(reset): ' +
           'node --print "\'\'" && ' +
-          `node --print "'Fetched PR into local branch \\'${prBranch}\\'.'"` :
+          `node --print "'Fetched PR into local branch \\'${localBranch}\\'.'"` :
         'withStyle(reset): ' +
           'node --print "\'\'" && ' +
-          `node --print "'Fetched PR into local branch \\'${prBranch}\\' ` +
+          `node --print "'Fetched PR into local branch \\'${localBranch}\\' ` +
             `(and also branch range \\'${_PR_LOCAL_BRANCH_BASE}..${_PR_LOCAL_BRANCH_TOP}\\').'" && ` +
           'node --print "\'\'" && ' +
           `node --print "'PR commits (${prCommits})\\n---'" && ` +
@@ -36,15 +37,15 @@ describe('gcoghpr', () => {
 
       Object.assign(MockExecutor.definitions, {
         'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git`,
-        [`git show-ref --heads --quiet ${prBranch}`]: 'error:',
+        [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
         'git checkout master': '',
         [`git remote remove ${_PR_REMOTE_ALIAS} || true`]: '',
         [`git remote add ${_PR_REMOTE_ALIAS} https://github.com/${prAuthor}/${upRepo}.git`]: '',
         [`git fetch --no-tags ${_PR_REMOTE_ALIAS} ${prBranch}`]: '',
-        [`git branch --force --track ${prBranch} ${_PR_REMOTE_ALIAS}/${prBranch}`]: '',
-        [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${prBranch}`]: '',
-        [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${prBranch}~${prCommits}`]: '',
-        [`git checkout ${prBranch}`]: '',
+        [`git branch --force --track ${localBranch} ${_PR_REMOTE_ALIAS}/${prBranch}`]: '',
+        [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${localBranch}`]: '',
+        [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${localBranch}~${prCommits}`]: '',
+        [`git checkout ${localBranch}`]: '',
         [reportSuccessCmd]: '',
       });
 
@@ -187,6 +188,7 @@ describe('gcoghpr', () => {
         expect(gcoghpr._logger.logs.debug).toEqual([
           `Upstream info: ${JSON.stringify(expectedUpstreamInfo)}`,
           `PR info: ${JSON.stringify(expectedPrInfo)}`,
+          `Local branch: ${_PR_LOCAL_BRANCH_PREFIX}-pr1337`,
         ]);
       });
 
@@ -196,15 +198,18 @@ describe('gcoghpr', () => {
         await gcoghpr.run(['1337']);
         expect(spy).not.toHaveBeenCalled();
 
-        MockExecutor.definitions['git show-ref --heads --quiet some-branch'] = '';
+        const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-pr1337`;
+        MockExecutor.definitions[`git show-ref --heads --quiet ${localBranch}`] = '';
 
         await gcoghpr.run(['1337']);
-        expect(spy).toHaveBeenCalledWith('some-branch');
+        expect(spy).toHaveBeenCalledWith(localBranch);
       });
 
       it('should abort the operation if `_confirmOverwriteBranch()` rejects', async () => {
         spyOn(gcoghpr, '_confirmOverwriteBranch').and.callFake(() => Promise.reject('test'));
-        MockExecutor.definitions['git show-ref --heads --quiet some-branch'] = '';
+
+        const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-pr1337`;
+        MockExecutor.definitions[`git show-ref --heads --quiet ${localBranch}`] = '';
 
         const err = await reversePromise(gcoghpr.run(['1337']));
         const executor = MockExecutor.instances[0];
@@ -212,7 +217,7 @@ describe('gcoghpr', () => {
         expect(err).toBe('test');
         expect(executor.getExecutedCommands()).toEqual([
           'git remote get-url upstream || git remote get-url origin',
-          'git show-ref --heads --quiet some-branch',
+          `git show-ref --heads --quiet ${localBranch}`,
         ]);
       });
 
