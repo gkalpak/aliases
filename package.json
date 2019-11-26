@@ -50,6 +50,7 @@
     "gaa": "./bin/git/gaa.js",
     "gb": "./bin/git/gb.js",
     "gbc": "./bin/git/gbc.js",
+    "gbcm": "./bin/git/gbcm.js",
     "gbd": "./bin/git/gbd.js",
     "gcl": "./bin/git/gcl.js",
     "gcm": "./bin/git/gcm.js",
