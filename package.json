@@ -165,7 +165,8 @@
   "dependencies": {
     "@gkalpak/cli-utils": "^0.1.8",
     "chalk": "^3.0.0",
-    "inquirer": "^7.0.0"
+    "inquirer": "^7.0.0",
+    "is-wsl": "^2.1.1"
   },
   "devDependencies": {
     "eslint": "^6.6.0",

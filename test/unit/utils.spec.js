@@ -2,6 +2,7 @@
 
 // Imports
 const chalk = require('chalk');
+const isWsl = require('is-wsl');
 const utils = require('../../lib/utils');
 const {reversePromise, tickAsPromised} = require('../test-utils');
 
@@ -159,8 +160,8 @@ describe('utils', () => {
       expect(getPlatform).toEqual(jasmine.any(Function));
     });
 
-    it('should return the current platform', () => {
-      expect(getPlatform()).toBe(process.platform);
+    it('should return the current platform (or `wsl`)', () => {
+      expect(getPlatform()).toBe(isWsl ? 'wsl' : process.platform);
     });
   });
 

@@ -5,6 +5,7 @@
 const {existsSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync} = require('fs');
 const {join} = require('path');
 const {BIN_DIR} = require('../lib/constants');
+const {getPlatform} = require('../lib/utils');
 
 // Run
 _main();
@@ -23,7 +24,8 @@ function _main() {
   });
 
   // "Activate" any platform-specific scripts.
-  const platformExtRe = new RegExp(`\\.${process.platform}\\.js$`);
+  const platform = getPlatform();
+  const platformExtRe = new RegExp(`\\.${platform}\\.js$`);
   const platformScripts = findFiles(BIN_DIR).filter(x => platformExtRe.test(x));
   platformScripts.forEach(platformScriptPath => {
     const activeScriptPath = platformScriptPath.replace(platformExtRe, '.js');
