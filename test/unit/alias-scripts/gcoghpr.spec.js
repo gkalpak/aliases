@@ -12,7 +12,7 @@ const {MockExecutor, MockHttps, MockLazyLoader, MockLogger} = require('./gcoghpr
 
 const {
   Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, _GH_TOKEN_NAME, _PR_LOCAL_BRANCH_BASE,
-  _PR_LOCAL_BRANCH_PREFIX, _PR_LOCAL_BRANCH_TOP,
+  _PR_LOCAL_BRANCH_PREFIX, _PR_LOCAL_BRANCH_TOP, _PR_REMOTE_ALIAS_PREFIX,
 } = gcoghprExps;
 
 // Tests
@@ -22,8 +22,8 @@ describe('gcoghpr', () => {
     let gcoghpr;
 
     const addDefinitions = (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0) => {
-      const originUrl = `https://github.com/${prAuthor}/${upRepo}.git`;
       const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
+      const remoteUrl = `${_PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
       const reportSuccessCmd = !prCommits ?
         'withStyle(reset): ' +
           'node --print "\'\'" && ' +
@@ -40,12 +40,12 @@ describe('gcoghpr', () => {
         'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git`,
         [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
         'git checkout master': '',
-        [`git fetch --no-tags ${originUrl} ${prBranch}`]: '',
-        [`git branch --force ${localBranch} FETCH_HEAD`]: '',
+        [`git remote remove ${remoteUrl} || true`]: '',
+        [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
+        [`git fetch --no-tags ${remoteUrl} ${prBranch}`]: '',
+        [`git branch --force --track ${localBranch} ${remoteUrl}/${prBranch}`]: '',
         [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${localBranch}`]: '',
         [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${localBranch}~${prCommits}`]: '',
-        [`git config branch.${localBranch}.remote ${originUrl}`]: '',
-        [`git config branch.${localBranch}.merge refs/heads/${prBranch}`]: '',
         [`git checkout ${localBranch}`]: '',
         [reportSuccessCmd]: '',
       });
