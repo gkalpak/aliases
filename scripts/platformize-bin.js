@@ -2,7 +2,7 @@
 'use strict';
 
 // Imports
-const {existsSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync} = require('fs');
+const {copyFileSync, existsSync, readdirSync, renameSync, statSync} = require('fs');
 const {join} = require('path');
 const {BIN_DIR} = require('../lib/constants');
 const {getPlatform} = require('../lib/utils');
@@ -40,7 +40,8 @@ function _main() {
 }
 
 function copyFile(fromPath, toPath) {
-  writeFileSync(toPath, readFileSync(fromPath));
+  // Use a copying method that preserves "executability" for the scripts to work on *nix platforms.
+  copyFileSync(fromPath, toPath);
 }
 
 function findFiles(rootDir) {
