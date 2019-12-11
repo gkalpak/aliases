@@ -2,7 +2,7 @@
 'use strict';
 
 // Imports
-const {copyFileSync, existsSync, readdirSync, renameSync, statSync} = require('fs');
+const {chmodSync, copyFileSync, existsSync, readdirSync, renameSync, statSync} = require('fs');
 const {join} = require('path');
 const {BIN_DIR} = require('../lib/constants');
 const {getPlatform} = require('../lib/utils');
@@ -30,17 +30,20 @@ function _main() {
   platformScripts.forEach(platformScriptPath => {
     const activeScriptPath = platformScriptPath.replace(platformExtRe, '.js');
     const defaultScriptPath = platformScriptPath.replace(platformExtRe, '.default.js');
+    const activeScriptMode = statSync(activeScriptPath).mode;
 
     // Back up the default script for future restoration.
     moveFile(activeScriptPath, defaultScriptPath);
 
     // Copy the platform-specific script (not move just in case).
     copyFile(platformScriptPath, activeScriptPath);
+
+    // Preserve active script mode (including "executability") for the scripts to work on *nix platforms.
+    chmodSync(activeScriptPath, activeScriptMode);
   });
 }
 
 function copyFile(fromPath, toPath) {
-  // Use a copying method that preserves "executability" for the scripts to work on *nix platforms.
   copyFileSync(fromPath, toPath);
 }
 
