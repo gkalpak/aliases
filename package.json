@@ -101,6 +101,8 @@
     "grbia": "./bin/git/grbia.js",
     "grbin": "./bin/git/grbin.js",
     "grbm": "./bin/git/grbm.js",
+    "grs": "./bin/git/grs.js",
+    "grs1": "./bin/git/grs1.js",
     "gs": "./bin/git/gs.js",
     "gsh": "./bin/git/gsh.js",
     "gshn": "./bin/git/gshn.js",
