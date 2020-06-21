@@ -116,7 +116,7 @@
     "lla": "./bin/misc/lla.js",
     "nad": "./bin/node/nad.js",
     "nap": "./bin/node/nap.js",
-    "niga": "./bin/node/niga.js",
+    "niag": "./bin/node/niag.js",
     "nls": "./bin/node/nls.js",
     "nls1": "./bin/node/nls1.js",
     "nlsg": "./bin/node/nlsg.js",

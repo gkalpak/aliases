@@ -99,11 +99,11 @@ Things I want to (but won't necessarily) do:
 - Add aliases for:
   - Updating to the latest Node.js version on a branch. E.g. `nvup 6` would:
     - Install the latest 6.x version.
-    - Install packages (either via `niga` or by looking at the previously installed 6.x version).
+    - Install packages (either via `niag` or by looking at the previously installed 6.x version).
     - Uninstall older 6.x versions.
   - Installing the latest Node.js version on a branch. E.g. `nvi 8` would:
     - Install the latest 8.x version.
-    - Install packages (either via `niga` or by looking at the highest installed version).
+    - Install packages (either via `niag` or by looking at the highest installed version).
 
 
 [build-status]: https://travis-ci.org/gkalpak/aliases
