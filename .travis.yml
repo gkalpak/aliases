@@ -17,6 +17,8 @@ cache:
     - "$HOME/.npm"
 
 install:
+  # Install `yarn` to be used in e2e tests.
+  - npm install --global yarn;
   # Run `npm install`, if `npm ci` fails, to work around old npm versions' not supporting `npm ci`.
   - npm ci || npm install;
 

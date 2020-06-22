@@ -102,6 +102,30 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
       expect(result).toContain(process.version.replace(/^v/, ''));
     });
   })));
+
+  describe('ylsg', () => {
+    const alias = 'yarn global list --depth=0';
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'ylsg'));
+
+    it(`should be an alias for \`${alias}\``, async () => {
+      const result1 = await testingUtils.testCmd(alias);
+      const result2 = await testScript();
+
+      expect(removeYarnDuration(result2)).toContain(removeYarnDuration(result1));
+    });
+  });
+
+  describe('ylsg1', () => {
+    const alias = 'yarn global list --depth=1';
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'ylsg1'));
+
+    it(`should be an alias for \`${alias}\``, async () => {
+      const result1 = await testingUtils.testCmd(alias);
+      const result2 = await testScript();
+
+      expect(removeYarnDuration(result2)).toContain(removeYarnDuration(result1));
+    });
+  });
 }));
 
 // Helpers
@@ -115,4 +139,10 @@ function onlyOnWindows(testSuite) {
 
 function onlyWithNvm(testSuite) {
   return onlyIf(NVM_EXISTS, testSuite);
+}
+
+// Yarn adds a `Done in <XYZ>s.` line at the end, which may defer between invocations. Remove it to
+// make it easier to compare the command outputs.
+function removeYarnDuration(output) {
+  return output.replace(/Done in .+?s\.$/, '');
 }
