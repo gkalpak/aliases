@@ -607,6 +607,7 @@ describe('gcoghpr', () => {
   describe('_Logger', () => {
     const spiedColors = ['cyan', 'gray', 'red', 'yellow'];
     const originalColorStyles = spiedColors.map(color => ({...chalk[color]._styler}));
+    const basicColorLevel = 1;
     const chalkLevel = chalk.level;
     let consoleSpies;
     let stdoutWriteSpy;
@@ -628,8 +629,8 @@ describe('gcoghpr', () => {
         closeAll: `</${color}>`,
       }));
 
-      // In some environments (e.g. Windows on Travis), `chalk.level` is `0`.
-      chalk.level = chalkLevel || chalk.Level.Basic;
+      // In some environments (e.g. Windows on Travis), `chalk.level` is `0` (all colors disabled).
+      chalk.level = chalkLevel || basicColorLevel;
 
       logger = new _Logger();
       cyanLogger = new _Logger();
