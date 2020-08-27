@@ -39,7 +39,6 @@ describe('gcoghpr', () => {
       Object.assign(MockExecutor.definitions, {
         'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git`,
         [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
-        'git checkout master': '',
         [`git remote remove ${remoteUrl} || true`]: '',
         [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
         [`git fetch --no-tags ${remoteUrl} ${prBranch}`]: '',
@@ -245,7 +244,7 @@ describe('gcoghpr', () => {
         await gcoghpr.run(['1337']);
 
         expect(gcoghpr._logger.color).toBe('reset');
-        expect(execSpy).toHaveBeenCalledTimes(11);
+        expect(execSpy).toHaveBeenCalledTimes(10);
       });
     });
 
