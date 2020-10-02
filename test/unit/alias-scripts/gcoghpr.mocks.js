@@ -47,6 +47,11 @@ class MockExecutor {
     // while keeping original behavior.
   }
 
+  execForOutput(command, config) {
+    config = Object.assign({}, config, {returnOutput: true});
+    return this.exec(command, config).then(output => output.trim());
+  }
+
   execWithStyle(color, command, config) {
     return this.exec(`withStyle(${color || 'reset'}): ${command}`, config);
   }

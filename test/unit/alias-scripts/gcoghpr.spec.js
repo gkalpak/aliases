@@ -37,7 +37,7 @@ describe('gcoghpr', () => {
           `git log --decorate --oneline -${prCommits + 1} || true`;
 
       Object.assign(MockExecutor.definitions, {
-        'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git`,
+        'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git\n`,
         [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
         [`git remote remove ${remoteUrl} || true`]: '',
         [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
@@ -104,7 +104,7 @@ describe('gcoghpr', () => {
       it('should correctly handle upstream repository URLs without a trailing `.git`', async () => {
         overwriteDefinitions('gkalpak', 'aliases.js', 'some-author', 'some-branch', 42, 1337);
         MockExecutor.definitions['git remote get-url upstream || git remote get-url origin'] =
-          'https://github.com/gkalpak/aliases.js';
+          'https://github.com/gkalpak/aliases.js\n';
 
         await gcoghpr.run(['1337']);
         const executor = MockExecutor.instances[0];
@@ -374,6 +374,50 @@ describe('gcoghpr', () => {
         expect(mockLogger.logs.debug).toEqual([
           'Running command \'foo --bar && echo test\' (config: {"foo":"bar","baz":"qux"})...',
         ]);
+      });
+    });
+
+    describe('.execForOutput()', () => {
+      let executor;
+      let execSpy;
+
+      beforeEach(() => {
+        executor = new _Executor(mockLogger);
+        execSpy = spyOn(executor, 'exec').and.returnValue(Promise.resolve('ok'));
+      });
+
+      it('should delegate to `exec()` (with `returnOutput: true`)', async () => {
+        await expectAsync(executor.execForOutput('foo', {bar: 'baz'})).toBeResolvedTo('ok');
+        expect(execSpy).toHaveBeenCalledWith(jasmine.any(String), {bar: 'baz', returnOutput: true});
+
+        execSpy.calls.reset();
+        execSpy.and.returnValue(Promise.reject('Test error'));
+
+        await expectAsync(executor.execForOutput('foo2', {bar2: 'baz2'})).toBeRejectedWith('Test error');
+        expect(execSpy).toHaveBeenCalledWith(jasmine.any(String), {bar2: 'baz2', returnOutput: true});
+      });
+
+      it('should be handle a missing `config`', async () => {
+        await expectAsync(executor.execForOutput('foo')).toBeResolvedTo('ok');
+        expect(execSpy).toHaveBeenCalledWith(jasmine.any(String), {returnOutput: true});
+      });
+
+      it('should override `returnOutput` from the passed in `config`', async () => {
+        await expectAsync(executor.execForOutput('foo', {bar: 'baz', returnOutput: false})).toBeResolvedTo('ok');
+        expect(execSpy).toHaveBeenCalledWith(jasmine.any(String), {bar: 'baz', returnOutput: true});
+      });
+
+      it('should not affect the original `config`', async () => {
+        const config = {bar: 'baz', returnOutput: false};
+
+        await expectAsync(executor.execForOutput('foo', config)).toBeResolvedTo('ok');
+        expect(execSpy).toHaveBeenCalledWith(jasmine.any(String), {bar: 'baz', returnOutput: true});
+        expect(config.returnOutput).toBeFalse();
+      });
+
+      it('should trim the output', async () => {
+        execSpy.and.returnValue(Promise.resolve('  \n  \t  trimmed  \t  \n  '));
+        await expectAsync(executor.execForOutput('foo')).toBeResolvedTo('trimmed');
       });
     });
 
