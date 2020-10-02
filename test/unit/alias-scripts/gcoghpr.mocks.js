@@ -17,7 +17,7 @@ class MockExecutor {
     MockExecutor.instances.push(this);
   }
 
-  exec(command, config) {
+  exec(command, config = {}) {
     command = stripAnsi(command);
     this.execDouble(command, config);
 
@@ -26,17 +26,20 @@ class MockExecutor {
       throw new Error(`Unexpected command: ${command}\nExpecting one of: ${expectedCmds}`);
     }
 
-    let result = MockExecutor.definitions[command];
+    let output = MockExecutor.definitions[command];
     let success = true;
 
-    if (result.lastIndexOf('error:', 0) === 0) {
-      result = result.replace('error:', '');
+    if (output.startsWith('error:')) {
+      output = output.replace('error:', '');
       success = false;
     }
 
-    this.executions.push({command, config, result, success});
+    this.executions.push({command, config, output, success});
 
-    return Promise[success ? 'resolve' : 'reject'](result);
+    const promiseMethod = success ? 'resolve' : 'reject';
+    const promiseArg = config.returnOutput ? output : '';
+
+    return Promise[promiseMethod](promiseArg);
   }
 
   execDouble() {
