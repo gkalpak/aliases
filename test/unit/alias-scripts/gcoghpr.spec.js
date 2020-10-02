@@ -21,43 +21,46 @@ describe('gcoghpr', () => {
     let mockHttps;
     let gcoghpr;
 
-    const addDefinitions = (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0) => {
-      const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
-      const remoteUrl = `${_PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
-      const reportSuccessCmd = !prCommits ?
-        'withStyle(reset): ' +
-          'node --print "\'\'" && ' +
-          `node --print "'Fetched PR into local branch \\'${localBranch}\\'.'"` :
-        'withStyle(reset): ' +
-          'node --print "\'\'" && ' +
-          `node --print "'Fetched PR into local branch \\'${localBranch}\\' ` +
-            `(and also branch range \\'${_PR_LOCAL_BRANCH_BASE}..${_PR_LOCAL_BRANCH_TOP}\\').'" && ` +
-          'node --print "\'\'" && ' +
-          `node --print "'PR commits (${prCommits})\\n---'" && ` +
-          `git log --decorate --oneline -${prCommits + 1} || true`;
+    const addDefinitions =
+      (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0, currentBranch = 'master') => {
+        const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
+        const remoteUrl = `${_PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
+        const reportSuccessCmd = !prCommits ?
+          'withStyle(reset): ' +
+            'node --print "\'\'" && ' +
+            `node --print "'Fetched PR into local branch \\'${localBranch}\\'.'"` :
+          'withStyle(reset): ' +
+            'node --print "\'\'" && ' +
+            `node --print "'Fetched PR into local branch \\'${localBranch}\\' ` +
+              `(and also branch range \\'${_PR_LOCAL_BRANCH_BASE}..${_PR_LOCAL_BRANCH_TOP}\\').'" && ` +
+            'node --print "\'\'" && ' +
+            `node --print "'PR commits (${prCommits})\\n---'" && ` +
+            `git log --decorate --oneline -${prCommits + 1} || true`;
 
-      Object.assign(MockExecutor.definitions, {
-        'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git\n`,
-        [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
-        [`git remote remove ${remoteUrl} || true`]: '',
-        [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
-        [`git fetch --no-tags ${remoteUrl} ${prBranch}`]: '',
-        [`git branch --force --track ${localBranch} ${remoteUrl}/${prBranch}`]: '',
-        [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${localBranch}`]: '',
-        [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${localBranch}~${prCommits}`]: '',
-        [`git checkout ${localBranch}`]: '',
-        [reportSuccessCmd]: '',
-      });
+        Object.assign(MockExecutor.definitions, {
+          'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git\n`,
+          [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
+          'git rev-parse --abbrev-ref HEAD': currentBranch,
+          ...((currentBranch === localBranch) ? {'git checkout master': ''} : undefined),
+          [`git remote remove ${remoteUrl} || true`]: '',
+          [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
+          [`git fetch --no-tags ${remoteUrl} ${prBranch}`]: '',
+          [`git branch --force --track ${localBranch} ${remoteUrl}/${prBranch}`]: '',
+          [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${localBranch}`]: '',
+          [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${localBranch}~${prCommits}`]: '',
+          [`git checkout ${localBranch}`]: '',
+          [reportSuccessCmd]: '',
+        });
 
-      if (prNumber) {
-        mockHttps.
-          whenGet(`https://api.github.com/repos/${upUser}/${upRepo}/pulls/${prNumber}`).
-          response(200, JSON.stringify({
-            commits: prCommits,
-            head: {label: `${prAuthor}:${prBranch}`},
-          }));
-      }
-    };
+        if (prNumber) {
+          mockHttps.
+            whenGet(`https://api.github.com/repos/${upUser}/${upRepo}/pulls/${prNumber}`).
+            response(200, JSON.stringify({
+              commits: prCommits,
+              head: {label: `${prAuthor}:${prBranch}`},
+            }));
+        }
+      };
     const overwriteDefinitions = (...args) => {
       MockExecutor.definitions = {};
       mockHttps.reset();
@@ -221,6 +224,30 @@ describe('gcoghpr', () => {
         ]);
       });
 
+      it('should not checkout master if not already on the target branch', async () => {
+        overwriteDefinitions(
+          'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${_PR_LOCAL_BRANCH_PREFIX}-pr1337-not`);
+
+        await gcoghpr.run(['1337']);
+        const executor = MockExecutor.instances[0];
+        const executedCommands = executor.getExecutedCommands();
+
+        expect(executedCommands).toEqual(Object.keys(MockExecutor.definitions));
+        expect(executedCommands).not.toContain('git checkout master');
+      });
+
+      it('should checkout master if already on the target branch', async () => {
+        overwriteDefinitions(
+          'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${_PR_LOCAL_BRANCH_PREFIX}-pr1337`);
+
+        await gcoghpr.run(['1337']);
+        const executor = MockExecutor.instances[0];
+        const executedCommands = executor.getExecutedCommands();
+
+        expect(executedCommands).toEqual(Object.keys(MockExecutor.definitions));
+        expect(executedCommands).toContain('git checkout master');
+      });
+
       it('should not log PR commits if not available', async () => {
         const didLogCommits = executor => executor.
           getExecutedCommands().
@@ -244,7 +271,7 @@ describe('gcoghpr', () => {
         await gcoghpr.run(['1337']);
 
         expect(gcoghpr._logger.color).toBe('reset');
-        expect(execSpy).toHaveBeenCalledTimes(10);
+        expect(execSpy).toHaveBeenCalledTimes(11);
       });
     });
 
