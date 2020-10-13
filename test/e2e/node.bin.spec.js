@@ -39,11 +39,14 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
   });
 
   describe('nlsg', () => {
+    // Under some circumstances, `npm list` fails due to missing peerDependency even with the `--global` option.
+    // For example, when running the E2E tests from a different directory: `npm --prefix=aliases test-e2e`
+
     const alias = 'npm list --depth=0 --global';
-    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nlsg'));
+    const testScript = testingUtils.testScriptFactory(`${join(ROOT_DIR, SCRIPT_DIR, 'nlsg')} 2>&1 || true`);
 
     it(`should be an alias for \`${alias}\``, async () => {
-      const result1 = await testingUtils.testCmd(alias);
+      const result1 = await testingUtils.testCmd(`${alias} 2>&1 || true`);
       const result2 = await testScript();
 
       expect(result2).toContain(result1);
@@ -51,11 +54,14 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
   });
 
   describe('nlsg1', () => {
+    // Under some circumstances, `npm list` fails due to missing peerDependency even with the `--global` option.
+    // For example, when running the E2E tests from a different directory: `npm --prefix=aliases test-e2e`
+
     const alias = 'npm list --depth=1 --global';
-    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nlsg1'));
+    const testScript = testingUtils.testScriptFactory(`${join(ROOT_DIR, SCRIPT_DIR, 'nlsg1')} 2>&1 || true`);
 
     it(`should be an alias for \`${alias}\``, async () => {
-      const result1 = await testingUtils.testCmd(alias);
+      const result1 = await testingUtils.testCmd(`${alias} 2>&1 || true`);
       const result2 = await testScript();
 
       expect(result2).toContain(result1);
