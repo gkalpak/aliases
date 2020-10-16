@@ -135,6 +135,17 @@ describe('g-pick-branch', () => {
           verifyPromptedWith('choices', [choice('bar', 'bar (current)'), choice('foo'), choice('master')]);
         });
 
+        it('should mark branches checked out in other worktrees (and remove leading `+`)', async () => {
+          branches = [
+            '  foo',
+            '+ bar',
+            '  master',
+          ];
+          await gPickBranch({});
+
+          verifyPromptedWith('choices', [choice('bar', 'bar (other worktree)'), choice('foo'), choice('master')]);
+        });
+
         it('should specify the default choice (if any)', async () => {
           branches = [
             '  foo',
