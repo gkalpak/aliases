@@ -2,6 +2,7 @@
 
 // Imports
 const {commandUtils, processUtils} = require('@gkalpak/cli-utils');
+const {italic} = require('chalk');
 const inquirer = require('inquirer');
 const gPickBranchExps = require('../../../lib/alias-scripts/g-pick-branch');
 const {reversePromise} = require('../../test-utils');
@@ -153,6 +154,34 @@ describe('g-pick-branch', () => {
           await gPickBranch({});
 
           verifyPromptedWith('default', 1);
+        });
+
+        it('should use italic for `gcoghpr-` branches', async () => {
+          branches = [
+            '  foo-gcoghpr',
+            '* bar-gcoghpr',
+            '  gcoghpr-master',
+          ];
+          await gPickBranch({});
+
+          verifyPromptedWith('choices', [
+            choice('foo-gcoghpr'),
+            choice('bar-gcoghpr', 'bar-gcoghpr (current)'),
+            choice('gcoghpr-master', italic('gcoghpr-master')),
+          ]);
+
+          branches = [
+            '  foo-gcoghpr',
+            '* gcoghpr-bar',
+            '  gcoghpr-master',
+          ];
+          await gPickBranch({});
+
+          verifyPromptedWith('choices', [
+            choice('foo-gcoghpr'),
+            choice('gcoghpr-bar', italic('gcoghpr-bar (current)')),
+            choice('gcoghpr-master', italic('gcoghpr-master')),
+          ]);
         });
 
         it('should register a callback to exit with an error if exited while the prompt is shown', async () => {
