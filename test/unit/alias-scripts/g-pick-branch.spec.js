@@ -69,7 +69,7 @@ describe('g-pick-branch', () => {
 
       describe('picking a branch', () => {
         let branches;
-        const verifyPromptedWith = (prop, value) => () => {
+        const verifyPromptedWith = (prop, value) => {
           if (prop === 'choices') value.push(new inquirer.Separator());
           expect(inquirer.prompt).toHaveBeenCalledWith([jasmine.objectContaining({[prop]: value})]);
         };
