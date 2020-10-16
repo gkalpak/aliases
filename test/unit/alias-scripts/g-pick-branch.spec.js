@@ -69,6 +69,7 @@ describe('g-pick-branch', () => {
 
       describe('picking a branch', () => {
         let branches;
+        const choice = (value, name = value) => ({name, value, short: value});
         const verifyPromptedWith = (prop, value) => {
           if (prop === 'choices') value.push(new inquirer.Separator());
           expect(inquirer.prompt).toHaveBeenCalledWith([jasmine.objectContaining({[prop]: value})]);
@@ -96,7 +97,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('choices', ['foo', 'bar', 'master']);
+          verifyPromptedWith('choices', [choice('foo'), choice('bar'), choice('master')]);
         });
 
         it('should trim whitespace around branches', async () => {
@@ -107,7 +108,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('choices', ['foo', 'bar', 'master']);
+          verifyPromptedWith('choices', [choice('foo'), choice('bar'), choice('master')]);
         });
 
         it('should ignore empty or whitespace-only lines', async () => {
@@ -120,7 +121,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('choices', ['foo', 'bar', 'master']);
+          verifyPromptedWith('choices', [choice('foo'), choice('bar'), choice('master')]);
         });
 
         it('should mark the current branch (and remove leading `*`)', async () => {
@@ -131,7 +132,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('choices', ['foo', 'bar (current)', 'master']);
+          verifyPromptedWith('choices', [choice('foo'), choice('bar', 'bar (current)'), choice('master')]);
         });
 
         it('should specify the default choice (if any)', async () => {
@@ -151,7 +152,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('default', 'bar (current)');
+          verifyPromptedWith('default', 1);
         });
 
         it('should register a callback to exit with an error if exited while the prompt is shown', async () => {
@@ -226,17 +227,6 @@ describe('g-pick-branch', () => {
 
           expect(await gPickBranch({returnOutput: true})).toBe('foo');
           expect(console.log).not.toHaveBeenCalled();
-        });
-
-        it('should remove the "current" marker from the selected branch\'s name', async () => {
-          inquirer.prompt.and.returnValues(
-            Promise.resolve({branch: 'foo (current)'}),
-            Promise.resolve({branch: 'bar (current)'}));
-
-          await gPickBranch({returnOutput: false});
-          expect(console.log).toHaveBeenCalledWith('foo');
-
-          expect(await gPickBranch({returnOutput: true})).toBe('bar');
         });
       });
     });
