@@ -89,7 +89,7 @@ describe('g-pick-branch', () => {
           verifyPromptedWith('message', 'Pick a branch:');
         });
 
-        it('should pass the branches as options (as returned by `git branch`)', async () => {
+        it('should pass the branches (as returned by `git branch`) as options, sorted alphabetically', async () => {
           branches = [
             'foo',
             'bar',
@@ -97,7 +97,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('choices', [choice('foo'), choice('bar'), choice('master')]);
+          verifyPromptedWith('choices', [choice('bar'), choice('foo'), choice('master')]);
         });
 
         it('should trim whitespace around branches', async () => {
@@ -108,7 +108,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('choices', [choice('foo'), choice('bar'), choice('master')]);
+          verifyPromptedWith('choices', [choice('bar'), choice('foo'), choice('master')]);
         });
 
         it('should ignore empty or whitespace-only lines', async () => {
@@ -121,7 +121,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('choices', [choice('foo'), choice('bar'), choice('master')]);
+          verifyPromptedWith('choices', [choice('bar'), choice('foo'), choice('master')]);
         });
 
         it('should mark the current branch (and remove leading `*`)', async () => {
@@ -132,7 +132,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('choices', [choice('foo'), choice('bar', 'bar (current)'), choice('master')]);
+          verifyPromptedWith('choices', [choice('bar', 'bar (current)'), choice('foo'), choice('master')]);
         });
 
         it('should specify the default choice (if any)', async () => {
@@ -143,7 +143,7 @@ describe('g-pick-branch', () => {
           ];
           await gPickBranch({});
 
-          verifyPromptedWith('default', undefined);
+          verifyPromptedWith('default', 0);
 
           branches = [
             '  foo',
@@ -164,9 +164,9 @@ describe('g-pick-branch', () => {
           await gPickBranch({});
 
           verifyPromptedWith('choices', [
-            choice('foo-gcoghpr'),
-            choice('bar-gcoghpr', 'bar-gcoghpr (current)'),
             choice('gcoghpr-master', '[gcoghpr] master'),
+            choice('bar-gcoghpr', 'bar-gcoghpr (current)'),
+            choice('foo-gcoghpr'),
           ]);
 
           branches = [
@@ -177,9 +177,9 @@ describe('g-pick-branch', () => {
           await gPickBranch({});
 
           verifyPromptedWith('choices', [
-            choice('foo-gcoghpr'),
             choice('gcoghpr-bar', '[gcoghpr] bar (current)'),
             choice('gcoghpr-master', '[gcoghpr] master'),
+            choice('foo-gcoghpr'),
           ]);
         });
 
