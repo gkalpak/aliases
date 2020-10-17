@@ -68,6 +68,7 @@
     "gcmifs": "./bin/git/gcmifs.js",
     "gco": "./bin/git/gco.js",
     "gcoghpr": "./bin/git/gcoghpr.js",
+    "gcoghpr-cleanup": "./bin/git/gcoghpr-cleanup.js",
     "gcom": "./bin/git/gcom.js",
     "gcopr": "./bin/git/gcopr.js",
     "gcp": "./bin/git/gcp.js",

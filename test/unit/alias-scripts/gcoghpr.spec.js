@@ -11,8 +11,8 @@ const {reversePromise} = require('../../test-utils');
 const {MockExecutor, MockHttps, MockLazyLoader, MockLogger} = require('./gcoghpr.mocks');
 
 const {
-  Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, _GH_TOKEN_NAME, _PR_LOCAL_BRANCH_BASE,
-  _PR_LOCAL_BRANCH_PREFIX, _PR_LOCAL_BRANCH_TOP, _PR_REMOTE_ALIAS_PREFIX,
+  Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, PR_LOCAL_BRANCH_PREFIX, PR_REMOTE_ALIAS_PREFIX,
+  _GH_TOKEN_NAME, _PR_LOCAL_BRANCH_BASE, _PR_LOCAL_BRANCH_TOP,
 } = gcoghprExps;
 
 // Tests
@@ -23,8 +23,8 @@ describe('gcoghpr', () => {
 
     const addDefinitions =
       (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0, currentBranch = 'master') => {
-        const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
-        const remoteUrl = `${_PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
+        const localBranch = `${PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
+        const remoteUrl = `${PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
         const reportSuccessCmd = !prCommits ?
           'withStyle(reset): ' +
             'node --print "\'\'" && ' +
@@ -191,7 +191,7 @@ describe('gcoghpr', () => {
         expect(gcoghpr._logger.logs.debug).toEqual([
           `Upstream info: ${JSON.stringify(expectedUpstreamInfo)}`,
           `PR info: ${JSON.stringify(expectedPrInfo)}`,
-          `Local branch: ${_PR_LOCAL_BRANCH_PREFIX}-pr1337`,
+          `Local branch: ${PR_LOCAL_BRANCH_PREFIX}-pr1337`,
         ]);
       });
 
@@ -201,7 +201,7 @@ describe('gcoghpr', () => {
         await gcoghpr.run(['1337']);
         expect(spy).not.toHaveBeenCalled();
 
-        const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-pr1337`;
+        const localBranch = `${PR_LOCAL_BRANCH_PREFIX}-pr1337`;
         MockExecutor.definitions[`git show-ref --heads --quiet ${localBranch}`] = '';
 
         await gcoghpr.run(['1337']);
@@ -211,7 +211,7 @@ describe('gcoghpr', () => {
       it('should abort the operation if `_confirmOverwriteBranch()` rejects', async () => {
         spyOn(gcoghpr, '_confirmOverwriteBranch').and.callFake(() => Promise.reject('test'));
 
-        const localBranch = `${_PR_LOCAL_BRANCH_PREFIX}-pr1337`;
+        const localBranch = `${PR_LOCAL_BRANCH_PREFIX}-pr1337`;
         MockExecutor.definitions[`git show-ref --heads --quiet ${localBranch}`] = '';
 
         const err = await reversePromise(gcoghpr.run(['1337']));
@@ -226,7 +226,7 @@ describe('gcoghpr', () => {
 
       it('should not checkout master if not already on the target branch', async () => {
         overwriteDefinitions(
-          'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${_PR_LOCAL_BRANCH_PREFIX}-pr1337-not`);
+          'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${PR_LOCAL_BRANCH_PREFIX}-pr1337-not`);
 
         await gcoghpr.run(['1337']);
         const executor = MockExecutor.instances[0];
@@ -238,7 +238,7 @@ describe('gcoghpr', () => {
 
       it('should checkout master if already on the target branch', async () => {
         overwriteDefinitions(
-          'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${_PR_LOCAL_BRANCH_PREFIX}-pr1337`);
+          'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${PR_LOCAL_BRANCH_PREFIX}-pr1337`);
 
         await gcoghpr.run(['1337']);
         const executor = MockExecutor.instances[0];
