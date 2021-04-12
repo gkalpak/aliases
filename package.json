@@ -178,6 +178,11 @@
   "peerDependencies": {
     "@gkalpak/ng-maintain": "~0.0.7"
   },
+  "peerDependenciesMeta": {
+    "@gkalpak/ng-maintain": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@gkalpak/cli-utils": "^0.1.9",
     "chalk": "^4.1.0",
