@@ -64,7 +64,7 @@ Here is the list of all global dependencies with associated min. version (older 
     Windows][git-win]' `Git BASH`)
 - `ngm-diff-wh`: `ngm-diff-wh` >=0.0.4 (part of the [ng-maintain] suite)
 - `ngm-pr-merge`: `ngm-pr-merge` >=0.0.4 (part of the [ng-maintain] suite)
-- `node`: [Node.js][node] >=8
+- `node`: [Node.js][node] >=10
 - `npm`: [npm] >=3 (comes bundled with Node.js)
 - `nvm`: [nvm] >=0.30 (on *nix) / [nvm-windows][nvm-win] >=1 (on Windows)
 - `yarn`: [yarn] >=0.24
