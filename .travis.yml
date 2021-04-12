@@ -7,9 +7,11 @@ dist: trusty
 sudo: false
 
 language: node_js
+# Also update "Global dependencies" in `README.md` to match tested Node.js versions.
 node_js:
   - 10
   - 12
+  - 14
   - node
 
 cache:
