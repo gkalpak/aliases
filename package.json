@@ -140,6 +140,7 @@
     "nv": "./bin/node/nv.js",
     "nvls": "./bin/node/nvls.js",
     "nvlsa": "./bin/node/nvlsa.js",
+    "nvmup": "./bin/node/nvmup.js",
     "nvu": "./bin/node/nvu.js",
     "osv": "./bin/misc/osv.js",
     "salfup": "./bin/misc/salfup.js",
