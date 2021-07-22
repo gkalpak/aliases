@@ -176,8 +176,8 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
     it('should not list hidden files', async () => {
       const result = await testScript(ROOT_DIR);
 
+      expect(result).not.toContain('.github');
       expect(result).not.toContain('.gitignore');
-      expect(result).not.toContain('.travis.yml');
     });
 
     it('should list the current directory\'s files by default', async () => {
@@ -214,8 +214,8 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
     it('should also list hidden files', async () => {
       const result = await testScript(ROOT_DIR);
 
+      expect(result).toContain('.github');
       expect(result).toContain('.gitignore');
-      expect(result).toContain('.travis.yml');
     });
 
     it('should list the current directory\'s files by default', async () => {

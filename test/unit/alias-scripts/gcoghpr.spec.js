@@ -699,7 +699,7 @@ describe('gcoghpr', () => {
         closeAll: `</${color}>`,
       }));
 
-      // In some environments (e.g. Windows on Travis), `chalk.level` is `0` (all colors disabled).
+      // In some environments (e.g. Windows on CI), `chalk.level` is `0` (all colors disabled).
       chalk.level = chalkLevel || basicColorLevel;
 
       logger = new _Logger();

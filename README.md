@@ -107,8 +107,8 @@ Things I want to (but won't necessarily) do:
     - Install packages (either via `niag` or by looking at the highest installed version).
 
 
-[build-status]: https://travis-ci.org/gkalpak/aliases
-[build-status-image]: https://travis-ci.org/gkalpak/aliases.svg?branch=master
+[build-status]: https://github.com/gkalpak/aliases/actions/workflows/ci.yml
+[build-status-image]: https://github.com/gkalpak/aliases/actions/workflows/ci.yml/badge.svg?branch=master&event=push
 [cli-utils]: https://www.npmjs.com/package/@gkalpak/cli-utils
 [docker]: https://www.docker.com/
 [git]: https://git-scm.com/

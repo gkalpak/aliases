@@ -1,0 +1,28 @@
+name: CI
+on:
+  - pull_request
+  - push
+jobs:
+  test:
+    name: Node ${{ matrix.node_version }} on ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        node_version:
+          - 12
+          - 14
+          - lts/*
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node_version }}
+          cache: npm
+      # Install `yarn` to be used in e2e tests.
+      - run: npm install --global yarn;
+      - run: npm ci;
+      - run: npm test;

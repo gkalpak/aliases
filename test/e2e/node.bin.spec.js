@@ -9,6 +9,7 @@ const {ROOT_DIR} = require('../test-utils');
 // Constants
 const SCRIPT_DIR = 'bin/node/';
 const NVM_EXISTS = !!which('nvm');
+const IS_WINDOWS = process.platform === 'win32';
 
 // Tests
 describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
@@ -50,7 +51,7 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
       const result2 = await testScript();
 
       expect(result2).toContain(result1);
-    });
+    }, IS_WINDOWS ? 180000 : undefined);  // `npm list` can be really slow on Windows (esp. CI).
   });
 
   describe('nlsg1', () => {
@@ -65,7 +66,7 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
       const result2 = await testScript();
 
       expect(result2).toContain(result1);
-    });
+    }, IS_WINDOWS ? 180000 : undefined);  // `npm list` can be really slow on Windows (esp. CI).
   });
 
   describe('nv', () => {
@@ -77,7 +78,7 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
     });
   });
 
-  // - `nvm` might not be available on some environments; e.g. Windows on Travis.
+  // - `nvm` might not be available on some environments; e.g. Windows on CI.
   // - `nvm` is being funny on non-Windows platforms, giving errors when run during tests
   //   (but not directly in the terminal).
   describe('nvls', onlyWithNvm(onlyOnWindows(() => {
@@ -89,7 +90,7 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
     });
   })));
 
-  // - `nvm` might not be available on some environments; e.g. Windows on Travis.
+  // - `nvm` might not be available on some environments; e.g. Windows on CI.
   // - `nvm` is being funny on non-Windows platforms, giving errors when run during tests
   //   (but not directly in the terminal).
   describe('nvlsa', onlyWithNvm(onlyOnWindows(() => {
@@ -140,7 +141,7 @@ function onlyIf(condition, testSuite) {
 }
 
 function onlyOnWindows(testSuite) {
-  return onlyIf(process.platform === 'win32', testSuite);
+  return onlyIf(IS_WINDOWS, testSuite);
 }
 
 function onlyWithNvm(testSuite) {
