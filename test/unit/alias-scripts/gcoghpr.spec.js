@@ -18,6 +18,7 @@ const {
 // Tests
 describe('gcoghpr', () => {
   describe('Gcoghpr()', () => {
+    const defaultBranch = 'default-branch';
     let mockHttps;
     let gcoghpr;
 
@@ -25,6 +26,9 @@ describe('gcoghpr', () => {
         (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0, currentBranch = 'master') => {
           const localBranch = `${PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
           const remoteUrl = `${PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
+          const gitGetDefaultBranchCmd =
+                '(git show-ref --heads --quiet master && echo master) || ' +
+                '(git show-ref --heads --quiet main && echo main) || echo unknown-branch';
           const reportSuccessCmd = !prCommits ?
             'withStyle(reset): ' +
               'node --print "\'\'" && ' +
@@ -41,7 +45,10 @@ describe('gcoghpr', () => {
             'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git\n`,
             [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
             'git rev-parse --abbrev-ref HEAD': currentBranch,
-            ...((currentBranch === localBranch) ? {'git checkout master': ''} : undefined),
+            ...((currentBranch !== localBranch) ? undefined : {
+              [gitGetDefaultBranchCmd]: defaultBranch,
+              [`git checkout ${defaultBranch}`]: '',
+            }),
             [`git remote remove ${remoteUrl} || true`]: '',
             [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
             [`git fetch --no-tags ${remoteUrl} ${prBranch}`]: '',
@@ -224,7 +231,7 @@ describe('gcoghpr', () => {
         ]);
       });
 
-      it('should not checkout master if not already on the target branch', async () => {
+      it('should not checkout the default branch if not already on the target branch', async () => {
         overwriteDefinitions(
             'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${PR_LOCAL_BRANCH_PREFIX}-pr1337-not`);
 
@@ -233,10 +240,10 @@ describe('gcoghpr', () => {
         const executedCommands = executor.getExecutedCommands();
 
         expect(executedCommands).toEqual(Object.keys(MockExecutor.definitions));
-        expect(executedCommands).not.toContain('git checkout master');
+        expect(executedCommands).not.toContain(`git checkout ${defaultBranch}`);
       });
 
-      it('should checkout master if already on the target branch', async () => {
+      it('should checkout the default branch if already on the target branch', async () => {
         overwriteDefinitions(
             'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${PR_LOCAL_BRANCH_PREFIX}-pr1337`);
 
@@ -245,7 +252,7 @@ describe('gcoghpr', () => {
         const executedCommands = executor.getExecutedCommands();
 
         expect(executedCommands).toEqual(Object.keys(MockExecutor.definitions));
-        expect(executedCommands).toContain('git checkout master');
+        expect(executedCommands).toContain(`git checkout ${defaultBranch}`);
       });
 
       it('should not log PR commits if not available', async () => {
