@@ -7,8 +7,8 @@
     "jasmine"
   ],
   "rules": {
-    "jasmine/new-line-before-expect": 0,
-    "jasmine/no-spec-dupes": [1, "branch"],
-    "jasmine/no-suite-dupes": [1, "branch"]
+    "jasmine/new-line-before-expect": "off",
+    "jasmine/no-spec-dupes": ["warn", "branch"],
+    "jasmine/no-suite-dupes": ["warn", "branch"]
   }
 }

@@ -13,8 +13,8 @@ describe('g-pick-commit', () => {
   describe('gPickCommit()', () => {
     beforeEach(() => {
       spyOn(console, 'log');
-      spyOn(inquirer, 'prompt').and.returnValue(Promise.resolve({commit: ''}));
-      spyOn(commandUtils, 'run').and.returnValue(Promise.resolve(''));
+      spyOn(inquirer, 'prompt').and.resolveTo({commit: ''});
+      spyOn(commandUtils, 'run').and.resolveTo('');
     });
 
     it('should be a function', () => {
@@ -51,17 +51,17 @@ describe('g-pick-commit', () => {
       });
 
       it('should return `git log ...` output even if `config.returnOutput` is false (but not affect `config`)',
-        async () => {
-          const config = {returnOutput: false};
-          await gPickCommit(config);
+          async () => {
+            const config = {returnOutput: false};
+            await gPickCommit(config);
 
-          expect(commandUtils.run).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true});
-          expect(config.returnOutput).toBe(false);
-        }
+            expect(commandUtils.run).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true});
+            expect(config.returnOutput).toBe(false);
+          }
       );
 
       it('should propagate errors', async () => {
-        commandUtils.run.and.returnValue(Promise.reject('test'));
+        commandUtils.run.and.rejectWith('test');
         const err = await reversePromise(gPickCommit({}));
 
         expect(err).toBe('test');
@@ -212,8 +212,8 @@ describe('g-pick-commit', () => {
       describe('output', () => {
         it('should log the selected commit SHA (removing other info)', async () => {
           inquirer.prompt.and.returnValues(
-            Promise.resolve({commit: 'f00ba2 (foo, origin/baz) This is the foo commit message'}),
-            Promise.resolve({commit: 'b4r9ux (bar, origin/qux) This is the bar commit message'}));
+              Promise.resolve({commit: 'f00ba2 (foo, origin/baz) This is the foo commit message'}),
+              Promise.resolve({commit: 'b4r9ux (bar, origin/qux) This is the bar commit message'}));
 
           expect(await gPickCommit({})).toBeUndefined();
           expect(console.log).toHaveBeenCalledWith('f00ba2');
@@ -224,7 +224,7 @@ describe('g-pick-commit', () => {
 
         it('should return the selected commit SHA (removing other info) if `returnOutput` is `true`', async () => {
           const commit = 'f00ba2 (foo, origin/baz) This is the commit message';
-          inquirer.prompt.and.returnValue(Promise.resolve({commit}));
+          inquirer.prompt.and.resolveTo({commit});
 
           expect(await gPickCommit({returnOutput: true})).toBe('f00ba2');
           expect(console.log).not.toHaveBeenCalled();

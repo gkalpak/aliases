@@ -112,19 +112,19 @@ describe('a-builds-dir', () => {
           const err = await reversePromise(aBuildsDir({}));
 
           expect(err.message).toBe(
-            'Unable to locate the \'.../aio/aio-setup-builds/\' directory.\n' +
-            'Make sure you are in a directory between \'angular/\' and ' +
-            '\'angular/aio/aio-builds-setup/dockerbuild/scripts-js/\'.');
+              'Unable to locate the \'.../aio/aio-setup-builds/\' directory.\n' +
+              'Make sure you are in a directory between \'angular/\' and ' +
+              '\'angular/aio/aio-builds-setup/dockerbuild/scripts-js/\'.');
         });
 
         it('should verify that the directory matches `.../aio/aio-builds-setup/`', async () => {
           path.resolve.and.returnValues(
-            '/ng/aio/foo',
-            '/ng/notaio/aio-builds-setup',
-            '/ng/1/aio/aio-builds-setup',
-            '/ng/aio/aio-builds-setup/bar',
-            '/ng/aio/aio-builds-setupnot',
-            '/ng/2/aio/aio-builds-setup');
+              '/ng/aio/foo',
+              '/ng/notaio/aio-builds-setup',
+              '/ng/1/aio/aio-builds-setup',
+              '/ng/aio/aio-builds-setup/bar',
+              '/ng/aio/aio-builds-setupnot',
+              '/ng/2/aio/aio-builds-setup');
 
           await aBuildsDir({});
           expect(console.log).toHaveBeenCalledWith('/ng/1/aio/aio-builds-setup');

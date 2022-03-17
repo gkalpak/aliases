@@ -69,7 +69,7 @@ describe('utils', () => {
 
       it('should ignore the resolved value of callback (if it returns a promise)', async () => {
         const promise = Promise.resolve('foo');
-        callback.and.returnValue(Promise.resolve('bar'));
+        callback.and.resolveTo('bar');
 
         const val = await finallyAsPromised(promise, callback);
 
@@ -126,7 +126,7 @@ describe('utils', () => {
 
       it('should ignore the resolved value of callback (if it returns a promise)', async () => {
         const promise = Promise.reject('foo');
-        callback.and.returnValue(Promise.resolve('bar'));
+        callback.and.resolveTo('bar');
 
         const err = await reversePromise(finallyAsPromised(promise, callback));
 
@@ -312,8 +312,8 @@ describe('utils', () => {
 
       relativePaths.forEach(p => {
         const errorMessage =
-          `Unable to resolve '${p}'. Relative paths are not supported.\n` +
-          `(To load relative files use \`requireWithEnv(require.resolve('${p}'), ...)\`.)`;
+            `Unable to resolve '${p}'. Relative paths are not supported.\n` +
+            `(To load relative files use \`requireWithEnv(require.resolve('${p}'), ...)\`.)`;
         expect(() => requireWithEnv(p, {}, {})).toThrowError(errorMessage);
       });
 
@@ -349,19 +349,19 @@ describe('utils', () => {
 
     it('should ignore (but preserve) whitespace-only lines', () => {
       const input =
-        '        \n' +
-        '    Hello\n' +
-        '        \n' +
-        '      world\n' +
-        '  \n' +
-        '    !\n' +
-        '        ';
+          '        \n' +
+          '    Hello\n' +
+          '        \n' +
+          '      world\n' +
+          '  \n' +
+          '    !\n' +
+          '        ';
       expect(stripIndentation(input)).toBe(
-        'Hello\n' +
-        '    \n' +
-        '  world\n' +
-        '\n' +
-        '!');
+          'Hello\n' +
+          '    \n' +
+          '  world\n' +
+          '\n' +
+          '!');
     });
   });
 

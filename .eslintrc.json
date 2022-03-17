@@ -8,12 +8,26 @@
     "ecmaVersion": 2018
   },
   "rules": {
-    "indent": [2, 2, {"SwitchCase": 1}],
-    "linebreak-style": [2, "unix"],
-    "max-len": [2, 120],
-    "no-console": 0,
-    "no-prototype-builtins": 0,
-    "quotes": [2, "single"],
-    "semi": [2, "always"]
+    "arrow-parens": ["error", "as-needed"],
+    "dot-location": ["warn", "object"],
+    "indent": [
+      "error",
+      2,
+      {
+        "CallExpression": {"arguments": 2},
+        "FunctionDeclaration": {"parameters": 2},
+        "FunctionExpression": {"parameters": 2},
+        "SwitchCase": 1
+      }
+    ],
+    "linebreak-style": ["error", "unix"],
+    "max-classes-per-file": ["error", 2],
+    "max-len": ["error", 120],
+    "no-console": "off",
+    "no-multiple-empty-lines": ["error", {"max": 2, "maxBOF": 0, "maxEOF": 0}],
+    "no-prototype-builtins": "off",
+    "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"]
   }
 }

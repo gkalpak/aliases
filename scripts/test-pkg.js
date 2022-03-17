@@ -46,9 +46,9 @@ function checkFile(propName, filePath, rootDir) {
   const missingFile = !existsSync(resolve(rootDir, filePath));
 
   reportResults(
-    `The file mentioned in \`package.json > ${propName}\` exists.`,
-    `The file mentioned in \`package.json > ${propName}\` is missing.`,
-    {'Missing script': missingFile ? [filePath] : []});
+      `The file mentioned in \`package.json > ${propName}\` exists.`,
+      `The file mentioned in \`package.json > ${propName}\` is missing.`,
+      {'Missing script': missingFile ? [filePath] : []});
 }
 
 function compareToAliases(bin, aliases) {
@@ -58,12 +58,12 @@ function compareToAliases(bin, aliases) {
   const {missing, extra} = diff(expected, actual);
 
   reportResults(
-    'Aliases in `lib/constants.js` are in-sync with `package.json > bin`.',
-    'Aliases in `lib/constants.js` are not in-sync with `package.json > bin`.',
-    {
-      'Missing from `package.json > bin`': missing,
-      'Missing from `lib/constants.js`': extra,
-    });
+      'Aliases in `lib/constants.js` are in-sync with `package.json > bin`.',
+      'Aliases in `lib/constants.js` are not in-sync with `package.json > bin`.',
+      {
+        'Missing from `package.json > bin`': missing,
+        'Missing from `lib/constants.js`': extra,
+      });
 }
 
 function compareToBinDir(bin, rootDir) {
@@ -72,9 +72,9 @@ function compareToBinDir(bin, rootDir) {
     filter(path => !existsSync(path));
 
   reportResults(
-    'All scripts mentioned in `package.json > bin` exist.',
-    'Some scripts mentioned in `package.json > bin` are missing.',
-    {'Missing scripts': missingScripts});
+      'All scripts mentioned in `package.json > bin` exist.',
+      'Some scripts mentioned in `package.json > bin` are missing.',
+      {'Missing scripts': missingScripts});
 }
 
 function diff(arr1, arr2) {

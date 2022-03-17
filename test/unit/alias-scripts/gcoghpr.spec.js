@@ -22,45 +22,45 @@ describe('gcoghpr', () => {
     let gcoghpr;
 
     const addDefinitions =
-      (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0, currentBranch = 'master') => {
-        const localBranch = `${PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
-        const remoteUrl = `${PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
-        const reportSuccessCmd = !prCommits ?
-          'withStyle(reset): ' +
-            'node --print "\'\'" && ' +
-            `node --print "'Fetched PR into local branch \\'${localBranch}\\'.'"` :
-          'withStyle(reset): ' +
-            'node --print "\'\'" && ' +
-            `node --print "'Fetched PR into local branch \\'${localBranch}\\' ` +
-              `(and also branch range \\'${_PR_LOCAL_BRANCH_BASE}..${_PR_LOCAL_BRANCH_TOP}\\').'" && ` +
-            'node --print "\'\'" && ' +
-            `node --print "'PR commits (${prCommits})\\n---'" && ` +
-            `git log --decorate --oneline -${prCommits + 1} || true`;
+        (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0, currentBranch = 'master') => {
+          const localBranch = `${PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
+          const remoteUrl = `${PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
+          const reportSuccessCmd = !prCommits ?
+            'withStyle(reset): ' +
+              'node --print "\'\'" && ' +
+              `node --print "'Fetched PR into local branch \\'${localBranch}\\'.'"` :
+            'withStyle(reset): ' +
+              'node --print "\'\'" && ' +
+              `node --print "'Fetched PR into local branch \\'${localBranch}\\' ` +
+                `(and also branch range \\'${_PR_LOCAL_BRANCH_BASE}..${_PR_LOCAL_BRANCH_TOP}\\').'" && ` +
+              'node --print "\'\'" && ' +
+              `node --print "'PR commits (${prCommits})\\n---'" && ` +
+              `git log --decorate --oneline -${prCommits + 1} || true`;
 
-        Object.assign(MockExecutor.definitions, {
-          'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git\n`,
-          [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
-          'git rev-parse --abbrev-ref HEAD': currentBranch,
-          ...((currentBranch === localBranch) ? {'git checkout master': ''} : undefined),
-          [`git remote remove ${remoteUrl} || true`]: '',
-          [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
-          [`git fetch --no-tags ${remoteUrl} ${prBranch}`]: '',
-          [`git branch --force --track ${localBranch} ${remoteUrl}/${prBranch}`]: '',
-          [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${localBranch}`]: '',
-          [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${localBranch}~${prCommits}`]: '',
-          [`git checkout ${localBranch}`]: '',
-          [reportSuccessCmd]: '',
-        });
+          Object.assign(MockExecutor.definitions, {
+            'git remote get-url upstream || git remote get-url origin': `https://github.com/${upUser}/${upRepo}.git\n`,
+            [`git show-ref --heads --quiet ${localBranch}`]: 'error:',
+            'git rev-parse --abbrev-ref HEAD': currentBranch,
+            ...((currentBranch === localBranch) ? {'git checkout master': ''} : undefined),
+            [`git remote remove ${remoteUrl} || true`]: '',
+            [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
+            [`git fetch --no-tags ${remoteUrl} ${prBranch}`]: '',
+            [`git branch --force --track ${localBranch} ${remoteUrl}/${prBranch}`]: '',
+            [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${localBranch}`]: '',
+            [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${localBranch}~${prCommits}`]: '',
+            [`git checkout ${localBranch}`]: '',
+            [reportSuccessCmd]: '',
+          });
 
-        if (prNumber) {
-          mockHttps.
-            whenGet(`https://api.github.com/repos/${upUser}/${upRepo}/pulls/${prNumber}`).
-            response(200, JSON.stringify({
-              commits: prCommits,
-              head: {label: `${prAuthor}:${prBranch}`},
-            }));
-        }
-      };
+          if (prNumber) {
+            mockHttps.
+              whenGet(`https://api.github.com/repos/${upUser}/${upRepo}/pulls/${prNumber}`).
+              response(200, JSON.stringify({
+                commits: prCommits,
+                head: {label: `${prAuthor}:${prBranch}`},
+              }));
+          }
+        };
     const overwriteDefinitions = (...args) => {
       MockExecutor.definitions = {};
       mockHttps.reset();
@@ -107,7 +107,7 @@ describe('gcoghpr', () => {
       it('should correctly handle upstream repository URLs without a trailing `.git`', async () => {
         overwriteDefinitions('gkalpak', 'aliases.js', 'some-author', 'some-branch', 42, 1337);
         MockExecutor.definitions['git remote get-url upstream || git remote get-url origin'] =
-          'https://github.com/gkalpak/aliases.js\n';
+            'https://github.com/gkalpak/aliases.js\n';
 
         await gcoghpr.run(['1337']);
         const executor = MockExecutor.instances[0];
@@ -226,7 +226,7 @@ describe('gcoghpr', () => {
 
       it('should not checkout master if not already on the target branch', async () => {
         overwriteDefinitions(
-          'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${PR_LOCAL_BRANCH_PREFIX}-pr1337-not`);
+            'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${PR_LOCAL_BRANCH_PREFIX}-pr1337-not`);
 
         await gcoghpr.run(['1337']);
         const executor = MockExecutor.instances[0];
@@ -238,7 +238,7 @@ describe('gcoghpr', () => {
 
       it('should checkout master if already on the target branch', async () => {
         overwriteDefinitions(
-          'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${PR_LOCAL_BRANCH_PREFIX}-pr1337`);
+            'gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337, `${PR_LOCAL_BRANCH_PREFIX}-pr1337`);
 
         await gcoghpr.run(['1337']);
         const executor = MockExecutor.instances[0];
@@ -410,7 +410,7 @@ describe('gcoghpr', () => {
 
       beforeEach(() => {
         executor = new _Executor(mockLogger);
-        execSpy = spyOn(executor, 'exec').and.returnValue(Promise.resolve('ok'));
+        execSpy = spyOn(executor, 'exec').and.resolveTo('ok');
       });
 
       it('should delegate to `exec()` (with `returnOutput: true`)', async () => {
@@ -418,7 +418,7 @@ describe('gcoghpr', () => {
         expect(execSpy).toHaveBeenCalledWith(jasmine.any(String), {bar: 'baz', returnOutput: true});
 
         execSpy.calls.reset();
-        execSpy.and.returnValue(Promise.reject('Test error'));
+        execSpy.and.rejectWith('Test error');
 
         await expectAsync(executor.execForOutput('foo2', {bar2: 'baz2'})).toBeRejectedWith('Test error');
         expect(execSpy).toHaveBeenCalledWith(jasmine.any(String), {bar2: 'baz2', returnOutput: true});
@@ -443,7 +443,7 @@ describe('gcoghpr', () => {
       });
 
       it('should trim the output', async () => {
-        execSpy.and.returnValue(Promise.resolve('  \n  \t  trimmed  \t  \n  '));
+        execSpy.and.resolveTo('  \n  \t  trimmed  \t  \n  ');
         await expectAsync(executor.execForOutput('foo')).toBeResolvedTo('trimmed');
       });
     });
@@ -455,7 +455,7 @@ describe('gcoghpr', () => {
 
       beforeEach(() => {
         executor = new _Executor(mockLogger);
-        execSpy = spyOn(executor, 'exec').and.returnValue(Promise.resolve('ok'));
+        execSpy = spyOn(executor, 'exec').and.resolveTo('ok');
         stdoutWriteSpy = spyOn(process.stdout, 'write');
       });
 
@@ -510,7 +510,7 @@ describe('gcoghpr', () => {
 
       beforeEach(() => {
         process.env[_GH_TOKEN_NAME] = 'TEST_TOKEN';
-        _httpsGetSpy = spyOn(ghUtils, '_httpsGet').and.returnValue(Promise.resolve('{"foo":"bar"}'));
+        _httpsGetSpy = spyOn(ghUtils, '_httpsGet').and.resolveTo('{"foo":"bar"}');
       });
 
       afterEach(() => process.env[_GH_TOKEN_NAME] = originalAccessToken);
@@ -541,7 +541,7 @@ describe('gcoghpr', () => {
       });
 
       it('should reject if the response is not valid JSON', async () => {
-        _httpsGetSpy.and.returnValue(Promise.resolve('{foo: \'bar\'}'));
+        _httpsGetSpy.and.resolveTo('{foo: \'bar\'}');
         const err = await reversePromise(ghUtils.get('baz/qux'));
 
         expect(err).toEqual(jasmine.any(SyntaxError));

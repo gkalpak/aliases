@@ -89,7 +89,7 @@ describe('nvu', () => {
       });
 
       it('should propagate errors', async () => {
-        commandUtils.run.and.returnValue(Promise.reject('test'));
+        commandUtils.run.and.rejectWith('test');
         const err = await reversePromise(nvu(['333'], {}));
 
         expect(err).toBe('test');

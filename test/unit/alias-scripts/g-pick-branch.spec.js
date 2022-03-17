@@ -13,8 +13,8 @@ describe('g-pick-branch', () => {
   describe('gPickBranch()', () => {
     beforeEach(() => {
       spyOn(console, 'log');
-      spyOn(inquirer, 'prompt').and.returnValue(Promise.resolve({branch: ''}));
-      spyOn(commandUtils, 'run').and.returnValue(Promise.resolve(''));
+      spyOn(inquirer, 'prompt').and.resolveTo({branch: ''});
+      spyOn(commandUtils, 'run').and.resolveTo('');
     });
 
     it('should be a function', () => {
@@ -51,17 +51,17 @@ describe('g-pick-branch', () => {
       });
 
       it('should return `git branch` output even if `config.returnOutput` is false (but not affect `config`)',
-        async () => {
-          const config = {returnOutput: false};
-          await gPickBranch(config);
+          async () => {
+            const config = {returnOutput: false};
+            await gPickBranch(config);
 
-          expect(commandUtils.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
-          expect(config.returnOutput).toBe(false);
-        }
+            expect(commandUtils.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
+            expect(config.returnOutput).toBe(false);
+          }
       );
 
       it('should propagate errors', async () => {
-        commandUtils.run.and.returnValue(Promise.reject('test'));
+        commandUtils.run.and.rejectWith('test');
         const err = await reversePromise(gPickBranch({}));
 
         expect(err).toBe('test');
@@ -262,7 +262,7 @@ describe('g-pick-branch', () => {
         });
 
         it('should return the selected branch if `returnOutput` is `true`', async () => {
-          inquirer.prompt.and.returnValue(Promise.resolve({branch: 'foo'}));
+          inquirer.prompt.and.resolveTo({branch: 'foo'});
 
           expect(await gPickBranch({returnOutput: true})).toBe('foo');
           expect(console.log).not.toHaveBeenCalled();

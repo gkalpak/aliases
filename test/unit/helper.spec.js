@@ -86,8 +86,8 @@ describe('helper', () => {
 
       it('should mention ignoring `--gkcu-` arguments', async () => {
         const expectedNote = utils.wrapLine(
-          '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
-          'determining their index.)');
+            '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
+            'determining their index.)');
         const msg = await getHelpMessage();
 
         expect(msg).toContain(expectedNote);
@@ -95,7 +95,7 @@ describe('helper', () => {
     });
 
     describe('(for specific category)', () => {
-      const chainCategoryTestFactory = (runAssertions) => async (prev, cat) => {
+      const chainCategoryTestFactory = runAssertions => async (prev, cat) => {
         await prev;
         const msg = await getHelpMessage(cat.name);
         runAssertions(msg, cat);
@@ -153,8 +153,8 @@ describe('helper', () => {
 
       it('should mention ignoring `--gkcu-` arguments', async () => {
         const expectedNote = utils.wrapLine(
-          '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
-          'determining their index.)');
+            '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
+            'determining their index.)');
 
         const runAssertions = msg => expect(msg).toContain(expectedNote);
         const chainCategoryTest = chainCategoryTestFactory(runAssertions);
