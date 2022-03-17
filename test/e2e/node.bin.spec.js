@@ -137,7 +137,10 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
 
 // Helpers
 function onlyIf(condition, testSuite) {
-  return condition ? testSuite : () => undefined;
+  return condition ?
+    testSuite :
+    // Return a dummy test suite to avoid Jasmine's "describe with no children" error.
+    () => it('is skipped', () => expect(true).toBeTrue());
 }
 
 function onlyOnWindows(testSuite) {
