@@ -79,6 +79,7 @@
     "gd": "./bin/git/gd.js",
     "gd1": "./bin/git/gd1.js",
     "gdn": "./bin/git/gdn.js",
+    "gdefb": "./bin/git/gdefb.js",
     "gdn1": "./bin/git/gdn1.js",
     "gdnh": "./bin/git/gdnh.js",
     "gdh": "./bin/git/gdh.js",
