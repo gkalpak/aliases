@@ -4,12 +4,13 @@
 const {testingUtils} = require('@gkalpak/cli-utils');
 const {join} = require('path');
 const {which} = require('shelljs');
+const {getPlatform} = require('../../lib/utils');
 const {ROOT_DIR} = require('../test-utils');
 
 // Constants
 const SCRIPT_DIR = 'bin/node/';
 const NVM_EXISTS = !!which('nvm');
-const IS_WINDOWS = process.platform === 'win32';
+const IS_WINDOWS = getPlatform() === 'win32';
 
 // Tests
 describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
