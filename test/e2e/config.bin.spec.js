@@ -4,10 +4,12 @@
 const {testingUtils} = require('@gkalpak/cli-utils');
 const {readFileSync} = require('fs');
 const {join} = require('path');
+const {getPlatform} = require('../../lib/utils');
 const {ROOT_DIR} = require('../test-utils');
 
 // Constants
 const SCRIPT_DIR = 'bin/config/';
+const IS_WSL = getPlatform() === 'wsl';
 
 // Tests
 describe(SCRIPT_DIR, () => {
@@ -20,7 +22,7 @@ describe(SCRIPT_DIR, () => {
       const result = await testScript();
 
       expect(result).toMatch(new RegExp(`^### ${generatedByReSrc}\\n### Copy the following into '~/\\.bashrc':`));
-      expect(result).toMatch(/bind "TAB:menu-complete";$/);
+      expect(result).toMatch(IS_WSL ? /export GPG_TTY="\$\(tty\)";$/ : /bind "TAB:menu-complete";$/);
     });
   });
 
@@ -31,7 +33,7 @@ describe(SCRIPT_DIR, () => {
       const result = await testScript();
 
       expect(result).toMatch(new RegExp(`^### ${generatedByReSrc}\\n### Run the following commands:`));
-      expect(result).toMatch(/git config --global user\.name "George Kalpakas"$/);
+      expect(result).toMatch(/git config --global user\.signingKey "[0-9A-F]{16}"$/);
     });
   });
 
