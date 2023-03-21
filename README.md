@@ -54,7 +54,7 @@ inspecting the associated command (e.g. via `halp`).
 
 Here is the list of all global dependencies with associated min. version (older versions are not guaranteed work):
 
-- `git`: [git] >=2.35
+- `git`: [git] >=2.40
 - `docker`: [docker] >= 17
 - `grep`: [grep] >=3 (could come through a bash emulation environment on Windows, such as [git for
     Windows][git-win]' `Git BASH`)
