@@ -12,8 +12,8 @@ jobs:
           - macos-latest
           - windows-latest
         node_version:
-          - 12
-          - 14
+          - 16
+          - 18
           - lts/*
     runs-on: ${{ matrix.os }}
     steps:

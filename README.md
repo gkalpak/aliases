@@ -64,7 +64,7 @@ Here is the list of all global dependencies with associated min. version (older 
     Windows][git-win]' `Git BASH`)
 - `ngm-diff-wh`: `ngm-diff-wh` >=0.0.4 (part of the [ng-maintain] suite)
 - `ngm-pr-merge`: `ngm-pr-merge` >=0.0.4 (part of the [ng-maintain] suite)
-- `node`: [Node.js][node] >=10
+- `node`: [Node.js][node] >=16
 - `npm`: [npm] >=3 (comes bundled with Node.js)
 - `nvm`: [nvm] >=0.30 (on *nix) / [nvm-windows][nvm-win] >=1 (on Windows)
 - `yarn`: [yarn] >=0.24
@@ -100,11 +100,11 @@ Things I want to (but won't necessarily) do:
 - Add aliases for:
   - Updating to the latest Node.js version on a branch. E.g. `nvup 6` would:
     - Install the latest 6.x version.
-    - Install packages (either via `niag` or by looking at the previously installed 6.x version).
+    - Install packages (either via `naga` or by looking at the previously installed 6.x version).
     - Uninstall older 6.x versions.
   - Installing the latest Node.js version on a branch. E.g. `nvi 8` would:
     - Install the latest 8.x version.
-    - Install packages (either via `niag` or by looking at the highest installed version).
+    - Install packages (either via `naga` or by looking at the highest installed version).
 
 
 [build-status]: https://github.com/gkalpak/aliases/actions/workflows/ci.yml
