@@ -1,24 +1,33 @@
-'use strict';
-
 // Imports
-const {commandUtils, processUtils} = require('@gkalpak/cli-utils');
-const inquirer = require('inquirer');
-const gPickBranchExps = require('../../../lib/alias-scripts/g-pick-branch');
-const {reversePromise} = require('../../test-utils');
+import {commandUtils, processUtils} from '@gkalpak/cli-utils';
+import inquirer from 'inquirer';
 
-const {gPickBranch, main} = gPickBranchExps;
+import {_testing, gPickBranch, main} from '../../../lib/alias-scripts/g-pick-branch.js';
+
 
 // Tests
 describe('g-pick-branch', () => {
   describe('gPickBranch()', () => {
+    let cmdUtilsRunSpy;
+    let consoleLogSpy;
+    let promptSpy;
+
     beforeEach(() => {
-      spyOn(console, 'log');
-      spyOn(inquirer, 'prompt').and.resolveTo({branch: ''});
-      spyOn(commandUtils, 'run').and.resolveTo('');
+      cmdUtilsRunSpy = spyOn(commandUtils, 'run').and.resolveTo('');
+      consoleLogSpy = spyOn(console, 'log');
+      promptSpy = spyOn(inquirer, 'prompt').and.resolveTo({branch: ''});
     });
 
     it('should be a function', () => {
       expect(gPickBranch).toEqual(jasmine.any(Function));
+    });
+
+    it('should delegate to its internal counterpart', async () => {
+      const mockConfig = {foo: 'bar'};
+      const internalSpy = spyOn(_testing, '_gPickBranch').and.resolveTo('foo');
+
+      expect(await gPickBranch(mockConfig)).toBe('foo');
+      expect(internalSpy).toHaveBeenCalledWith(mockConfig);
     });
 
     describe('(dryrun)', () => {
@@ -33,7 +42,7 @@ describe('g-pick-branch', () => {
         const cmdDesc = 'Pick one from a list of branches.';
         await gPickBranch({dryrun: true});
 
-        expect(console.log).toHaveBeenCalledWith(cmdDesc);
+        expect(consoleLogSpy).toHaveBeenCalledWith(cmdDesc);
       });
     });
 
@@ -47,7 +56,7 @@ describe('g-pick-branch', () => {
 
       it('should run `git branch` (and return the output)', async () => {
         await gPickBranch({});
-        expect(commandUtils.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
+        expect(cmdUtilsRunSpy).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
       });
 
       it('should return `git branch` output even if `config.returnOutput` is false (but not affect `config`)',
@@ -55,31 +64,31 @@ describe('g-pick-branch', () => {
             const config = {returnOutput: false};
             await gPickBranch(config);
 
-            expect(commandUtils.run).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
+            expect(cmdUtilsRunSpy).toHaveBeenCalledWith('git branch', [], {returnOutput: true});
             expect(config.returnOutput).toBe(false);
           }
       );
 
       it('should propagate errors', async () => {
-        commandUtils.run.and.rejectWith('test');
-        const err = await reversePromise(gPickBranch({}));
-
-        expect(err).toBe('test');
+        cmdUtilsRunSpy.and.rejectWith('test');
+        await expectAsync(gPickBranch({})).toBeRejectedWith('test');
       });
 
       describe('picking a branch', () => {
         let branches;
+        let procUtilsDoOnExitSpy;
+
         const choice = (value, name = value) => ({name, value, short: value});
         const verifyPromptedWith = (prop, value) => {
           if (prop === 'choices') value.push(new inquirer.Separator());
-          expect(inquirer.prompt).toHaveBeenCalledWith([jasmine.objectContaining({[prop]: value})]);
+          expect(promptSpy).toHaveBeenCalledWith([jasmine.objectContaining({[prop]: value})]);
         };
 
         beforeEach(() => {
           branches = [];
-          commandUtils.run.and.callFake(() => Promise.resolve(branches.join('\n')));
+          cmdUtilsRunSpy.and.callFake(() => Promise.resolve(branches.join('\n')));
 
-          spyOn(processUtils, 'doOnExit').and.callThrough();
+          procUtilsDoOnExitSpy = spyOn(processUtils, 'doOnExit').and.callThrough();
         });
 
         it('should prompt the user to pick a branch', async () => {
@@ -197,75 +206,75 @@ describe('g-pick-branch', () => {
         it('should register a callback to exit with an error if exited while the prompt is shown', async () => {
           let callback;
 
-          inquirer.prompt.and.callFake(() => {
-            expect(processUtils.doOnExit).toHaveBeenCalledWith(process, jasmine.any(Function));
-            callback = processUtils.doOnExit.calls.mostRecent().args[1];
+          promptSpy.and.callFake(() => {
+            expect(procUtilsDoOnExitSpy).toHaveBeenCalledWith(process, jasmine.any(Function));
+            callback = procUtilsDoOnExitSpy.calls.mostRecent().args[1];
             return Promise.resolve({branch: ''});
           });
 
           await gPickBranch({});
 
-          spyOn(process, 'exit');
+          const processExitSpy = spyOn(process, 'exit');
 
           callback(undefined);
           callback(false);
           callback(1);
           callback(42);
-          expect(process.exit).not.toHaveBeenCalled();
+          expect(processExitSpy).not.toHaveBeenCalled();
 
           callback(0);
-          expect(process.exit).toHaveBeenCalledWith(1);
+          expect(processExitSpy).toHaveBeenCalledWith(1);
         });
 
         it('should unregister the `onExit` callback once prompting completes successfully', async () => {
           const unlistenSpy = jasmine.createSpy('unlisten');
 
-          processUtils.doOnExit.and.returnValue(unlistenSpy);
-          inquirer.prompt.and.callFake(() => {
-            expect(processUtils.doOnExit).toHaveBeenCalledTimes(1);
+          procUtilsDoOnExitSpy.and.returnValue(unlistenSpy);
+          promptSpy.and.callFake(() => {
+            expect(procUtilsDoOnExitSpy).toHaveBeenCalledTimes(1);
             expect(unlistenSpy).not.toHaveBeenCalled();
             return Promise.resolve({branch: ''});
           });
 
           await gPickBranch({});
 
-          expect(inquirer.prompt).toHaveBeenCalledTimes(1);
+          expect(promptSpy).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });
 
         it('should unregister the `onExit` callback once prompting completes with error', async () => {
           const unlistenSpy = jasmine.createSpy('unlisten');
 
-          processUtils.doOnExit.and.returnValue(unlistenSpy);
-          inquirer.prompt.and.callFake(() => {
-            expect(processUtils.doOnExit).toHaveBeenCalledTimes(1);
+          procUtilsDoOnExitSpy.and.returnValue(unlistenSpy);
+          promptSpy.and.callFake(() => {
+            expect(procUtilsDoOnExitSpy).toHaveBeenCalledTimes(1);
             expect(unlistenSpy).not.toHaveBeenCalled();
             return Promise.reject('');
           });
 
-          await reversePromise(gPickBranch({}));
+          await expectAsync(gPickBranch({})).toBeRejected();
 
-          expect(inquirer.prompt).toHaveBeenCalledTimes(1);
+          expect(promptSpy).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });
       });
 
       describe('output', () => {
         it('should log the selected branch', async () => {
-          inquirer.prompt.and.returnValues(Promise.resolve({branch: 'foo'}), Promise.resolve({branch: 'bar'}));
+          promptSpy.and.returnValues(Promise.resolve({branch: 'foo'}), Promise.resolve({branch: 'bar'}));
 
           expect(await gPickBranch({})).toBeUndefined();
-          expect(console.log).toHaveBeenCalledWith('foo');
+          expect(consoleLogSpy).toHaveBeenCalledWith('foo');
 
           expect(await gPickBranch({returnOutput: false})).toBeUndefined();
-          expect(console.log).toHaveBeenCalledWith('bar');
+          expect(consoleLogSpy).toHaveBeenCalledWith('bar');
         });
 
         it('should return the selected branch if `returnOutput` is `true`', async () => {
-          inquirer.prompt.and.resolveTo({branch: 'foo'});
+          promptSpy.and.resolveTo({branch: 'foo'});
 
           expect(await gPickBranch({returnOutput: true})).toBe('foo');
-          expect(console.log).not.toHaveBeenCalled();
+          expect(consoleLogSpy).not.toHaveBeenCalled();
         });
       });
     });
@@ -274,7 +283,7 @@ describe('g-pick-branch', () => {
   describe('main()', () => {
     let gPickBranchSpy;
 
-    beforeEach(() => gPickBranchSpy = spyOn(gPickBranchExps, 'gPickBranch'));
+    beforeEach(() => gPickBranchSpy = spyOn(_testing, '_gPickBranch'));
 
     it('should be a function', () => {
       expect(main).toEqual(jasmine.any(Function));

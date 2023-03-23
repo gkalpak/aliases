@@ -1,21 +1,23 @@
 #!/usr/bin/env node
-'use strict';
-
 // Imports
-const {green, red} = require('chalk');
-const {existsSync} = require('fs');
-const {resolve} = require('path');
-const {ALIASES, ROOT_DIR} = require('../lib/constants');
-const {bin, main, types, typings} = require('../package.json');
+import {existsSync} from 'node:fs';
+import {resolve as pathResolve} from 'node:path';
+
+import chalk from 'chalk';
+
+import {ALIASES, ROOT_DIR} from '../lib/constants.js';
+import {loadPackageJson} from '../test/test-utils.js';
+
 
 // Constants
-const CHECK_MARK = green('\u2714');
-const X_MARK = red('\u2716');
+const CHECK_MARK = chalk.green('\u2714');
+const X_MARK = chalk.red('\u2716');
+const {bin, main, types, typings} = loadPackageJson();
 
 // Run
 _main();
 
-// Function - Definitions
+// Helpers
 function _main() {
   checkBin(bin || {}, ROOT_DIR, ALIASES);
   checkFile('main', main || '', ROOT_DIR);
@@ -43,7 +45,7 @@ function checkBin(bin, rootDir, aliases) {
 function checkFile(propName, filePath, rootDir) {
   if (!filePath) return;
 
-  const missingFile = !existsSync(resolve(rootDir, filePath));
+  const missingFile = !existsSync(pathResolve(rootDir, filePath));
 
   reportResults(
       `The file mentioned in \`package.json > ${propName}\` exists.`,
@@ -68,7 +70,7 @@ function compareToAliases(bin, aliases) {
 
 function compareToBinDir(bin, rootDir) {
   const missingScripts = Object.keys(bin).
-    map(key => resolve(rootDir, bin[key])).
+    map(key => pathResolve(rootDir, bin[key])).
     filter(path => !existsSync(path));
 
   reportResults(

@@ -1,15 +1,16 @@
-'use strict';
-
 // Imports
-const {testingUtils} = require('@gkalpak/cli-utils');
-const {join} = require('path');
-const {which} = require('shelljs');
-const {getPlatform} = require('../../lib/utils');
-const {ROOT_DIR} = require('../test-utils');
+import {join} from 'node:path';
+
+import {testingUtils} from '@gkalpak/cli-utils';
+import sh from 'shelljs';
+
+import {getPlatform} from '../../lib/utils.js';
+import {ROOT_DIR} from '../test-utils.js';
+
 
 // Constants
 const SCRIPT_DIR = 'bin/node/';
-const NVM_EXISTS = !!which('nvm');
+const NVM_EXISTS = !!sh.which('nvm');
 const IS_WINDOWS = getPlatform() === 'win32';
 
 // Tests

@@ -1,19 +1,12 @@
-'use strict';
-
 // Imports
-const {commandUtils} = require('@gkalpak/cli-utils');
-const chalk = require('chalk');
-const rl = require('readline');
-const stripAnsi = require('strip-ansi');
-const gcoghprExps = require('../../../lib/alias-scripts/gcoghpr');
-const {version} = require('../../../package.json');
-const {reversePromise} = require('../../test-utils');
-const {MockExecutor, MockHttps, MockLazyLoader, MockLogger} = require('./gcoghpr.mocks');
+import {commandUtils} from '@gkalpak/cli-utils';
+import chalk from 'chalk';
+import stripAnsi from 'strip-ansi';
 
-const {
-  Gcoghpr, main, _Executor, _GitHubUtils, _LazyLoader, _Logger, PR_LOCAL_BRANCH_PREFIX, PR_REMOTE_ALIAS_PREFIX,
-  _GH_TOKEN_NAME, _PR_LOCAL_BRANCH_BASE, _PR_LOCAL_BRANCH_TOP,
-} = gcoghprExps;
+import {_testing, Gcoghpr, main} from '../../../lib/alias-scripts/gcoghpr.js';
+import {PR_LOCAL_BRANCH_PREFIX, PR_REMOTE_ALIAS_PREFIX} from '../../../lib/constants.js';
+import {loadPackageJson} from '../../test-utils.js';
+import {MockExecutor, MockHttps, MockLogger} from './gcoghpr.mocks.js';
 
 // Tests
 describe('gcoghpr', () => {
@@ -35,8 +28,8 @@ describe('gcoghpr', () => {
               `node --print "'Fetched PR into local branch \\'${localBranch}\\'.'"` :
             'withStyle(reset): ' +
               'node --print "\'\'" && ' +
-              `node --print "'Fetched PR into local branch \\'${localBranch}\\' ` +
-                `(and also branch range \\'${_PR_LOCAL_BRANCH_BASE}..${_PR_LOCAL_BRANCH_TOP}\\').'" && ` +
+              `node --print "'Fetched PR into local branch \\'${localBranch}\\' (and also branch ` +
+                `range \\'${_testing._PR_LOCAL_BRANCH_BASE}..${_testing._PR_LOCAL_BRANCH_TOP}\\').'" && ` +
               'node --print "\'\'" && ' +
               `node --print "'PR commits (${prCommits})\\n---'" && ` +
               `git log --decorate --oneline -${prCommits + 1} || true`;
@@ -53,8 +46,8 @@ describe('gcoghpr', () => {
             [`git remote add ${remoteUrl} https://github.com/${prAuthor}/${upRepo}.git`]: '',
             [`git fetch --no-tags ${remoteUrl} ${prBranch}`]: '',
             [`git branch --force --track ${localBranch} ${remoteUrl}/${prBranch}`]: '',
-            [`git branch --force ${_PR_LOCAL_BRANCH_TOP} ${localBranch}`]: '',
-            [`git branch --force ${_PR_LOCAL_BRANCH_BASE} ${localBranch}~${prCommits}`]: '',
+            [`git branch --force ${_testing._PR_LOCAL_BRANCH_TOP} ${localBranch}`]: '',
+            [`git branch --force ${_testing._PR_LOCAL_BRANCH_BASE} ${localBranch}~${prCommits}`]: '',
             [`git checkout ${localBranch}`]: '',
             [reportSuccessCmd]: '',
           });
@@ -76,22 +69,15 @@ describe('gcoghpr', () => {
 
     beforeEach(() => {
       mockHttps = new MockHttps();
-      MockLazyLoader.mockedDependencies = {https:  mockHttps};
+      spyOn(_testing, '_httpsGet').and.callFake((...args) => mockHttps.get(...args));
 
       MockExecutor.instances = [];
       overwriteDefinitions('gkalpak', 'aliases', 'some-author', 'some-branch', 42, 1337);
 
-      gcoghprExps._Executor = MockExecutor;
-      gcoghprExps._LazyLoader = MockLazyLoader;
-      gcoghprExps._Logger = MockLogger;
+      spyOnProperty(_testing, '_Executor').and.returnValue(MockExecutor);
+      spyOnProperty(_testing, '_Logger').and.returnValue(MockLogger);
 
       gcoghpr = new Gcoghpr();
-    });
-
-    afterEach(() => {
-      gcoghprExps._Executor = _Executor;
-      gcoghprExps._LazyLoader = _LazyLoader;
-      gcoghprExps._Logger = _Logger;
     });
 
     describe('.run()', () => {
@@ -156,23 +142,21 @@ describe('gcoghpr', () => {
       });
 
       it('should print usage information and exit (with error) when more than 1 arguments', async () => {
-        const err = await reversePromise(gcoghpr.run(['1', '3', '3', '7']));
+        await expectAsync(gcoghpr.run(['1', '3', '3', '7'])).toBeRejectedWithError('Invalid input.');
         const executor = MockExecutor.instances[0];
 
         expect(gcoghpr._logger.logs.error).toEqual(['Expected 1 argument, found: 1, 3, 3, 7']);
         expect(gcoghpr._logger.logs.log).toEqual(['\nUsage: gcoghpr @(<pr-number>|<author>:<branch>)\n']);
         expect(executor.executions).toEqual([]);
-        expect(err).toEqual(new Error('Invalid input.'));
       });
 
       it('should print usage information and exit (with error) when invalid PR identifier format', async () => {
-        const err = await reversePromise(gcoghpr.run(['baz/qux']));
+        await expectAsync(gcoghpr.run(['baz/qux'])).toBeRejectedWithError('Invalid input.');
         const executor = MockExecutor.instances[0];
 
         expect(gcoghpr._logger.logs.error).toEqual(['Unexpected PR identifier: baz/qux']);
         expect(gcoghpr._logger.logs.log).toEqual(['\nUsage: gcoghpr @(<pr-number>|<author>:<branch>)\n']);
         expect(executor.executions).toEqual([]);
-        expect(err).toEqual(new Error('Invalid input.'));
       });
 
       it('should accept the PR identifier in `<author>:<branch>` format', async () => {
@@ -221,10 +205,9 @@ describe('gcoghpr', () => {
         const localBranch = `${PR_LOCAL_BRANCH_PREFIX}-pr1337`;
         MockExecutor.definitions[`git show-ref --heads --quiet ${localBranch}`] = '';
 
-        const err = await reversePromise(gcoghpr.run(['1337']));
-        const executor = MockExecutor.instances[0];
+        await expectAsync(gcoghpr.run(['1337'])).toBeRejectedWith('test');
 
-        expect(err).toBe('test');
+        const executor = MockExecutor.instances[0];
         expect(executor.getExecutedCommands()).toEqual([
           'git remote get-url upstream || git remote get-url origin',
           `git show-ref --heads --quiet ${localBranch}`,
@@ -293,7 +276,7 @@ describe('gcoghpr', () => {
 
         mockAnswer = 'y';
 
-        rlCreateInterfaceSpy = spyOn(rl, 'createInterface').and.returnValue(mockRlInterface);
+        rlCreateInterfaceSpy = spyOn(_testing, '_rlCreateInterface').and.returnValue(mockRlInterface);
       });
 
       it('should return a promise', async () => {
@@ -321,19 +304,17 @@ describe('gcoghpr', () => {
       });
 
       it('should resolve if the answer is `y`/`yes` (case-insensitively)', async () => {
-        await ['y', 'yes', 'Y', 'YES', 'yEs', 'YeS'].reduce(async (prev, answer) => {
-          await prev;
+        for (const answer of ['y', 'yes', 'Y', 'YES', 'yEs', 'YeS']) {
           mockAnswer = answer;
-          await gcoghpr._confirmOverwriteBranch('foo');
-        }, Promise.resolve());
+          await expectAsync(gcoghpr._confirmOverwriteBranch('foo')).toBeResolved();
+        }
       });
 
       it('should reject if the answer is not `y`/`yes` (case-insensitively)', async () => {
-        await ['n', 'no', 'No', 'NO', 'NoOoOo', 'nope', 'maybe', 'OK', 'sure', ''].reduce(async (prev, answer) => {
-          await prev;
+        for (const answer of ['n', 'no', 'No', 'NO', 'NoOoOo', 'nope', 'maybe', 'OK', 'sure', '']) {
           mockAnswer = answer;
-          await reversePromise(gcoghpr._confirmOverwriteBranch('foo'));
-        }, Promise.resolve());
+          await expectAsync(gcoghpr._confirmOverwriteBranch('foo')).toBeRejected();
+        }
       });
     });
   });
@@ -345,18 +326,18 @@ describe('gcoghpr', () => {
 
     describe('.constructor()', () => {
       it('should default to `{}` for `baseConfig`', () => {
-        const executor1 = new _Executor(mockLogger, {foo: 'bar'});
+        const executor1 = new _testing._Executor(mockLogger, {foo: 'bar'});
         expect(executor1._baseConfig).toEqual({foo: 'bar'});
 
-        const executor2 = new _Executor(mockLogger);
+        const executor2 = new _testing._Executor(mockLogger);
         expect(executor2._baseConfig).toEqual({});
       });
 
       it('should default to `false` for `debugMode`', () => {
-        const executor1 = new _Executor(mockLogger, {}, true);
+        const executor1 = new _testing._Executor(mockLogger, {}, true);
         expect(executor1._debugMode).toBe(true);
 
-        const executor2 = new _Executor(mockLogger);
+        const executor2 = new _testing._Executor(mockLogger);
         expect(executor2._debugMode).toBe(false);
       });
     });
@@ -367,7 +348,7 @@ describe('gcoghpr', () => {
 
       beforeEach(() => {
         cuSpawnAsPromisedSpy = spyOn(commandUtils, 'spawnAsPromised').and.returnValue('ok');
-        executor = new _Executor(mockLogger);
+        executor = new _testing._Executor(mockLogger);
       });
 
       it('should delegate to `commandUtils.spawnAsPromised()`', () => {
@@ -378,7 +359,7 @@ describe('gcoghpr', () => {
       });
 
       it('should use `baseConfig` as a basis', () => {
-        executor = new _Executor(mockLogger, {foo: 'not bar', baz: 'qux'});
+        executor = new _testing._Executor(mockLogger, {foo: 'not bar', baz: 'qux'});
         executor.exec('foo', {foo: 'bar'});
 
         expect(cuSpawnAsPromisedSpy).toHaveBeenCalledWith('foo', {foo: 'bar', baz: 'qux'});
@@ -401,7 +382,7 @@ describe('gcoghpr', () => {
 
         mockLogger.logs.info = [];
 
-        executor = new _Executor(mockLogger, {foo: 'bar'}, true);
+        executor = new _testing._Executor(mockLogger, {foo: 'bar'}, true);
         executor.exec('foo --bar && echo test', {baz: 'qux'});
 
         expect(mockLogger.logs.info).toEqual(['RUN: foo --bar']);
@@ -416,7 +397,7 @@ describe('gcoghpr', () => {
       let execSpy;
 
       beforeEach(() => {
-        executor = new _Executor(mockLogger);
+        executor = new _testing._Executor(mockLogger);
         execSpy = spyOn(executor, 'exec').and.resolveTo('ok');
       });
 
@@ -461,7 +442,8 @@ describe('gcoghpr', () => {
       let stdoutWriteSpy;
 
       beforeEach(() => {
-        executor = new _Executor(mockLogger);
+        executor = new _testing._Executor(mockLogger);
+
         execSpy = spyOn(executor, 'exec').and.resolveTo('ok');
         stdoutWriteSpy = spyOn(process.stdout, 'write');
       });
@@ -495,7 +477,7 @@ describe('gcoghpr', () => {
 
         execSpy.and.callFake(() => Promise.reject('not ok'));
 
-        await reversePromise(executor.execWithStyle('cyan', 'foo --bar'));
+        await expectAsync(executor.execWithStyle('cyan', 'foo --bar')).toBeRejected();
         expect(stdoutWriteSpy).toHaveBeenCalledWith('switchColor(cyan --> reset)');
       });
     });
@@ -507,22 +489,25 @@ describe('gcoghpr', () => {
 
     beforeEach(() => {
       mockHttps = new MockHttps();
-      MockLazyLoader.mockedDependencies = {https: mockHttps};
-      ghUtils = new _GitHubUtils(new MockLogger(), new MockLazyLoader());
+      spyOn(_testing, '_httpsGet').and.callFake((...args) => mockHttps.get(...args));
+
+      ghUtils = new _testing._GitHubUtils(new MockLogger());
     });
 
     describe('.get()', () => {
-      const originalAccessToken = process.env[_GH_TOKEN_NAME];
+      const originalAccessToken = process.env[_testing._GH_TOKEN_NAME];
       let _httpsGetSpy;
 
       beforeEach(() => {
-        process.env[_GH_TOKEN_NAME] = 'TEST_TOKEN';
+        process.env[_testing._GH_TOKEN_NAME] = 'TEST_TOKEN';
         _httpsGetSpy = spyOn(ghUtils, '_httpsGet').and.resolveTo('{"foo":"bar"}');
       });
 
-      afterEach(() => process.env[_GH_TOKEN_NAME] = originalAccessToken);
+      afterEach(() => process.env[_testing._GH_TOKEN_NAME] = originalAccessToken);
 
       it('should call `_GitHubUtils#_httpsGet()` with appropriate arguments', async () => {
+        const {version} = loadPackageJson();
+
         await ghUtils.get('baz/qux');
 
         expect(_httpsGetSpy).toHaveBeenCalledWith('https://api.github.com/baz/qux', {
@@ -535,9 +520,7 @@ describe('gcoghpr', () => {
 
       it('should reject if `_GitHubUtils#_httpsGet()` fails', async () => {
         _httpsGetSpy.and.callFake(() => Promise.reject('test'));
-        const err = await reversePromise(ghUtils.get('baz/qux'));
-
-        expect(err).toBe('test');
+        await expectAsync(ghUtils.get('baz/qux')).toBeRejectedWith('test');
       });
 
       it('should parse the response as JSON', async () => {
@@ -549,14 +532,13 @@ describe('gcoghpr', () => {
 
       it('should reject if the response is not valid JSON', async () => {
         _httpsGetSpy.and.resolveTo('{foo: \'bar\'}');
-        const err = await reversePromise(ghUtils.get('baz/qux'));
 
-        expect(err).toEqual(jasmine.any(SyntaxError));
+        await expectAsync(ghUtils.get('baz/qux')).toBeRejectedWithError(SyntaxError);
         expect(ghUtils._logger.logs.error).toEqual(['Response:\n{foo: \'bar\'}']);
       });
 
       it('should omit the access token if not available (and print a warning)', async () => {
-        process.env[_GH_TOKEN_NAME] = '';
+        process.env[_testing._GH_TOKEN_NAME] = '';
         await ghUtils.get('baz/qux');
 
         expect(_httpsGetSpy).toHaveBeenCalledWith(jasmine.any(String), {
@@ -565,7 +547,7 @@ describe('gcoghpr', () => {
       });
 
       it('should print a warning for the missing access token (but only once)', async () => {
-        process.env[_GH_TOKEN_NAME] = '';
+        process.env[_testing._GH_TOKEN_NAME] = '';
 
         const logs = ghUtils._logger.logs;
         expect(logs.warn).toEqual([]);
@@ -573,7 +555,7 @@ describe('gcoghpr', () => {
         await ghUtils.get('baz/qux');
         expect(logs.warn.length).toBe(1);
         expect(logs.warn).toEqual([
-          `No GitHub access token found in \`${_GH_TOKEN_NAME}\` environment variable.\n` +
+          `No GitHub access token found in \`${_testing._GH_TOKEN_NAME}\` environment variable.\n` +
           'Proceeding anonymously (and subject to rate-limiting)...',
         ]);
 
@@ -616,32 +598,19 @@ describe('gcoghpr', () => {
       });
 
       it('should call `https#get()` with appropriate arguments', async () => {
+        const mockOpts = {bar: 'baz'};
         const httpsGetSpy = spyOn(mockHttps, 'get').and.callThrough();
-        await request('status-200', {bar: 'baz'});
 
-        const expectedOptions = jasmine.objectContaining({
-          protocol: 'https:',
-          hostname: 'example.com',
-          port: null,
-          path: '/status-200',
-          bar: 'baz',
-        });
+        await request('status-200', mockOpts);
 
-        expect(httpsGetSpy).toHaveBeenCalledWith(expectedOptions, jasmine.any(Function));
+        expect(httpsGetSpy).toHaveBeenCalledWith('https://example.com/status-200', mockOpts, jasmine.any(Function));
       });
 
       it('should default to `{}` for `options`', async () => {
         const httpsGetSpy = spyOn(mockHttps, 'get').and.callThrough();
         await request('status-200');
 
-        const expectedOptions = jasmine.objectContaining({
-          protocol: 'https:',
-          hostname: 'example.com',
-          port: null,
-          path: '/status-200',
-        });
-
-        expect(httpsGetSpy).toHaveBeenCalledWith(expectedOptions, jasmine.any(Function));
+        expect(httpsGetSpy).toHaveBeenCalledWith('https://example.com/status-200', {}, jasmine.any(Function));
       });
 
       it('should log the request (but not option values)', async () => {
@@ -656,9 +625,10 @@ describe('gcoghpr', () => {
       });
 
       it('should reject with the request and response info (on non-2xx status code)', async () => {
-        await Promise.all(['100', '300', '400', '500'].map(async code =>
-          expect(await reversePromise(request(`status-${code}`))).
-            toBe(`Request to '${baseUrl}/status-${code}' failed (status: ${code}):\nSTATUS ${code}`)));
+        for (const code of ['100', '300', '400', '500']) {
+          await expectAsync(request(`status-${code}`)).
+            toBeRejectedWith(`Request to '${baseUrl}/status-${code}' failed (status: ${code}):\nSTATUS ${code}`);
+        }
       });
 
       it('should reject on request error', async () => {
@@ -666,8 +636,7 @@ describe('gcoghpr', () => {
           whenGet(`${baseUrl}/request-error`).
           requestError('REQUEST ERROR');
 
-        const err = await reversePromise(request('request-error'));
-        expect(err).toBe('REQUEST ERROR');
+        await expectAsync(request('request-error')).toBeRejectedWith('REQUEST ERROR');
       });
 
       it('should reject on response error', async () => {
@@ -675,48 +644,61 @@ describe('gcoghpr', () => {
           whenGet(`${baseUrl}/response-error`).
           requestError('RESPONSE ERROR');
 
-        const err = await reversePromise(request('response-error'));
-        expect(err).toBe('RESPONSE ERROR');
+        await expectAsync(request('response-error')).toBeRejectedWith('RESPONSE ERROR');
       });
     });
   });
 
   describe('_Logger', () => {
-    const spiedColors = ['cyan', 'gray', 'red', 'yellow'];
-    const originalColorStyles = spiedColors.map(color => ({...chalk[color]._styler}));
+    const colorsToMock = ['cyan', 'gray', 'red', 'yellow'];
     const basicColorLevel = 1;
-    const chalkLevel = chalk.level;
+    const originalChalkLevel = chalk.level;
+    let restoreColors;
     let consoleSpies;
     let stdoutWriteSpy;
     let logger;
     let cyanLogger;
 
+    // Ugly hack, because `chalk` makes it really hard to mock colors :(
+    const mockChalkColors = mockedColors => {
+      const originalColorStyles = {};
+      const stylerSymbol = Object.
+        getOwnPropertySymbols(chalk[mockedColors[0]]).
+        find(s => s.toString() === 'Symbol(STYLER)');
+
+      mockedColors.forEach(color => {
+        const originalStyle = originalColorStyles[color] = chalk[color][stylerSymbol];
+        chalk[color][stylerSymbol] = {
+          ...originalStyle,
+          open: `<${color}>`,
+          close: `</${color}>`,
+          openAll: `<${color}>`,
+          closeAll: `</${color}>`,
+        };
+      });
+
+      return () => mockedColors.forEach(color => chalk[color][stylerSymbol] = originalColorStyles[color]);
+    };
+
     beforeEach(() => {
+      // In some environments (e.g. Windows on CI), `chalk.level` is `0` (all colors disabled).
+      chalk.level = originalChalkLevel || basicColorLevel;
+      restoreColors = mockChalkColors(colorsToMock);
+
       consoleSpies = {};
       ['debug', 'error', 'info', 'log', 'warn'].forEach(method =>
         consoleSpies[method] = spyOn(console, method));
 
       stdoutWriteSpy = spyOn(process.stdout, 'write');
 
-      // Ugly hack, because `chalk` makes it really hard to mock colors :(
-      spiedColors.forEach(color => Object.assign(chalk[color]._styler, {
-        open: `<${color}>`,
-        close: `</${color}>`,
-        openAll: `<${color}>`,
-        closeAll: `</${color}>`,
-      }));
-
-      // In some environments (e.g. Windows on CI), `chalk.level` is `0` (all colors disabled).
-      chalk.level = chalkLevel || basicColorLevel;
-
-      logger = new _Logger();
-      cyanLogger = new _Logger();
+      logger = new _testing._Logger();
+      cyanLogger = new _testing._Logger();
       cyanLogger.forceColor('cyan');
     });
 
     afterEach(() => {
-      spiedColors.forEach((color, i) => Object.assign(chalk[color]._styler, originalColorStyles[i]));
-      chalk.level = chalkLevel;
+      restoreColors();
+      chalk.level = originalChalkLevel;
     });
 
     describe('.forceColor()', () => {
@@ -827,9 +809,9 @@ describe('gcoghpr', () => {
       expect(main).toEqual(jasmine.any(Function));
     });
 
-    it('should delegate to `Gcoghpr#run()` (with appropriate arguments)', () => {
-      gcoghprRunSpy.and.returnValue('foo');
-      const result = main('runtimeArgs', 'config');
+    it('should delegate to `Gcoghpr#run()` (with appropriate arguments)', async () => {
+      gcoghprRunSpy.and.resolveTo('foo');
+      const result = await main('runtimeArgs', 'config');
 
       expect(gcoghprRunSpy).toHaveBeenCalledWith('runtimeArgs', 'config');
       expect(result).toBe('foo');

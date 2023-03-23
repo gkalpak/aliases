@@ -1,21 +1,22 @@
 #!/usr/bin/env/ node
-'use strict';
-
 // Imports
-const {mkdirSync, writeFileSync} = require('fs');
-const {join} = require('path');
-const {rm, set} = require('shelljs');
-const {ALIASES, BIN_DIR} = require('../lib/constants');
+import {mkdirSync, writeFileSync} from 'node:fs';
+import {join} from 'node:path';
+
+import sh from 'shelljs';
+
+import {ALIASES, BIN_DIR} from '../lib/constants.js';
+
 
 // Run
 _main();
 
-// Function - Definitions
+// Helpers
 function _main() {
-  set('-e');
+  sh.set('-e');
 
   // Clean up `bin/`.
-  rm('-rf', BIN_DIR);
+  sh.rm('-rf', BIN_DIR);
   mkdirSync(BIN_DIR);
 
   // For each alias category...

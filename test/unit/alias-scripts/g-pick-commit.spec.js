@@ -1,24 +1,33 @@
-'use strict';
-
 // Imports
-const {commandUtils, processUtils} = require('@gkalpak/cli-utils');
-const inquirer = require('inquirer');
-const gPickCommitExps = require('../../../lib/alias-scripts/g-pick-commit');
-const {reversePromise} = require('../../test-utils');
+import {commandUtils, processUtils} from '@gkalpak/cli-utils';
+import inquirer from 'inquirer';
 
-const {gPickCommit, main} = gPickCommitExps;
+import {_testing, gPickCommit, main} from '../../../lib/alias-scripts/g-pick-commit.js';
+
 
 // Tests
 describe('g-pick-commit', () => {
   describe('gPickCommit()', () => {
+    let cmdUtilsRunSpy;
+    let consoleLogSpy;
+    let promptSpy;
+
     beforeEach(() => {
-      spyOn(console, 'log');
-      spyOn(inquirer, 'prompt').and.resolveTo({commit: ''});
-      spyOn(commandUtils, 'run').and.resolveTo('');
+      cmdUtilsRunSpy = spyOn(commandUtils, 'run').and.resolveTo('');
+      consoleLogSpy = spyOn(console, 'log');
+      promptSpy = spyOn(inquirer, 'prompt').and.resolveTo({commit: ''});
     });
 
     it('should be a function', () => {
       expect(gPickCommit).toEqual(jasmine.any(Function));
+    });
+
+    it('should delegate to its internal counterpart', async () => {
+      const mockConfig = {foo: 'bar'};
+      const internalSpy = spyOn(_testing, '_gPickCommit').and.resolveTo('foo');
+
+      expect(await gPickCommit(mockConfig)).toBe('foo');
+      expect(internalSpy).toHaveBeenCalledWith(mockConfig);
     });
 
     describe('(dryrun)', () => {
@@ -33,7 +42,7 @@ describe('g-pick-commit', () => {
         const cmdDesc = 'Pick one from a list of commits.';
         await gPickCommit({dryrun: true});
 
-        expect(console.log).toHaveBeenCalledWith(cmdDesc);
+        expect(consoleLogSpy).toHaveBeenCalledWith(cmdDesc);
       });
     });
 
@@ -47,7 +56,7 @@ describe('g-pick-commit', () => {
 
       it('should run `git log ...` (and return the output)', async () => {
         await gPickCommit({});
-        expect(commandUtils.run).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true});
+        expect(cmdUtilsRunSpy).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true});
       });
 
       it('should return `git log ...` output even if `config.returnOutput` is false (but not affect `config`)',
@@ -55,20 +64,20 @@ describe('g-pick-commit', () => {
             const config = {returnOutput: false};
             await gPickCommit(config);
 
-            expect(commandUtils.run).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true});
+            expect(cmdUtilsRunSpy).toHaveBeenCalledWith('git log --oneline -50', [], {returnOutput: true});
             expect(config.returnOutput).toBe(false);
           }
       );
 
       it('should propagate errors', async () => {
-        commandUtils.run.and.rejectWith('test');
-        const err = await reversePromise(gPickCommit({}));
-
-        expect(err).toBe('test');
+        cmdUtilsRunSpy.and.rejectWith('test');
+        await expectAsync(gPickCommit({})).toBeRejectedWith('test');
       });
 
       describe('picking a commit', () => {
         let commits;
+        let procUtilsDoOnExitSpy;
+
         const verifyPromptedWith = (prop, value) => () => {
           if (prop === 'choices') value.push(new inquirer.Separator());
           expect(inquirer.prompt).toHaveBeenCalledWith([jasmine.objectContaining({[prop]: value})]);
@@ -76,9 +85,9 @@ describe('g-pick-commit', () => {
 
         beforeEach(() => {
           commits = [];
-          commandUtils.run.and.callFake(() => Promise.resolve(commits.join('\n')));
+          cmdUtilsRunSpy.and.callFake(() => Promise.resolve(commits.join('\n')));
 
-          spyOn(processUtils, 'doOnExit').and.callThrough();
+          procUtilsDoOnExitSpy = spyOn(processUtils, 'doOnExit').and.callThrough();
         });
 
         it('should prompt the user to pick a commit', async () => {
@@ -156,78 +165,78 @@ describe('g-pick-commit', () => {
         it('should register a callback to exit with an error if exited while the prompt is shown', async () => {
           let callback;
 
-          inquirer.prompt.and.callFake(() => {
-            expect(processUtils.doOnExit).toHaveBeenCalledWith(process, jasmine.any(Function));
-            callback = processUtils.doOnExit.calls.mostRecent().args[1];
+          promptSpy.and.callFake(() => {
+            expect(procUtilsDoOnExitSpy).toHaveBeenCalledWith(process, jasmine.any(Function));
+            callback = procUtilsDoOnExitSpy.calls.mostRecent().args[1];
             return Promise.resolve({commit: ''});
           });
 
           await gPickCommit({});
 
-          spyOn(process, 'exit');
+          const processExitSpy = spyOn(process, 'exit');
 
           callback(undefined);
           callback(false);
           callback(1);
           callback(42);
-          expect(process.exit).not.toHaveBeenCalled();
+          expect(processExitSpy).not.toHaveBeenCalled();
 
           callback(0);
-          expect(process.exit).toHaveBeenCalledWith(1);
+          expect(processExitSpy).toHaveBeenCalledWith(1);
         });
 
         it('should unregister the `onExit` callback once prompting completes successfully', async () => {
           const unlistenSpy = jasmine.createSpy('unlisten');
 
-          processUtils.doOnExit.and.returnValue(unlistenSpy);
-          inquirer.prompt.and.callFake(() => {
-            expect(processUtils.doOnExit).toHaveBeenCalledTimes(1);
+          procUtilsDoOnExitSpy.and.returnValue(unlistenSpy);
+          promptSpy.and.callFake(() => {
+            expect(procUtilsDoOnExitSpy).toHaveBeenCalledTimes(1);
             expect(unlistenSpy).not.toHaveBeenCalled();
             return Promise.resolve({commit: ''});
           });
 
           await gPickCommit({});
 
-          expect(inquirer.prompt).toHaveBeenCalledTimes(1);
+          expect(promptSpy).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });
 
         it('should unregister the `onExit` callback once prompting completes with error', async () => {
           const unlistenSpy = jasmine.createSpy('unlisten');
 
-          processUtils.doOnExit.and.returnValue(unlistenSpy);
-          inquirer.prompt.and.callFake(() => {
-            expect(processUtils.doOnExit).toHaveBeenCalledTimes(1);
+          procUtilsDoOnExitSpy.and.returnValue(unlistenSpy);
+          promptSpy.and.callFake(() => {
+            expect(procUtilsDoOnExitSpy).toHaveBeenCalledTimes(1);
             expect(unlistenSpy).not.toHaveBeenCalled();
             return Promise.reject('');
           });
 
-          await reversePromise(gPickCommit({}));
+          await expectAsync(gPickCommit({})).toBeRejected();
 
-          expect(inquirer.prompt).toHaveBeenCalledTimes(1);
+          expect(promptSpy).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });
       });
 
       describe('output', () => {
         it('should log the selected commit SHA (removing other info)', async () => {
-          inquirer.prompt.and.returnValues(
+          promptSpy.and.returnValues(
               Promise.resolve({commit: 'f00ba2 (foo, origin/baz) This is the foo commit message'}),
               Promise.resolve({commit: 'b4r9ux (bar, origin/qux) This is the bar commit message'}));
 
           expect(await gPickCommit({})).toBeUndefined();
-          expect(console.log).toHaveBeenCalledWith('f00ba2');
+          expect(consoleLogSpy).toHaveBeenCalledWith('f00ba2');
 
           expect(await gPickCommit({returnOutput: false})).toBeUndefined();
-          expect(console.log).toHaveBeenCalledWith('b4r9ux');
+          expect(consoleLogSpy).toHaveBeenCalledWith('b4r9ux');
         });
 
         it('should return the selected commit SHA (removing other info) if `returnOutput` is `true`', async () => {
           const commit = 'f00ba2 (foo, origin/baz) This is the commit message';
-          inquirer.prompt.and.resolveTo({commit});
+          promptSpy.and.resolveTo({commit});
 
           expect(await gPickCommit({returnOutput: true})).toBe('f00ba2');
-          expect(console.log).not.toHaveBeenCalled();
+          expect(consoleLogSpy).not.toHaveBeenCalled();
         });
       });
     });
@@ -236,7 +245,7 @@ describe('g-pick-commit', () => {
   describe('main()', () => {
     let gPickCommitSpy;
 
-    beforeEach(() => gPickCommitSpy = spyOn(gPickCommitExps, 'gPickCommit'));
+    beforeEach(() => gPickCommitSpy = spyOn(_testing, '_gPickCommit'));
 
     it('should be a function', () => {
       expect(main).toEqual(jasmine.any(Function));

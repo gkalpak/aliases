@@ -1,16 +1,16 @@
 #!/usr/bin/env/ node
-'use strict';
-
 // Imports
-const {chmodSync, copyFileSync, existsSync, readdirSync, renameSync, statSync} = require('fs');
-const {join} = require('path');
-const {BIN_DIR} = require('../lib/constants');
-const {getPlatform} = require('../lib/utils');
+import {chmodSync, copyFileSync, existsSync, readdirSync, renameSync, statSync} from 'node:fs';
+import {join} from 'node:path';
+
+import {BIN_DIR} from '../lib/constants.js';
+import {getPlatform} from '../lib/utils.js';
+
 
 // Run
 _main();
 
-// Function - Definitions
+// Helpers
 function _main() {
   // Nothing to do if `bin/` does not exist (e.g. first local `npm install`).
   if (!existsSync(BIN_DIR)) return;

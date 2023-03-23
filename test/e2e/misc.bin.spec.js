@@ -1,13 +1,14 @@
-'use strict';
-
 // Imports
-const {testingUtils} = require('@gkalpak/cli-utils');
-const {join} = require('path');
-const {version} = require('../../package.json');
-const {ROOT_DIR} = require('../test-utils');
+import {join} from 'node:path';
+
+import {testingUtils} from '@gkalpak/cli-utils';
+
+import {loadPackageJson, ROOT_DIR} from '../test-utils.js';
+
 
 // Constants
 const SCRIPT_DIR = 'bin/misc/';
+const VERSION = loadPackageJson().version;
 
 // Tests
 describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
@@ -16,7 +17,7 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
 
     it('should print the current version stamp', async () => {
       const result = await testScript();
-      expect(result).toBe(`@gkalpak/aliases v${version}`);
+      expect(result).toBe(`@gkalpak/aliases v${VERSION}`);
     });
   });
 
@@ -25,10 +26,10 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
 
     it('should print the current version stamp', async () => {
       const result1 = await testScript();
-      expect(result1).toContain(`@gkalpak/aliases v${version}`);
+      expect(result1).toContain(`@gkalpak/aliases v${VERSION}`);
 
       const result2 = await testScript('misc');
-      expect(result2).toContain(`@gkalpak/aliases v${version}`);
+      expect(result2).toContain(`@gkalpak/aliases v${VERSION}`);
     });
 
     it('should mention the "universal" arguments', async () => {

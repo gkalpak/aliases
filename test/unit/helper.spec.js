@@ -1,26 +1,27 @@
-'use strict';
-
 // Imports
-const stripAnsi = require('strip-ansi');
-const constants = require('../../lib/constants');
-const helper = require('../../lib/helper');
-const utils = require('../../lib/utils');
+import stripAnsi from 'strip-ansi';
+
+import {_testing as constantsTesting, ALIASES, VERSION_STAMP} from '../../lib/constants.js';
+import {_testing as helperTesting, help} from '../../lib/helper.js';
+import {_testing as utilsTesting, capitalize, stripIndentation, wrapLine} from '../../lib/utils.js';
+
 
 // Tests
 describe('helper', () => {
   describe('.help()', () => {
-    const help = helper.help;
-    const categories = Object.keys(constants.ALIASES).map(name => ({name, spec: constants.ALIASES[name]}));
-    const categoryToHeading = (cat, partial) => utils.capitalize(`${cat.name} aliases${partial ? ' subset' : ''}`);
+    const categories = Object.keys(ALIASES).map(name => ({name, spec: ALIASES[name]}));
+    const categoryToHeading = (cat, partial) => capitalize(`${cat.name} aliases${partial ? ' subset' : ''}`);
     const getHelpMessage = async (...args) => {
       await help(...args);
-      return stripAnsi(console.log.calls.mostRecent().args[0]);
+      return stripAnsi(consoleLogSpy.calls.mostRecent().args[0]);
     };
+    let consoleLogSpy;
+    let helpForCategorySpy;
 
     beforeEach(() => {
-      spyOn(console, 'log');
-      spyOn(helper, '_helpForCategory').and.callThrough();
-      spyOn(utils, 'onError').and.callFake(err => Promise.reject(err));
+      consoleLogSpy = spyOn(console, 'log');
+      helpForCategorySpy = spyOn(helperTesting, '_helpForCategory').and.callThrough();
+      spyOn(utilsTesting, '_onError').and.callFake(err => Promise.reject(err));
     });
 
     it('should be a function', () => {
@@ -41,15 +42,15 @@ describe('helper', () => {
         });
 
         it('should log a help message', async () => {
-          expect(console.log).not.toHaveBeenCalled();
+          expect(consoleLogSpy).not.toHaveBeenCalled();
 
           await help(...args);
-          expect(console.log).toHaveBeenCalledTimes(1);
+          expect(consoleLogSpy).toHaveBeenCalledTimes(1);
         });
 
         it('should display the version stamp', async () => {
           const msg = await getHelpMessage(...args);
-          expect(msg).toContain(constants.VERSION_STAMP);
+          expect(msg).toContain(VERSION_STAMP);
         });
       });
     });
@@ -66,12 +67,12 @@ describe('helper', () => {
       });
 
       it('should contain help for each category', async () => {
-        helper._helpForCategory.and.callFake(cat => `_helpForCategory(${cat.name})`);
+        helpForCategorySpy.and.callFake(cat => `helpForCategory(${cat.name})`);
         const msg = await getHelpMessage();
 
         categories.forEach(cat => {
-          expect(helper._helpForCategory).toHaveBeenCalledWith(cat, jasmine.any(String));
-          expect(msg).toContain(`_helpForCategory(${cat.name})`);
+          expect(helpForCategorySpy).toHaveBeenCalledWith(cat, jasmine.any(String));
+          expect(msg).toContain(`helpForCategory(${cat.name})`);
         });
       });
 
@@ -85,7 +86,7 @@ describe('helper', () => {
       });
 
       it('should mention ignoring `--gkcu-` arguments', async () => {
-        const expectedNote = utils.wrapLine(
+        const expectedNote = wrapLine(
             '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
             'determining their index.)');
         const msg = await getHelpMessage();
@@ -99,7 +100,7 @@ describe('helper', () => {
         await prev;
         const msg = await getHelpMessage(cat.name);
         runAssertions(msg, cat);
-        helper._helpForCategory.calls.reset();
+        helpForCategorySpy.calls.reset();
       };
 
       it('should not contain "Available aliases"', async () => {
@@ -122,15 +123,15 @@ describe('helper', () => {
       });
 
       it('should only contain help for the specified category', async () => {
-        helper._helpForCategory.and.callFake(cat => `_helpForCategory(${cat.name})`);
+        helpForCategorySpy.and.callFake(cat => `helpForCategory(${cat.name})`);
 
         const runAssertions = (msg, cat) => categories.forEach(c => {
-          const heading = `_helpForCategory(${c.name})`;
+          const heading = `helpForCategory(${c.name})`;
           if (c === cat) {
-            expect(helper._helpForCategory).toHaveBeenCalledWith(c, jasmine.any(String));
+            expect(helpForCategorySpy).toHaveBeenCalledWith(c, jasmine.any(String));
             expect(msg).toContain(heading);
           } else {
-            expect(helper._helpForCategory).not.toHaveBeenCalledWith(c, jasmine.any(String));
+            expect(helpForCategorySpy).not.toHaveBeenCalledWith(c, jasmine.any(String));
             expect(msg).not.toContain(heading);
           }
         });
@@ -152,7 +153,7 @@ describe('helper', () => {
       });
 
       it('should mention ignoring `--gkcu-` arguments', async () => {
-        const expectedNote = utils.wrapLine(
+        const expectedNote = wrapLine(
             '(NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or ' +
             'determining their index.)');
 
@@ -298,15 +299,12 @@ describe('helper', () => {
   });
 
   describe('._helpForCategory()', () => {
-    const _helpForCategory = helper._helpForCategory;
-    const originalDescReplacements = constants.DESC_REPLACEMENTS;
+    const _helpForCategory = helperTesting._helpForCategory;
     const joiner = ' ~ ';
     const mockAlias = description => {
       const mockSpec = {code: '', description};
       return {getSpec: () => mockSpec};
     };
-
-    afterEach(() => constants.DESC_REPLACEMENTS = originalDescReplacements);
 
     it('should be a function', () => {
       expect(_helpForCategory).toEqual(jasmine.any(Function));
@@ -317,7 +315,7 @@ describe('helper', () => {
         name: 'test',
         spec: {foo: mockAlias('bar'), baz: mockAlias('qux')},
       };
-      const expected = utils.stripIndentation(`
+      const expected = stripIndentation(`
         Test aliases:
 
           foo${joiner}bar
@@ -332,7 +330,7 @@ describe('helper', () => {
         name: 'test',
         spec: {foo: mockAlias('bar'), bazzz: mockAlias('qux')},
       };
-      const expected = utils.stripIndentation(`
+      const expected = stripIndentation(`
         Test aliases:
 
           foo  ${joiner}bar
@@ -351,7 +349,7 @@ describe('helper', () => {
           bazz: mockAlias('quux'),
         },
       };
-      const expected = utils.stripIndentation(`
+      const expected = stripIndentation(`
         Test aliases:
 
           foo ${joiner}bar
@@ -362,7 +360,7 @@ describe('helper', () => {
     });
 
     it('should replace certain strings in descriptions', () => {
-      constants.DESC_REPLACEMENTS = {test: '~TeSt~'};
+      spyOn(constantsTesting, '_getDescReplacements').and.returnValue({test: '~TeSt~'});
 
       const category = {
         name: 'test',
@@ -373,7 +371,7 @@ describe('helper', () => {
           qux: mockAlias('-test- qux -test-'),
         },
       };
-      const expected = utils.stripIndentation(`
+      const expected = stripIndentation(`
         Test aliases:
 
           foo${joiner}foo --~TeSt~
@@ -386,7 +384,7 @@ describe('helper', () => {
     });
 
     it('should wrap long descriptions (using `utils.wrapLine()`)', () => {
-      spyOn(utils, 'wrapLine').and.callThrough();
+      const wrapLineSpy = spyOn(utilsTesting, '_wrapLine').and.callThrough();
 
       const wrapIndent = ' '.repeat(10);
       const category = {
@@ -394,13 +392,13 @@ describe('helper', () => {
         spec: {foo: mockAlias('bar'), bazzz: mockAlias('qux')},
       };
 
-      expect(utils.wrapLine).not.toHaveBeenCalled();
+      expect(wrapLineSpy).not.toHaveBeenCalled();
 
       _helpForCategory(category, joiner);
 
-      expect(utils.wrapLine).toHaveBeenCalledTimes(2);
-      expect(utils.wrapLine).toHaveBeenCalledWith('bar', wrapIndent);
-      expect(utils.wrapLine).toHaveBeenCalledWith('qux', wrapIndent);
+      expect(wrapLineSpy).toHaveBeenCalledTimes(2);
+      expect(wrapLineSpy).toHaveBeenCalledWith('bar', wrapIndent);
+      expect(wrapLineSpy).toHaveBeenCalledWith('qux', wrapIndent);
     });
   });
 });

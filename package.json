@@ -171,6 +171,7 @@
     "yud": "./bin/node/yud.js",
     "yup": "./bin/node/yup.js"
   },
+  "type": "module",
   "license": "Unlicense",
   "author": "gkalpak <kalpakas.g@gmail.com>",
   "homepage": "https://github.com/gkalpak/aliases#readme",

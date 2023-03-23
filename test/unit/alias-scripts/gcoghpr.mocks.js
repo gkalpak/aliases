@@ -1,14 +1,15 @@
 /* eslint-disable max-classes-per-file */
-'use strict';
-
 // Imports
-const {EventEmitter} = require('events');
-const stripAnsi = require('strip-ansi');
-const {format} = require('url');
-const {_LazyLoader} = require('../../../lib/alias-scripts/gcoghpr');
+import {EventEmitter} from 'node:events';
+
+import stripAnsi from 'strip-ansi';
+
 
 // Classes
 class MockExecutor {
+  static definitions = {};
+  static instances = [];
+
   constructor(logger, baseConfig = {}, debugMode = false) {
     this.logger = logger;
     this.baseConfig = baseConfig;
@@ -61,13 +62,9 @@ class MockExecutor {
     return this.executions.map(({command}) => command);
   }
 }
-MockExecutor.definitions = {};
-MockExecutor.instances = [];
 
 class MockHttps {
-  constructor() {
-    this.reset();
-  }
+  _definitions = [];
 
   whenGet(url) {
     const definition = new MockHttpsDefinition(url);
@@ -76,10 +73,7 @@ class MockHttps {
     return definition;
   }
 
-  get(url, options, cb) {
-    url = format(url);
-    cb = cb  || options;
-
+  get(url, options, cb = options) {
     const definition = this._definitions.find(d => d.$match(url));
 
     if (!definition) {
@@ -192,14 +186,6 @@ class MockHttpsDefinition {
   }
 }
 
-class MockLazyLoader extends _LazyLoader {
-  get(dep) {
-    return MockLazyLoader.mockedDependencies[dep] || super.get(dep);
-  }
-}
-MockLazyLoader.mockedDependencies = {};
-
-
 class MockLogger {
   constructor() {
     this.color = 'reset';
@@ -234,9 +220,8 @@ class MockLogger {
 }
 
 // Exports
-module.exports = {
+export {
   MockExecutor,
   MockHttps,
-  MockLazyLoader,
   MockLogger,
 };

@@ -1,17 +1,27 @@
-'use strict';
-
 // Imports
-const chalk = require('chalk');
-const isWsl = require('is-wsl');
-const {sep} = require('path');
-const utils = require('../../lib/utils');
-const {reversePromise, ROOT_DIR, tickAsPromised} = require('../test-utils');
+import {sep} from 'node:path';
+
+import chalk from 'chalk';
+import isWsl from 'is-wsl';
+
+import {
+  _testing,
+  capitalize,
+  getPlatform,
+  importWithEnv,
+  isMain,
+  loadJson,
+  onError,
+  padRight,
+  stripIndentation,
+  wrapLine,
+} from '../../lib/utils.js';
+import {ROOT_DIR} from '../test-utils.js';
+
 
 // Tests
 describe('utils', () => {
   describe('.capitalize()', () => {
-    const capitalize = utils.capitalize;
-
     it('should be a function', () => {
       expect(capitalize).toEqual(jasmine.any(Function));
     });
@@ -24,141 +34,16 @@ describe('utils', () => {
     });
   });
 
-  describe('.finallyAsPromised()', () => {
-    const finallyAsPromised = utils.finallyAsPromised;
-    let callback;
-
-    beforeEach(() => callback = jasmine.createSpy('callback'));
-
-    it('should be a function', () => {
-      expect(finallyAsPromised).toEqual(jasmine.any(Function));
-    });
-
-    it('should return a promise', () => {
-      const noop = () => {};
-      expect(finallyAsPromised(new Promise(noop), noop)).toEqual(jasmine.any(Promise));
-    });
-
-    describe('when the original promise is resolved', () => {
-      it('should call the callback afterwards', async () => {
-        const promiseSpy = jasmine.createSpy('promiseSpy').and.callFake(() => expect(callback).not.toHaveBeenCalled());
-        const promise = Promise.resolve().then(promiseSpy);
-
-        await finallyAsPromised(promise, callback);
-
-        expect(promiseSpy).toHaveBeenCalledTimes(1);
-        expect(callback).toHaveBeenCalledTimes(1);
-      });
-
-      it('should wait if callback returns a promise', async () => {
-        const callbackSpy = jasmine.createSpy('callbackSpy');
-        callback.and.callFake(() => tickAsPromised().then(callbackSpy));
-
-        await finallyAsPromised(Promise.resolve(), callback);
-
-        expect(callbackSpy).toHaveBeenCalledTimes(1);
-      });
-
-      it('should ignore the return result of callback', async () => {
-        const promise = Promise.resolve('foo');
-        callback.and.returnValue('bar');
-
-        const val = await finallyAsPromised(promise, callback);
-
-        expect(val).toBe('foo');
-      });
-
-      it('should ignore the resolved value of callback (if it returns a promise)', async () => {
-        const promise = Promise.resolve('foo');
-        callback.and.resolveTo('bar');
-
-        const val = await finallyAsPromised(promise, callback);
-
-        expect(val).toBe('foo');
-      });
-
-      it('should reject with the value thrown by callback', async () => {
-        const promise = Promise.resolve('foo');
-        callback.and.callFake(() => { throw 'bar'; });
-
-        const err = await reversePromise(finallyAsPromised(promise, callback));
-
-        expect(err).toBe('bar');
-      });
-
-      it('should reject with the rejected value of callback (if it returns a promise)', async () => {
-        const promise = Promise.resolve('foo');
-        callback.and.callFake(() => Promise.reject('bar'));
-
-        const err = await reversePromise(finallyAsPromised(promise, callback));
-
-        expect(err).toBe('bar');
-      });
-    });
-
-    describe('when the original promise is rejected', () => {
-      it('should call the callback afterwards', async () => {
-        const promiseSpy = jasmine.createSpy('promiseSpy').and.callFake(() => expect(callback).not.toHaveBeenCalled());
-        const promise = Promise.resolve().then(promiseSpy).then(() => Promise.reject());
-
-        await reversePromise(finallyAsPromised(promise, callback));
-
-        expect(promiseSpy).toHaveBeenCalledTimes(1);
-        expect(callback).toHaveBeenCalledTimes(1);
-      });
-
-      it('should wait if callback returns a promise', async () => {
-        const callbackSpy = jasmine.createSpy('callbackSpy');
-        callback.and.callFake(() => tickAsPromised().then(callbackSpy));
-
-        await reversePromise(finallyAsPromised(Promise.reject(), callback));
-
-        expect(callbackSpy).toHaveBeenCalledTimes(1);
-      });
-
-      it('should ignore the return result of callback', async () => {
-        const promise = Promise.reject('foo');
-        callback.and.returnValue('bar');
-
-        const err = await reversePromise(finallyAsPromised(promise, callback));
-
-        expect(err).toBe('foo');
-      });
-
-      it('should ignore the resolved value of callback (if it returns a promise)', async () => {
-        const promise = Promise.reject('foo');
-        callback.and.resolveTo('bar');
-
-        const err = await reversePromise(finallyAsPromised(promise, callback));
-
-        expect(err).toBe('foo');
-      });
-
-      it('should reject with the value thrown by callback', async () => {
-        const promise = Promise.reject('foo');
-        callback.and.callFake(() => { throw 'bar'; });
-
-        const err = await reversePromise(finallyAsPromised(promise, callback));
-
-        expect(err).toBe('bar');
-      });
-
-      it('should reject with the rejected value of callback (if it returns a promise)', async () => {
-        const promise = Promise.reject('foo');
-        callback.and.callFake(() => Promise.reject('bar'));
-
-        const err = await reversePromise(finallyAsPromised(promise, callback));
-
-        expect(err).toBe('bar');
-      });
-    });
-  });
-
   describe('.getPlatform()', () => {
-    const getPlatform = utils.getPlatform;
-
     it('should be a function', () => {
       expect(getPlatform).toEqual(jasmine.any(Function));
+    });
+
+    it('should delegate to its internal counterpart', () => {
+      const internalSpy = spyOn(_testing, '_getPlatform').and.returnValue('foo');
+
+      expect(getPlatform()).toBe('foo');
+      expect(internalSpy).toHaveBeenCalledWith();
     });
 
     it('should return the current platform (or `wsl`)', () => {
@@ -166,9 +51,94 @@ describe('utils', () => {
     });
   });
 
+  describe('.importWithEnv()', () => {
+    let importSpy;
+    let originalEnv;
+
+    beforeEach(() => {
+      importSpy = spyOn(_testing, '_import');
+
+      originalEnv = process.env;
+      process.env = {};
+    });
+
+    afterEach(() => process.env = originalEnv);
+
+    it('should be a function', () => {
+      expect(importWithEnv).toEqual(jasmine.any(Function));
+    });
+
+    it('should augment the environment with the specified values before loading the dependency', async () => {
+      process.env = {foo: 'foo', bar: 'bar'};
+      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
+
+      importSpy.and.callFake(() => expect(process.env).toEqual({
+        foo: 'foo',
+        bar: 'temp-bar',
+        baz: 'temp-baz',
+      }));
+
+      await importWithEnv('./utils.spec.js', import.meta.url, tempEnv);
+
+      expect(importSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should restore the environment after loading the dependency', async () => {
+      process.env = {foo: 'foo', bar: 'bar'};
+      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
+
+      await importWithEnv('./utils.spec.js', import.meta.url, tempEnv);
+
+      expect(process.env).toEqual({foo: 'foo', bar: 'bar'});
+      expect(process.env.hasOwnProperty('baz')).toBe(false);
+    });
+
+    it('should restore the environment if loading the dependency errors', async () => {
+      process.env = {foo: 'foo', bar: 'bar'};
+      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
+      importSpy.and.callFake(() => { throw new Error('test'); });
+
+      await expectAsync(importWithEnv('./utils.spec.js', import.meta.url, tempEnv)).toBeRejectedWithError('test');
+      expect(process.env).toEqual({foo: 'foo', bar: 'bar'});
+      expect(process.env.hasOwnProperty('baz')).toBe(false);
+    });
+
+    it('should load and return the specified dependency', async () => {
+      const mockDep = {};
+      importSpy.and.returnValue(mockDep);
+
+      await expectAsync(importWithEnv('./utils.spec.js', import.meta.url, {})).toBeResolvedTo(mockDep);
+    });
+
+    it('should resolve the path to a built-in module', async () => {
+      await importWithEnv('events', import.meta.url, {});
+      expect(importSpy).toHaveBeenCalledWith('events');
+    });
+
+    it('should resolve the path to a namespaced built-in module', async () => {
+      await importWithEnv('node:events', import.meta.url, {});
+      expect(importSpy).toHaveBeenCalledWith('node:events');
+    });
+
+    it('should resolve the path to a 3rd-party module', async () => {
+      await importWithEnv('@gkalpak/cli-utils', import.meta.url, {});
+      expect(importSpy).toHaveBeenCalledWith(jasmine.stringMatching(
+          /^file:\/\/\/.*?\/node_modules\/@gkalpak\/cli-utils\/out\/lib\/index.js$/));
+    });
+
+    it('should resolve the path to a local file', async () => {
+      await importWithEnv('../../lib/utils.js', import.meta.url, {});
+      expect(importSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^file:\/\/\/.*?\/lib\/utils.js$/));
+    });
+
+    it('should resolve the path to a local file without extension', async () => {
+      await importWithEnv('../../lib/utils', import.meta.url, {});
+      expect(importSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^file:\/\/\/.*?\/lib\/utils.js$/));
+    });
+  });
+
   describe('.isMain()', () => {
-    const isMain = utils.isMain;
-    const pathRoot = (utils.getPlatform() === 'win32') ? 'C:' : '';
+    const pathRoot = (getPlatform() === 'win32') ? 'C:' : '';
     const originalArgv = process.argv;
 
     const buildAbsPath = (...segments) => [pathRoot, ...segments].join(sep);
@@ -226,8 +196,6 @@ describe('utils', () => {
   });
 
   describe('.loadJson()', () => {
-    const loadJson = utils.loadJson;
-
     it('should be a function', () => {
       expect(loadJson).toEqual(jasmine.any(Function));
     });
@@ -257,62 +225,68 @@ describe('utils', () => {
   });
 
   describe('.onError()', () => {
-    const onError = utils.onError;
+    let consoleErrorSpy;
+    let processExitSpy;
 
     beforeEach(() => {
-      spyOn(console, 'error');
-      spyOn(process, 'exit');
+      consoleErrorSpy = spyOn(console, 'error');
+      processExitSpy = spyOn(process, 'exit');
     });
 
     it('should be a function', () => {
       expect(onError).toEqual(jasmine.any(Function));
     });
 
-    it('should log the error (in red)', () => {
-      onError('foo');
-      expect(console.error).toHaveBeenCalledWith(chalk.red('Error: foo'));
+    it('should delegate to its internal counterpart', async () => {
+      const internalSpy = spyOn(_testing, '_onError').and.resolveTo('foo');
+
+      expect(await onError('bar')).toBe('foo');
+      expect(internalSpy).toHaveBeenCalledWith('bar');
     });
 
-    it('should log the error as exit code if a (non-zero) number', () => {
-      onError(42);
-      expect(console.error).toHaveBeenCalledWith(chalk.red('Exit code: 42'));
-
-      console.error.calls.reset();
-
-      onError('42');
-      expect(console.error).toHaveBeenCalledWith(chalk.red('Error: 42'));
-
-      console.error.calls.reset();
-
-      onError(0);
-      expect(console.error).toHaveBeenCalledWith(chalk.red('Error: 0'));
+    it('should log the error (in red)', async () => {
+      await onError('foo');
+      expect(consoleErrorSpy).toHaveBeenCalledWith(chalk.red('Error: foo'));
     });
 
-    it('should log the error\'s stacktrace (in red) if an `Error`', () => {
-      onError(Object.assign(new Error('bar'), {stack: 'bar'}));
-      expect(console.error).toHaveBeenCalledWith(chalk.red('bar'));
+    it('should log the error as exit code if a (non-zero) number', async () => {
+      await onError(42);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(chalk.red('Exit code: 42'));
+
+      consoleErrorSpy.calls.reset();
+
+      await onError('42');
+      expect(consoleErrorSpy).toHaveBeenCalledWith(chalk.red('Error: 42'));
+
+      consoleErrorSpy.calls.reset();
+
+      await onError(0);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(chalk.red('Error: 0'));
     });
 
-    it('should exit the process with 1', () => {
-      onError('foo');
-      expect(process.exit).toHaveBeenCalledWith(1);
+    it('should log the error\'s stacktrace (in red) if an `Error`', async () => {
+      await onError(Object.assign(new Error('bar'), {stack: 'bar'}));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(chalk.red('bar'));
     });
 
-    it('should exit the process with `error` if a (non-zero) number', () => {
-      onError(42);
-      expect(process.exit).toHaveBeenCalledWith(42);
+    it('should exit the process with 1', async () => {
+      await onError('foo');
+      expect(processExitSpy).toHaveBeenCalledWith(1);
+    });
 
-      onError('42');
-      expect(process.exit).toHaveBeenCalledWith(1);
+    it('should exit the process with `error` if a (non-zero) number', async () => {
+      await onError(42);
+      expect(processExitSpy).toHaveBeenCalledWith(42);
 
-      onError(0);
-      expect(process.exit).toHaveBeenCalledWith(1);
+      await onError('42');
+      expect(processExitSpy).toHaveBeenCalledWith(1);
+
+      await onError(0);
+      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
   });
 
   describe('.padRight()', () => {
-    const padRight = utils.padRight;
-
     it('should be a function', () => {
       expect(padRight).toEqual(jasmine.any(Function));
     });
@@ -332,89 +306,7 @@ describe('utils', () => {
     });
   });
 
-  describe('.require()', () => {
-    const require_ = utils.require;
-
-    it('should be a function', () => {
-      expect(require_).toEqual(jasmine.any(Function));
-    });
-
-    it('should delegate to `require()`', () => {
-      expect(require_('path')).toBe(require('path'));
-    });
-  });
-
-  describe('.requireWithEnv()', () => {
-    const requireWithEnv = utils.requireWithEnv;
-    let requireSpy;
-
-    beforeEach(() => requireSpy = spyOn(utils, 'require'));
-
-    it('should be a function', () => {
-      expect(requireWithEnv).toEqual(jasmine.any(Function));
-    });
-
-    it('should load and return the specified dependency', () => {
-      const mockDep = {};
-      requireSpy.and.returnValue(mockDep);
-
-      const dep = requireWithEnv('foo', {}, {});
-
-      expect(dep).toBe(mockDep);
-      expect(requireSpy).toHaveBeenCalledWith('foo');
-    });
-
-    it('should augment the environment with the specified values before loading the dependency', () => {
-      const mockEnv = {foo: 'foo', bar: 'bar'};
-      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
-      requireSpy.and.callFake(() => expect(mockEnv).toEqual({
-        foo: 'foo',
-        bar: 'temp-bar',
-        baz: 'temp-baz',
-      }));
-
-      requireWithEnv('foo', mockEnv, tempEnv);
-
-      expect(requireSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('should restore the environment after loading the dependency', () => {
-      const mockEnv = {foo: 'foo', bar: 'bar'};
-      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
-
-      requireWithEnv('foo', mockEnv, tempEnv);
-
-      expect(mockEnv).toEqual({foo: 'foo', bar: 'bar'});
-      expect(mockEnv.hasOwnProperty('baz')).toBe(false);
-    });
-
-    it('should restore the environment if loading the dependency errors', () => {
-      const mockEnv = {foo: 'foo', bar: 'bar'};
-      const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
-      requireSpy.and.callFake(() => { throw new Error('test'); });
-
-      expect(() => requireWithEnv('foo', mockEnv, tempEnv)).toThrowError('test');
-      expect(mockEnv).toEqual({foo: 'foo', bar: 'bar'});
-      expect(mockEnv.hasOwnProperty('baz')).toBe(false);
-    });
-
-    it('should throw an error if a relative path is specified', () => {
-      const relativePaths = ['./foo', '../bar'];
-
-      relativePaths.forEach(p => {
-        const errorMessage =
-            `Unable to resolve '${p}'. Relative paths are not supported.\n` +
-            `(To load relative files use \`requireWithEnv(require.resolve('${p}'), ...)\`.)`;
-        expect(() => requireWithEnv(p, {}, {})).toThrowError(errorMessage);
-      });
-
-      expect(requireSpy).not.toHaveBeenCalled();
-    });
-  });
-
   describe('.stripIndentation()', () => {
-    const stripIndentation = utils.stripIndentation;
-
     it('should be a function', () => {
       expect(stripIndentation).toEqual(jasmine.any(Function));
     });
@@ -457,10 +349,18 @@ describe('utils', () => {
   });
 
   describe('.wrapLine()', () => {
-    const wrapLine = utils.wrapLine;
-
     it('should be a function', () => {
       expect(wrapLine).toEqual(jasmine.any(Function));
+    });
+
+    it('should delegate to its internal counterpart', async () => {
+      const internalSpy = spyOn(_testing, '_wrapLine').and.returnValue('foo');
+
+      expect(wrapLine('bar')).toBe('foo');
+      expect(internalSpy).toHaveBeenCalledWith('bar', '');
+
+      expect(wrapLine('baz', '  ')).toBe('foo');
+      expect(internalSpy).toHaveBeenCalledWith('baz', '  ');
     });
 
     it('should return the line as is if less than 76 characters', () => {

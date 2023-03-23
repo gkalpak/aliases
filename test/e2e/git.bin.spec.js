@@ -1,9 +1,10 @@
-'use strict';
-
 // Imports
-const {testingUtils} = require('@gkalpak/cli-utils');
-const {join} = require('path');
-const {ROOT_DIR} = require('../test-utils');
+import {join} from 'node:path';
+
+import {testingUtils} from '@gkalpak/cli-utils';
+
+import {ROOT_DIR} from '../test-utils.js';
+
 
 // Constants
 const SCRIPT_DIR = 'bin/git/';

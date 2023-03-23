@@ -1,8 +1,7 @@
-'use strict';
-
 // Imports
-const {Alias, AliasDefault, AliasSpec, AliasSpecDefault, AliasUnknown} = require('../../lib/alias');
-const utils = require('../../lib/utils');
+import {Alias, AliasDefault, AliasSpec, AliasSpecDefault, AliasUnknown} from '../../lib/alias.js';
+import {_testing as utilsTesting} from '../../lib/utils.js';
+
 
 // Tests
 describe('alias', () => {
@@ -62,7 +61,7 @@ describe('alias', () => {
       });
 
       it('should default to `utils.getPlatform()` for the platform', () => {
-        spyOn(utils, 'getPlatform').and.returnValue('foo');
+        spyOn(utilsTesting, '_getPlatform').and.returnValue('foo');
 
         const mockSpecMap = {default: {}, foo: {}};
         const alias = new Alias(mockSpecMap);

@@ -1,11 +1,12 @@
-'use strict';
-
 // Imports
-const {testingUtils} = require('@gkalpak/cli-utils');
-const {readFileSync} = require('fs');
-const {join} = require('path');
-const {getPlatform} = require('../../lib/utils');
-const {ROOT_DIR} = require('../test-utils');
+import {readFileSync} from 'node:fs';
+import {join} from 'node:path';
+
+import {testingUtils} from '@gkalpak/cli-utils';
+
+import {getPlatform} from '../../lib/utils.js';
+import {ROOT_DIR} from '../test-utils.js';
+
 
 // Constants
 const SCRIPT_DIR = 'bin/config/';

@@ -1,23 +1,21 @@
-'use strict';
-
 // Imports
-const {resolve} = require('path');
+import {readFileSync} from 'node:fs';
+import {join, resolve as pathResolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
+
 
 // Constants
-const ROOT_DIR = resolve(__dirname, '..');
+const __dirname = fileURLToPath(new URL('.', import.meta.url));
+const ROOT_DIR = pathResolve(__dirname, '..');
 
 // Exports
-module.exports = {
+export {
   ROOT_DIR,
-  reversePromise: _reversePromise,
-  tickAsPromised: _tickAsPromised,
+  loadPackageJson,
 };
 
-// Functions - Definitions
-function _reversePromise(p) {
-  return p.then(val => Promise.reject(val), err => err);
-}
-
-function _tickAsPromised() {
-  return new Promise(resolve => setTimeout(resolve));
+// Helpers
+function loadPackageJson() {
+  const pkgJsonPath = join(ROOT_DIR, 'package.json');
+  return JSON.parse(readFileSync(pkgJsonPath, 'utf8'));
 }
