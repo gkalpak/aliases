@@ -173,11 +173,17 @@ describe('utils', () => {
   describe('.isMain()', () => {
     const pathRoot = (getPlatform() === 'win32') ? 'C:' : '';
     const originalArgv = process.argv;
+    let fsExistsSyncSpy;
+    let fsRealpathSyncSpy;
 
     const buildAbsPath = (...segments) => [pathRoot, ...segments].join(sep);
     const buildFileUrl = (...segments) => ['file:/', pathRoot, ...segments].join('/');
 
-    beforeEach(() => process.argv = ['node']);
+    beforeEach(() => {
+      process.argv = ['node'];
+      fsExistsSyncSpy = spyOn(_testing, '_fsExistsSync').and.returnValue(true);
+      fsRealpathSyncSpy = spyOn(_testing, '_fsRealpathSync').and.callFake(path => path);
+    });
 
     afterEach(() => process.argv = originalArgv);
 
@@ -188,6 +194,9 @@ describe('utils', () => {
     it('should return `true` when the specified file URL corresponds to the main module', () => {
       process.argv[1] = buildAbsPath('foo', 'bar.js');
       expect(isMain(buildFileUrl('foo', 'bar.js'))).toBeTrue();
+
+      process.argv[1] = buildAbsPath('foo', 'bar.mjs');
+      expect(isMain(buildFileUrl('foo', 'bar.mjs'))).toBeTrue();
 
       process.argv[1] = buildAbsPath('foo', 'bar');
       expect(isMain(buildFileUrl('foo', 'bar'))).toBeTrue();
@@ -207,24 +216,39 @@ describe('utils', () => {
       expect(isMain(buildFileUrl('qux', 'foo', 'bar'))).toBeFalse();
     });
 
-    ['js', 'cjs', 'mjs'].forEach(ext =>
-      it(`should ignore a \`.${ext}\` extension`, () => {
-        process.argv[1] = buildAbsPath('foo', `bar.${ext}`);
-        expect(isMain(buildFileUrl('foo', 'bar'))).toBeTrue();
+    it('should account for an omitted `.js` file extension', () => {
+      process.argv[1] = buildAbsPath('foo', 'bar');
+      fsExistsSyncSpy.and.callFake(path => path === `${process.argv[1]}.js`);
 
-        process.argv[1] = buildAbsPath('foo', 'bar');
-        expect(isMain(buildFileUrl('foo', `bar.${ext}`))).toBeTrue();
-      }));
+      expect(isMain(buildFileUrl('foo', 'bar.js'))).toBeTrue();
+    });
 
-    it('should ensure that both extensions (if present) are the same', () => {
-      process.argv[1] = buildAbsPath('foo', 'bar.js');
-      expect(isMain(buildFileUrl('foo', 'bar.cjs'))).toBeFalse();
+    it('should not assume a `.js` file extension if the resulting path does not exist', () => {
+      process.argv[1] = buildAbsPath('foo', 'bar');
+      fsExistsSyncSpy.and.callFake(path => path === process.argv[1]);
 
-      process.argv[1] = buildAbsPath('foo', 'bar.cjs');
-      expect(isMain(buildFileUrl('foo', 'bar.mjs'))).toBeFalse();
-
-      process.argv[1] = buildAbsPath('foo', 'bar.mjs');
       expect(isMain(buildFileUrl('foo', 'bar.js'))).toBeFalse();
+    });
+
+    it('should correctly resolve symbolic links', () => {
+      process.argv[1] = buildAbsPath('foo', 'bar.js');
+      const spy = fsRealpathSyncSpy.withArgs(process.argv[1]);
+
+      spy.and.returnValue(buildAbsPath('baz', 'qux.js'));
+      expect(isMain(buildFileUrl('baz', 'qux.js'))).toBeTrue();
+
+      spy.and.returnValue(buildAbsPath('foo', 'bar.mjs'));
+      expect(isMain(buildFileUrl('foo', 'bar.mjs'))).toBeTrue();
+    });
+
+    it('should correctly resolve symbolic links when the `.js` file extension is omitted', () => {
+      const absPathWithoutExt = process.argv[1] = buildAbsPath('foo', 'bar');
+      const absPathWithExt = `${absPathWithoutExt}.js`;
+
+      fsExistsSyncSpy.and.callFake(path => path === absPathWithExt);
+      fsRealpathSyncSpy.withArgs(absPathWithExt).and.returnValue(buildAbsPath('baz', 'qux.js'));
+
+      expect(isMain(buildFileUrl('baz', 'qux.js'))).toBeTrue();
     });
   });
 
