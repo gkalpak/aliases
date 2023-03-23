@@ -3,6 +3,7 @@
 // Imports
 const chalk = require('chalk');
 const isWsl = require('is-wsl');
+const {sep} = require('path');
 const utils = require('../../lib/utils');
 const {reversePromise, tickAsPromised} = require('../test-utils');
 
@@ -162,6 +163,65 @@ describe('utils', () => {
 
     it('should return the current platform (or `wsl`)', () => {
       expect(getPlatform()).toBe(isWsl ? 'wsl' : process.platform);
+    });
+  });
+
+  describe('.isMain()', () => {
+    const isMain = utils.isMain;
+    const pathRoot = (utils.getPlatform() === 'win32') ? 'C:' : '';
+    const originalArgv = process.argv;
+
+    const buildAbsPath = (...segments) => [pathRoot, ...segments].join(sep);
+    const buildFileUrl = (...segments) => ['file:/', pathRoot, ...segments].join('/');
+
+    beforeEach(() => process.argv = ['node']);
+
+    afterEach(() => process.argv = originalArgv);
+
+    it('should be a function', () => {
+      expect(isMain).toEqual(jasmine.any(Function));
+    });
+
+    it('should return `true` when the specified file URL corresponds to the main module', () => {
+      process.argv[1] = buildAbsPath('foo', 'bar.js');
+      expect(isMain(buildFileUrl('foo', 'bar.js'))).toBeTrue();
+
+      process.argv[1] = buildAbsPath('foo', 'bar');
+      expect(isMain(buildFileUrl('foo', 'bar'))).toBeTrue();
+    });
+
+    it('should return `false` when the specified file URL does not correspond to the main module', () => {
+      process.argv[1] = buildAbsPath('foo', 'bar.js');
+      expect(isMain(buildFileUrl('baz', 'qux.js'))).toBeFalse();
+
+      process.argv[1] = buildAbsPath('foo', 'bar');
+      expect(isMain(buildFileUrl('foo', 'baz'))).toBeFalse();
+
+      process.argv[1] = buildAbsPath('foo', 'bar');
+      expect(isMain(buildFileUrl('foo', 'bar', 'baz'))).toBeFalse();
+
+      process.argv[1] = buildAbsPath('foo', 'bar');
+      expect(isMain(buildFileUrl('qux', 'foo', 'bar'))).toBeFalse();
+    });
+
+    ['js', 'cjs', 'mjs'].forEach(ext =>
+      it(`should ignore a \`.${ext}\` extension`, () => {
+        process.argv[1] = buildAbsPath('foo', `bar.${ext}`);
+        expect(isMain(buildFileUrl('foo', 'bar'))).toBeTrue();
+
+        process.argv[1] = buildAbsPath('foo', 'bar');
+        expect(isMain(buildFileUrl('foo', `bar.${ext}`))).toBeTrue();
+      }));
+
+    it('should ensure that both extensions (if present) are the same', () => {
+      process.argv[1] = buildAbsPath('foo', 'bar.js');
+      expect(isMain(buildFileUrl('foo', 'bar.cjs'))).toBeFalse();
+
+      process.argv[1] = buildAbsPath('foo', 'bar.cjs');
+      expect(isMain(buildFileUrl('foo', 'bar.mjs'))).toBeFalse();
+
+      process.argv[1] = buildAbsPath('foo', 'bar.mjs');
+      expect(isMain(buildFileUrl('foo', 'bar.js'))).toBeFalse();
     });
   });
 
