@@ -7,14 +7,14 @@ import sh from 'shelljs';
 
 import {ALIASES, BIN_DIR} from '../lib/constants.js';
 
+sh.set('-e');
+
 
 // Run
 _main();
 
 // Helpers
 function _main() {
-  sh.set('-e');
-
   // Clean up `bin/`.
   sh.rm('-rf', BIN_DIR);
   mkdirSync(BIN_DIR);
