@@ -207,9 +207,9 @@ describe('utils', () => {
       }));
 
       expect(loadJson(`${ROOT_DIR}/test/.eslintrc.json`)).toEqual(jasmine.objectContaining({
-        env: {jasmine: true},
-        extends: 'plugin:jasmine/recommended',
+        extends: ['plugin:jasmine/recommended'],
         plugins: ['jasmine'],
+        env: {jasmine: true},
       }));
     });
 

@@ -167,7 +167,7 @@ class MockHttpsDefinition {
     let problem;
 
     if (this._requestErrorFactory) {
-      problem = `${prefix}request error set: ${this.requestErrorFactory}`;
+      problem = `${prefix}request error set: ${this._requestErrorFactory}`;
     } else if (this._responseErrorFactory) {
       problem = `${prefix}response error set: ${this._responseErrorFactory}`;
     } else if (this._responseFactory) {

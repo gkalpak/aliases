@@ -1,9 +1,14 @@
 {
+  "extends": [
+    "eslint:recommended"
+  ],
+  "plugins": [
+    "ordered-imports"
+  ],
   "env": {
 		"es2020": true,
     "node": true
   },
-  "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": 2022,
     "sourceType": "module"
@@ -23,12 +28,54 @@
     ],
     "linebreak-style": ["error", "unix"],
     "max-classes-per-file": ["error", 2],
-    "max-len": ["error", 120],
+    "max-len": ["error", 120, {"ignoreUrls": true}],
     "no-console": "off",
+    "no-duplicate-imports": ["error", {"includeExports": true}],
     "no-multiple-empty-lines": ["error", {"max": 2, "maxBOF": 0, "maxEOF": 0}],
     "no-prototype-builtins": "off",
-    "no-unused-vars": ["error", {"argsIgnorePattern": "^_"}],
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "all",
+        "argsIgnorePattern": "^_",
+        "caughtErrors": "all",
+        "caughtErrorsIgnorePattern": "^ignored",
+        "destructuredArrayIgnorePattern": "^_",
+        "ignoreRestSiblings": true,
+        "vars": "all"
+      }
+    ],
+    "ordered-imports/ordered-imports": [
+      "error",
+      {
+        "declaration-ordering": ["source", "case-insensitive"],
+        "group-ordering": [
+          {"name": "Built-in modules", "match": "^node:", "order": 1},
+          {"name": "3rd-party modules", "match": "^[@\\w]", "order": 2},
+          {"name": "Relative imports", "match": "^\\.", "order": 3},
+          {"name": "Other", "match": "^", "order": 10}
+        ],
+        "specifier-ordering": "case-insensitive",
+        "symbols-first": true
+      }
+    ],
     "quotes": ["error", "single"],
     "semi": ["error", "always"]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["bin/**/*.js"],
+      "rules": {
+        "ordered-imports/ordered-imports": [
+          "error",
+          {
+            "declaration-ordering": ["source", "case-insensitive"],
+            "group-ordering": [],
+            "specifier-ordering": "case-insensitive",
+            "symbols-first": true
+          }
+        ]
+      }
+    }
+  ]
 }
