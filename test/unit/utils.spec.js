@@ -8,6 +8,7 @@ import {
   _testing,
   capitalize,
   getPlatform,
+  hasOwnProperty,
   importWithEnv,
   isMain,
   loadJson,
@@ -51,6 +52,38 @@ describe('utils', () => {
     });
   });
 
+  describe('.hasOwnProperty()', () => {
+    it('should be a function', () => {
+      expect(hasOwnProperty).toEqual(jasmine.any(Function));
+    });
+
+    it('should return `true` is the object owns the property', () => {
+      expect(hasOwnProperty({foo: 'bar'}, 'foo')).toBeTrue();
+    });
+
+    it('should return `false` is the object does not have the property', () => {
+      expect(hasOwnProperty({foo: 'bar'}, 'bar')).toBeFalse();
+    });
+
+    it('should return `false` is the object has but does not own the property', () => {
+      const parent = {foo: 'bar'};
+      const child = Object.create(parent);
+
+      expect(child.foo).toBe('bar');
+      expect(hasOwnProperty(parent, 'foo')).toBeTrue();
+      expect(hasOwnProperty(child, 'foo')).toBeFalse();
+    });
+
+    it('should work on objects that do not inherit from `Object`', () => {
+      const obj = Object.create(null);
+      obj.foo = 'bar';
+
+      expect(obj.hasOwnProperty).toBeUndefined();
+      expect(hasOwnProperty(obj, 'foo')).toBeTrue();
+      expect(hasOwnProperty(obj, 'bar')).toBeFalse();
+    });
+  });
+
   describe('.importWithEnv()', () => {
     let importSpy;
     let originalEnv;
@@ -90,7 +123,7 @@ describe('utils', () => {
       await importWithEnv('./utils.spec.js', import.meta.url, tempEnv);
 
       expect(process.env).toEqual({foo: 'foo', bar: 'bar'});
-      expect(process.env.hasOwnProperty('baz')).toBe(false);
+      expect(hasOwnProperty(process.env, 'baz')).toBe(false);
     });
 
     it('should restore the environment if loading the dependency errors', async () => {
@@ -100,7 +133,7 @@ describe('utils', () => {
 
       await expectAsync(importWithEnv('./utils.spec.js', import.meta.url, tempEnv)).toBeRejectedWithError('test');
       expect(process.env).toEqual({foo: 'foo', bar: 'bar'});
-      expect(process.env.hasOwnProperty('baz')).toBe(false);
+      expect(hasOwnProperty(process.env, 'baz')).toBe(false);
     });
 
     it('should load and return the specified dependency', async () => {

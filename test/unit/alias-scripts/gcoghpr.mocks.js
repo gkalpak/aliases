@@ -4,6 +4,8 @@ import {EventEmitter} from 'node:events';
 
 import stripAnsi from 'strip-ansi';
 
+import {hasOwnProperty} from '../../../lib/utils.js';
+
 
 // Classes
 class MockExecutor {
@@ -23,7 +25,7 @@ class MockExecutor {
     command = stripAnsi(command);
     this.execDouble(command, config);
 
-    if (!MockExecutor.definitions.hasOwnProperty(command)) {
+    if (!hasOwnProperty(MockExecutor.definitions, command)) {
       const expectedCmds = Object.keys(MockExecutor.definitions).map(d => `\n  ${d}`).join('');
       throw new Error(`Unexpected command: ${command}\nExpecting one of: ${expectedCmds}`);
     }

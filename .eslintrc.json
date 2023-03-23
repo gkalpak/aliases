@@ -32,7 +32,6 @@
     "no-console": "off",
     "no-duplicate-imports": ["error", {"includeExports": true}],
     "no-multiple-empty-lines": ["error", {"max": 2, "maxBOF": 0, "maxEOF": 0}],
-    "no-prototype-builtins": "off",
     "no-unused-vars": [
       "error",
       {
