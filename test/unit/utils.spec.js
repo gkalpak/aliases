@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const isWsl = require('is-wsl');
 const {sep} = require('path');
 const utils = require('../../lib/utils');
-const {reversePromise, tickAsPromised} = require('../test-utils');
+const {reversePromise, ROOT_DIR, tickAsPromised} = require('../test-utils');
 
 // Tests
 describe('utils', () => {
@@ -222,6 +222,37 @@ describe('utils', () => {
 
       process.argv[1] = buildAbsPath('foo', 'bar.mjs');
       expect(isMain(buildFileUrl('foo', 'bar.js'))).toBeFalse();
+    });
+  });
+
+  describe('.loadJson()', () => {
+    const loadJson = utils.loadJson;
+
+    it('should be a function', () => {
+      expect(loadJson).toEqual(jasmine.any(Function));
+    });
+
+    it('should load and parse a JSON file', () => {
+      expect(loadJson(`${ROOT_DIR}/package.json`)).toEqual(jasmine.objectContaining({
+        name: '@gkalpak/aliases',
+        homepage: 'https://github.com/gkalpak/aliases#readme',
+      }));
+
+      expect(loadJson(`${ROOT_DIR}/test/.eslintrc.json`)).toEqual(jasmine.objectContaining({
+        env: {jasmine: true},
+        extends: 'plugin:jasmine/recommended',
+        plugins: ['jasmine'],
+      }));
+    });
+
+    it('should throw an error if the file does not exist', () => {
+      expect(() => loadJson('/non/existing/file.json')).toThrowError(
+          /^Failed to load and parse JSON file '\/non\/existing\/file\.json': ENOENT: no such file or directory/);
+    });
+
+    it('should throw an error if the file is not parsable', () => {
+      expect(() => loadJson(`${ROOT_DIR}/LICENSE.txt`)).toThrowError(
+          /^Failed to load and parse JSON file '[^']+\/LICENSE\.txt': Unexpected token . in JSON/);
     });
   });
 
