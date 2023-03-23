@@ -20,8 +20,6 @@ import {
 // Tests
 describe('constants', () => {
   describe('.ALIASES', () => {
-    const getObjectValues = obj => Object.keys(obj).map(key => obj[key]);
-
     it('should be an object', () => {
       expect(ALIASES).toEqual(jasmine.any(Object));
     });
@@ -31,10 +29,7 @@ describe('constants', () => {
     });
 
     it('should only contain `Alias` instances in each category', () => {
-      const categorySpecs = getObjectValues(ALIASES);
-      const allAliases = categorySpecs.
-        map(categorySpec => getObjectValues(categorySpec)).
-        reduce((aggr, categoryAliases) => aggr.concat(categoryAliases));
+      const allAliases = Object.values(ALIASES).flatMap(categorySpec => Object.values(categorySpec));
 
       expect(allAliases.length).toBeGreaterThan(10);
       allAliases.forEach(alias => expect(alias).toEqual(jasmine.any(Alias)));

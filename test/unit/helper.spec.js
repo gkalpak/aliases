@@ -9,7 +9,7 @@ import {_testing as utilsTesting, capitalize, stripIndentation, wrapLine} from '
 // Tests
 describe('helper', () => {
   describe('.help()', () => {
-    const categories = Object.keys(ALIASES).map(name => ({name, spec: ALIASES[name]}));
+    const categories = Object.entries(ALIASES).map(([name, spec]) => ({name, spec}));
     const categoryToHeading = (cat, partial) => capitalize(`${cat.name} aliases${partial ? ' subset' : ''}`);
     const getHelpMessage = async (...args) => {
       await help(...args);

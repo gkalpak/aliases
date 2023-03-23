@@ -148,15 +148,15 @@ class MockHttpsDefinition {
   }
 
   $getRequestError(url) {
-    return this._requestErrorFactory && this._requestErrorFactory(url);
+    return this._requestErrorFactory?.(url);
   }
 
   $getResponse(url) {
-    return this._responseFactory && this._responseFactory(url);
+    return this._responseFactory?.(url);
   }
 
   $getResponseError(url) {
-    return this._responseErrorFactory && this._responseErrorFactory(url);
+    return this._responseErrorFactory?.(url);
   }
 
   $match(url) {
