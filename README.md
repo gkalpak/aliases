@@ -59,6 +59,7 @@ Here is the list of all global dependencies with associated min. version (older 
 - `grep`: [grep] >=3 (could come through a bash emulation environment on Windows, such as [git for
     Windows][git-win]' `Git BASH`)
 - `http-server`: [http-server] >=0.12.0 (installed globally via [npm] or [yarn])
+- `kdiff3`: [kdiff3] >=0.9
 - `light-server`: [light-server] >=2.5.0 (installed globally via [npm] or [yarn])
 - `ls`: [ls] >=8 (could come through a bash emulation environment on Windows, such as [git for
     Windows][git-win]' `Git BASH`)
@@ -115,6 +116,7 @@ Things I want to (but won't necessarily) do:
 [git-win]: https://git-for-windows.github.io/
 [grep]: https://en.wikipedia.org/wiki/Grep
 [http-server]: https://www.npmjs.com/package/http-server
+[kdiff3]: https://invent.kde.org/sdk/kdiff3
 [light-server]: https://www.npmjs.com/package/light-server
 [ls]: https://en.wikipedia.org/wiki/Ls
 [ng-maintain]: https://www.npmjs.com/package/@gkalpak/ng-maintain
