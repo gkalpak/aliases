@@ -54,6 +54,17 @@ describe(SCRIPT_DIR, () => {
     });
   });
 
+  describe('cfgssh', () => {
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'cfgssh'));
+
+    it('should print configuration instructions for SSH', async () => {
+      const result = await testScript();
+
+      expect(result).toMatch(new RegExp(`^### ${generatedByReSrc}\\n### Copy the following into '~/\\.ssh/config':`));
+      expect(result).toMatch(/IdentityFile ~\/\.ssh\/id-rsa-gkalpak\.ppk$/);
+    });
+  });
+
   describe('cfgvim', () => {
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'cfgvim'));
 

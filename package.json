@@ -43,6 +43,7 @@
     "cfgbash": "./bin/config/cfgbash.js",
     "cfggit": "./bin/config/cfggit.js",
     "cfggpg": "./bin/config/cfggpg.js",
+    "cfgssh": "./bin/config/cfgssh.js",
     "cfgvim": "./bin/config/cfgvim.js",
     "dkrall": "./bin/docker/dkrall.js",
     "dkratt": "./bin/docker/dkratt.js",
