@@ -23,7 +23,11 @@ describe(SCRIPT_DIR, () => {
       const result = await testScript();
 
       expect(result).toMatch(new RegExp(`^### ${generatedByReSrc}\\n### Copy the following into '~/\\.bashrc':`));
-      expect(result).toMatch(IS_WSL ? /export GPG_TTY="\$\(tty\)";$/ : /bind "TAB:menu-complete";$/);
+      expect(result).toMatch(/#export HUSKY="0";\s+# For newer versions.$/);
+
+      if (IS_WSL) {
+        expect(result).toMatch(/export GPG_TTY="\$\(tty\)";$/);
+      }
     });
   });
 
