@@ -42,6 +42,18 @@ describe(SCRIPT_DIR, () => {
     });
   });
 
+  describe('cfggpg', () => {
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'cfggpg'));
+
+    it('should print configuration instructions for GPG', async () => {
+      const result = await testScript();
+
+      expect(result).toMatch(
+          new RegExp(`^### ${generatedByReSrc}\\n### Copy the following into '~/\\.gnupg/gpg-agent.conf':`));
+      expect(result).toMatch(/max-cache-ttl \d+$/);
+    });
+  });
+
   describe('cfgvim', () => {
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'cfgvim'));
 
