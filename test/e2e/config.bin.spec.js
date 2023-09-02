@@ -23,7 +23,7 @@ describe(SCRIPT_DIR, () => {
       const result = await testScript();
 
       expect(result).toMatch(new RegExp(`^### ${generatedByReSrc}\\n### Copy the following into '~/\\.bashrc':`));
-      expect(result).toMatch(/#export HUSKY="0";\s+# For newer versions.$/);
+      expect(result).toMatch(/#export HUSKY="0";\s+# For newer versions\.$/);
 
       if (IS_WSL) {
         expect(result).toMatch(/export GPG_TTY="\$\(tty\)";$/);
@@ -74,6 +74,26 @@ describe(SCRIPT_DIR, () => {
 
       expect(result).toMatch(new RegExp(`^""" ${generatedByReSrc}\\n""" Copy the following into '~/\\.vimrc':`));
       expect(result).toContain(vimrcContent);
+    });
+  });
+
+  describe('cfgwsl', () => {
+    const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'cfgwsl'));
+
+    it('should print configuration instructions for setting up WSL', async () => {
+      const result = await testScript();
+
+      if (!IS_WSL) {
+        expect(result).toBe('This alias only works in WSL.');
+      } else {
+        expect(result).toMatch(new RegExp(
+            `^### ${generatedByReSrc}\\n` +
+            '### Copy the following into a root-owned, 600-mode \'/etc/resolv\\.conf\' file:'));
+        expect(result).toMatch(new RegExp(
+            `### ${generatedByReSrc}\\n### Copy the following into a root-owned, 600-mode '/etc/wsl\\.conf' file:`));
+
+        expect(result).toMatch(/generateResolvConf = false$/);
+      }
     });
   });
 });
