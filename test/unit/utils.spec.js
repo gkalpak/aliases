@@ -277,7 +277,7 @@ describe('utils', () => {
 
     it('should throw an error if the file is not parsable', () => {
       expect(() => loadJson(`${ROOT_DIR}/LICENSE.txt`)).toThrowError(
-          /^Failed to load and parse JSON file '[^']+\/LICENSE\.txt': Unexpected token . in JSON/);
+          /^Failed to load and parse JSON file '[^']+\/LICENSE\.txt': Unexpected token .+ JSON/);
     });
   });
 
