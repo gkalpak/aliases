@@ -1,9 +1,10 @@
 {
   "extends": [
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:import/recommended"
   ],
   "plugins": [
-    "ordered-imports"
+    "import"
   ],
   "env": {
 		"es2020": true,
@@ -16,6 +17,28 @@
   "rules": {
     "arrow-parens": ["error", "as-needed"],
     "dot-location": ["warn", "object"],
+    "import/extensions": ["error", "always"],
+    "import/first": "error",
+    "import/group-exports": "error",
+    "import/newline-after-import": ["error", {"considerComments": true, "count": 2, "exactCount": true}],
+    "import/no-absolute-path": "error",
+    "import/no-anonymous-default-export": ["error", {"allowLiteral": true}],
+    "import/no-deprecated": "error",
+    "import/no-empty-named-blocks": "error",
+    "import/no-named-default": "error",
+    "import/no-namespace": "error",
+    "import/no-self-import": "error",
+    "import/no-unassigned-import": "error",
+    "import/no-useless-path-segments": ["error", {"noUselessIndex": true}],
+    "import/order": [
+      "error",
+      {
+        "alphabetize": {"caseInsensitive": true, "order": "asc", "orderImportKind": "asc"},
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"],
+        "newlines-between": "always",
+        "warnOnUnassignedImports": true
+      }
+    ],
     "indent": [
       "error",
       2,
@@ -44,34 +67,25 @@
         "vars": "all"
       }
     ],
-    "ordered-imports/ordered-imports": [
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"],
+    "sort-imports": [
       "error",
       {
-        "declaration-ordering": ["source", "case-insensitive"],
-        "group-ordering": [
-          {"name": "Built-in modules", "match": "^node:", "order": 1},
-          {"name": "3rd-party modules", "match": "^[@\\w]", "order": 2},
-          {"name": "Relative imports", "match": "^\\.", "order": 3},
-          {"name": "Other", "match": "^", "order": 10}
-        ],
-        "specifier-ordering": "case-insensitive",
-        "symbols-first": true
+        "ignoreCase": true,
+        "ignoreDeclarationSort": true
       }
-    ],
-    "quotes": ["error", "single"],
-    "semi": ["error", "always"]
+    ]
   },
   "overrides": [
     {
       "files": ["bin/**/*.js"],
       "rules": {
-        "ordered-imports/ordered-imports": [
+        "import/newline-after-import": "off",
+        "import/order": [
           "error",
           {
-            "declaration-ordering": ["source", "case-insensitive"],
-            "group-ordering": [],
-            "specifier-ordering": "case-insensitive",
-            "symbols-first": true
+            "newlines-between": "never"
           }
         ]
       }

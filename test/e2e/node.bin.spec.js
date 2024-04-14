@@ -7,8 +7,8 @@ import sh from 'shelljs';
 import {getPlatform} from '../../lib/utils.js';
 import {ROOT_DIR} from '../test-utils.js';
 
-sh.set('-e');
 
+sh.set('-e');
 
 // Constants
 const SCRIPT_DIR = 'bin/node/';

@@ -1,9 +1,9 @@
 // Imports
 import stripAnsi from 'strip-ansi';
 
-import {_testing as constantsTesting, ALIASES, VERSION_STAMP} from '../../lib/constants.js';
-import {_testing as helperTesting, help} from '../../lib/helper.js';
-import {_testing as utilsTesting, capitalize, stripIndentation, wrapLine} from '../../lib/utils.js';
+import {ALIASES, _testing as constantsTesting, VERSION_STAMP} from '../../lib/constants.js';
+import {help, _testing as helperTesting} from '../../lib/helper.js';
+import {capitalize, stripIndentation, _testing as utilsTesting, wrapLine} from '../../lib/utils.js';
 
 
 // Tests

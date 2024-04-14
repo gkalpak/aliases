@@ -1,7 +1,7 @@
 // Imports
 import {commandUtils} from '@gkalpak/cli-utils';
 
-import {_testing as nvuTesting, main, nvu} from '../../../lib/alias-scripts/nvu.js';
+import {main, nvu, _testing as nvuTesting} from '../../../lib/alias-scripts/nvu.js';
 import {ALIASES} from '../../../lib/constants.js';
 import {_testing as utilsTesting} from '../../../lib/utils.js';
 

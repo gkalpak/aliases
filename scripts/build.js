@@ -7,8 +7,8 @@ import sh from 'shelljs';
 
 import {ALIASES, BIN_DIR} from '../lib/constants.js';
 
-sh.set('-e');
 
+sh.set('-e');
 
 // Run
 _main();
