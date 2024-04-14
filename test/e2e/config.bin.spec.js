@@ -91,8 +91,12 @@ describe(SCRIPT_DIR, () => {
             '### Copy the following into a root-owned, 600-mode \'/etc/resolv\\.conf\' file:'));
         expect(result).toMatch(new RegExp(
             `### ${generatedByReSrc}\\n### Copy the following into a root-owned, 600-mode '/etc/wsl\\.conf' file:`));
+        expect(result).toMatch(new RegExp(
+            '### Run the following commands in PowerShell \\(with admin rights\\) to disable\\n' +
+            '### "Large Send Offload" and fix network slowness in WSL\\.\\n' +
+            '### See also: https:\\/\\/github\\.com\\/microsoft\\/WSL\\/issues\\/8171#issuecomment-1572881486'));
 
-        expect(result).toMatch(/generateResolvConf = false$/);
+        expect(result).toMatch(/Get-NetAdapterAdvancedProperty -Name "vEthernet \(WSL\)" \| Format-Table -AutoSize$/);
       }
     });
   });
