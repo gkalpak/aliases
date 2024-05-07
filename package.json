@@ -116,6 +116,7 @@
     "gst": "./bin/git/gst.js",
     "gstk": "./bin/git/gstk.js",
     "gstl": "./bin/git/gstl.js",
+    "gstm": "./bin/git/gstm.js",
     "gstp": "./bin/git/gstp.js",
     "gsync": "./bin/git/gsync.js",
     "halp": "./bin/misc/halp.js",
