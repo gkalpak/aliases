@@ -283,13 +283,13 @@ describe('helper', () => {
       });
 
       it('should not mention "universal" arguments at all', async () => {
-        const msg1 = await getHelpMessage('gs', 'foo');
+        const msg1 = await getHelpMessage('gst', 'foo');
         expect(msg1).not.toContain('--gkcu-');
 
-        const msg2 = await getHelpMessage('gs');
+        const msg2 = await getHelpMessage('gst');
         expect(msg2).not.toContain('--gkcu-');
 
-        const msg3 = await getHelpMessage('gs*');
+        const msg3 = await getHelpMessage('gst*');
         expect(msg3).not.toContain('--gkcu-');
 
         const msg4 = await getHelpMessage('foo');
