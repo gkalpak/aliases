@@ -82,22 +82,18 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
     });
   });
 
-  // - `nvm` might not be available on some environments; e.g. Windows on CI.
-  // - `nvm` is being funny on non-Windows platforms, giving errors when run during tests
-  //   (but not directly in the terminal).
-  describe('nvls', onlyWithNvm(onlyOnWindows(() => {
+  // - `nvm` might not be available on some environments; e.g. on CI.
+  describe('nvls', onlyWithNvm(() => {
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nvls'));
 
     it('should at least list (pun intended) the current Node.js version', async () => {
       const result = await testScript();
       expect(result).toContain(process.version.replace(/^v/, ''));
     });
-  })));
+  }));
 
-  // - `nvm` might not be available on some environments; e.g. Windows on CI.
-  // - `nvm` is being funny on non-Windows platforms, giving errors when run during tests
-  //   (but not directly in the terminal).
-  describe('nvlsa', onlyWithNvm(onlyOnWindows(() => {
+  // - `nvm` might not be available on some environments; e.g. on CI.
+  describe('nvlsa', onlyWithNvm(() => {
     const testScript = testingUtils.testScriptFactory(join(ROOT_DIR, SCRIPT_DIR, 'nvlsa'));
 
     it('should list some Node.js versions', async () => {
@@ -112,7 +108,7 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
       const result = await testScript();
       expect(result).toContain(process.version.replace(/^v/, ''));
     });
-  })));
+  }));
 
   describe('ylsg', () => {
     const alias = 'yarn global list --depth=0';
@@ -145,10 +141,6 @@ function onlyIf(condition, testSuite) {
     testSuite :
     // Return a dummy test suite to avoid Jasmine's "describe with no children" error.
     () => it('is skipped', () => expect(true).toBeTrue());
-}
-
-function onlyOnWindows(testSuite) {
-  return onlyIf(IS_WINDOWS, testSuite);
 }
 
 function onlyWithNvm(testSuite) {
