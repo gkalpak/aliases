@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import stripAnsi from 'strip-ansi';
 
 import {_testing, Gcoghpr, main} from '../../../lib/alias-scripts/gcoghpr.js';
-import {PR_LOCAL_BRANCH_PREFIX, PR_REMOTE_ALIAS_PREFIX} from '../../../lib/constants.js';
+import {ALIASES, PR_LOCAL_BRANCH_PREFIX, PR_REMOTE_ALIAS_PREFIX} from '../../../lib/constants.js';
 import {loadPackageJson} from '../../test-utils.js';
 
 import {MockExecutor, MockHttps, MockLogger} from './gcoghpr.mocks.js';
@@ -21,9 +21,7 @@ describe('gcoghpr', () => {
         (upUser, upRepo, prAuthor, prBranch, prCommits = 0, prNumber = 0, currentBranch = 'master') => {
           const localBranch = `${PR_LOCAL_BRANCH_PREFIX}-${!prNumber ? prBranch : `pr${prNumber}`}`;
           const remoteUrl = `${PR_REMOTE_ALIAS_PREFIX}-${prAuthor}`;
-          const gitGetDefaultBranchCmd =
-                '(git show-ref --heads --quiet master && echo master) || ' +
-                '(git show-ref --heads --quiet main && echo main) || echo unknown-branch';
+          const gitGetDefaultBranchCmd = ALIASES.git.gdefb.getSpec().command;
           const reportSuccessCmd = !prCommits ?
             'withStyle(reset): ' +
               'node --print "\'\'" && ' +
