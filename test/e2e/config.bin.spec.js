@@ -26,7 +26,7 @@ describe(SCRIPT_DIR, () => {
       expect(result).toMatch(/#export HUSKY="0";\s+# For newer versions\.$/);
 
       if (IS_WSL) {
-        expect(result).toMatch(/export GPG_TTY="\$\(tty\)";$/);
+        expect(result).toMatch(/export GPG_TTY="\$\(tty\)";\n/);
       }
     });
   });
