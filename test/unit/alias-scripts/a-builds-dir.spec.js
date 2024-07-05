@@ -66,7 +66,7 @@ describe('a-builds-dir', () => {
           await aBuildsDir({});
 
           expect(pathResolveSpy).toHaveBeenCalledTimes(1);
-          expect(consoleLogSpy).toHaveBeenCalledWith('/ng/1/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/ng/1/aio/aio-builds-setup');
         });
 
         it('should look at `./aio-builds-setup/` next', async () => {
@@ -76,7 +76,7 @@ describe('a-builds-dir', () => {
           await aBuildsDir({});
 
           expect(pathResolveSpy).toHaveBeenCalledTimes(2);
-          expect(consoleLogSpy).toHaveBeenCalledWith('/ng/2/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/ng/2/aio/aio-builds-setup');
         });
 
         it('should look at `./` next', async () => {
@@ -86,7 +86,7 @@ describe('a-builds-dir', () => {
           await aBuildsDir({});
 
           expect(pathResolveSpy).toHaveBeenCalledTimes(3);
-          expect(consoleLogSpy).toHaveBeenCalledWith('/ng/3/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/ng/3/aio/aio-builds-setup');
         });
 
         it('should look at `../` next', async () => {
@@ -96,7 +96,7 @@ describe('a-builds-dir', () => {
           await aBuildsDir({});
 
           expect(pathResolveSpy).toHaveBeenCalledTimes(4);
-          expect(consoleLogSpy).toHaveBeenCalledWith('/ng/4/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/ng/4/aio/aio-builds-setup');
         });
 
         it('should look at `../../` next', async () => {
@@ -106,7 +106,7 @@ describe('a-builds-dir', () => {
           await aBuildsDir({});
 
           expect(pathResolveSpy).toHaveBeenCalledTimes(5);
-          expect(consoleLogSpy).toHaveBeenCalledWith('/ng/5/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/ng/5/aio/aio-builds-setup');
         });
 
         it('should fail (with an informative error) if unable to locate the directory', async () => {
@@ -128,10 +128,10 @@ describe('a-builds-dir', () => {
               '/ng/2/aio/aio-builds-setup');
 
           await aBuildsDir({});
-          expect(consoleLogSpy).toHaveBeenCalledWith('/ng/1/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/ng/1/aio/aio-builds-setup');
 
           await aBuildsDir({});
-          expect(consoleLogSpy).toHaveBeenCalledWith('/ng/2/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/ng/2/aio/aio-builds-setup');
         });
 
         it('should verify that the directory exists', async () => {
@@ -146,7 +146,7 @@ describe('a-builds-dir', () => {
 
           await aBuildsDir({});
 
-          expect(consoleLogSpy).toHaveBeenCalledWith('/ng/2/existing/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/ng/2/existing/aio/aio-builds-setup');
         });
 
         it('should verify that the directory is a...directory', async () => {
@@ -155,7 +155,7 @@ describe('a-builds-dir', () => {
 
           await aBuildsDir({});
 
-          expect(console.log).toHaveBeenCalledWith('/ng/2/dir/aio/aio-builds-setup');
+          expect(console.log).toHaveBeenCalledWith('\n/ng/2/dir/aio/aio-builds-setup');
         });
 
         it('should fail if `fs.stat()` fails', async () => {
@@ -210,10 +210,10 @@ describe('a-builds-dir', () => {
       describe('output', () => {
         it('should log the absolute directory path', async () => {
           expect(await aBuildsDir({})).toBeUndefined();
-          expect(consoleLogSpy).toHaveBeenCalledWith('/absolute/1/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/absolute/1/aio/aio-builds-setup');
 
           expect(await aBuildsDir({returnOutput: false})).toBeUndefined();
-          expect(consoleLogSpy).toHaveBeenCalledWith('/absolute/2/aio/aio-builds-setup');
+          expect(consoleLogSpy).toHaveBeenCalledWith('\n/absolute/2/aio/aio-builds-setup');
         });
 
         it('should return the absolute directory path if `returnOutput` is `true`', async () => {
