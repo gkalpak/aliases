@@ -1,4 +1,5 @@
 // Imports
+import {createRequire} from 'node:module';
 import {sep} from 'node:path';
 
 import chalk from 'chalk';
@@ -85,11 +86,11 @@ describe('utils', () => {
   });
 
   describe('.importWithEnv()', () => {
-    let importSpy;
+    let importFnSpy;
     let originalEnv;
 
     beforeEach(() => {
-      importSpy = spyOn(_testing, '_import');
+      importFnSpy = jasmine.createSpy('importFn');
 
       originalEnv = process.env;
       process.env = {};
@@ -105,22 +106,22 @@ describe('utils', () => {
       process.env = {foo: 'foo', bar: 'bar'};
       const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
 
-      importSpy.and.callFake(() => expect(process.env).toEqual({
+      importFnSpy.and.callFake(() => expect(process.env).toEqual({
         foo: 'foo',
         bar: 'temp-bar',
         baz: 'temp-baz',
       }));
 
-      await importWithEnv('./utils.spec.js', import.meta.url, tempEnv);
+      await importWithEnv(importFnSpy, tempEnv);
 
-      expect(importSpy).toHaveBeenCalledTimes(1);
+      expect(importFnSpy).toHaveBeenCalledTimes(1);
     });
 
     it('should restore the environment after loading the dependency', async () => {
       process.env = {foo: 'foo', bar: 'bar'};
       const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
 
-      await importWithEnv('./utils.spec.js', import.meta.url, tempEnv);
+      await importWithEnv(importFnSpy, tempEnv);
 
       expect(process.env).toEqual({foo: 'foo', bar: 'bar'});
       expect(hasOwnProperty(process.env, 'baz')).toBe(false);
@@ -129,44 +130,45 @@ describe('utils', () => {
     it('should restore the environment if loading the dependency errors', async () => {
       process.env = {foo: 'foo', bar: 'bar'};
       const tempEnv = {bar: 'temp-bar', baz: 'temp-baz'};
-      importSpy.and.callFake(() => { throw new Error('test'); });
+      importFnSpy.and.rejectWith(new Error('test'));
 
-      await expectAsync(importWithEnv('./utils.spec.js', import.meta.url, tempEnv)).toBeRejectedWithError('test');
+      await expectAsync(importWithEnv(importFnSpy, tempEnv)).toBeRejectedWithError('test');
       expect(process.env).toEqual({foo: 'foo', bar: 'bar'});
       expect(hasOwnProperty(process.env, 'baz')).toBe(false);
     });
 
     it('should load and return the specified dependency', async () => {
       const mockDep = {};
-      importSpy.and.returnValue(mockDep);
+      importFnSpy.and.returnValue(mockDep);
 
-      await expectAsync(importWithEnv('./utils.spec.js', import.meta.url, {})).toBeResolvedTo(mockDep);
+      await expectAsync(importWithEnv(importFnSpy, {})).toBeResolvedTo(mockDep);
     });
 
-    it('should resolve the path to a built-in module', async () => {
-      await importWithEnv('events', import.meta.url, {});
-      expect(importSpy).toHaveBeenCalledWith('events');
+    it('should work correctly when importing a built-in module', async () => {
+      const events = await importWithEnv(() => import('events'), {});
+      expect(events.EventEmitter).toEqual(jasmine.any(Function));
     });
 
-    it('should resolve the path to a namespaced built-in module', async () => {
-      await importWithEnv('node:events', import.meta.url, {});
-      expect(importSpy).toHaveBeenCalledWith('node:events');
+    it('should work correctly when importing a namespaced built-in module', async () => {
+      const events = await importWithEnv(() => import('node:events'), {});
+      expect(events.EventEmitter).toEqual(jasmine.any(Function));
     });
 
-    it('should resolve the path to a 3rd-party module', async () => {
-      await importWithEnv('@gkalpak/cli-utils', import.meta.url, {});
-      expect(importSpy).toHaveBeenCalledWith(jasmine.stringMatching(
-          /^file:\/\/\/.*?\/node_modules\/@gkalpak\/cli-utils\/out\/lib\/index.js$/));
+    it('should work correctly when importing a 3rd-party module', async () => {
+      const gkcu = await importWithEnv(() => import('@gkalpak/cli-utils'), {});
+      expect(gkcu.commandUtils).toEqual(jasmine.any(Object));
     });
 
-    it('should resolve the path to a local file', async () => {
-      await importWithEnv('../../lib/utils.js', import.meta.url, {});
-      expect(importSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^file:\/\/\/.*?\/lib\/utils.js$/));
+    it('should work correctly when importing a local file', async () => {
+      const utils = await importWithEnv(() => import('../../lib/utils.js'), {});
+      expect(utils.importWithEnv).toEqual(jasmine.any(Function));
     });
 
-    it('should resolve the path to a local file without extension', async () => {
-      await importWithEnv('../../lib/utils', import.meta.url, {});
-      expect(importSpy).toHaveBeenCalledWith(jasmine.stringMatching(/^file:\/\/\/.*?\/lib\/utils.js$/));
+    it('should work correctly when requiring a local file', async () => {
+      const require = createRequire(import.meta.url);
+      /* eslint-disable-next-line import/extensions */
+      const gkcu = await importWithEnv(() => require('../../node_modules/@gkalpak/cli-utils/out/lib/index'), {});
+      expect(gkcu.commandUtils).toEqual(jasmine.any(Object));
     });
   });
 
