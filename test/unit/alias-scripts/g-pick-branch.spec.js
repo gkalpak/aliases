@@ -264,10 +264,10 @@ describe('g-pick-branch', () => {
           promptSpy.and.returnValues(Promise.resolve({branch: 'foo'}), Promise.resolve({branch: 'bar'}));
 
           expect(await gPickBranch({})).toBeUndefined();
-          expect(consoleLogSpy).toHaveBeenCalledWith('\nfoo');
+          expect(consoleLogSpy).toHaveBeenCalledWith('foo');
 
           expect(await gPickBranch({returnOutput: false})).toBeUndefined();
-          expect(consoleLogSpy).toHaveBeenCalledWith('\nbar');
+          expect(consoleLogSpy).toHaveBeenCalledWith('bar');
         });
 
         it('should return the selected branch if `returnOutput` is `true`', async () => {

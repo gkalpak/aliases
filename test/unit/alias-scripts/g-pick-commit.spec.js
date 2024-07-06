@@ -225,10 +225,10 @@ describe('g-pick-commit', () => {
               Promise.resolve({commit: 'b4r9ux (bar, origin/qux) This is the bar commit message'}));
 
           expect(await gPickCommit({})).toBeUndefined();
-          expect(consoleLogSpy).toHaveBeenCalledWith('\nf00ba2');
+          expect(consoleLogSpy).toHaveBeenCalledWith('f00ba2');
 
           expect(await gPickCommit({returnOutput: false})).toBeUndefined();
-          expect(consoleLogSpy).toHaveBeenCalledWith('\nb4r9ux');
+          expect(consoleLogSpy).toHaveBeenCalledWith('b4r9ux');
         });
 
         it('should return the selected commit SHA (removing other info) if `returnOutput` is `true`', async () => {
