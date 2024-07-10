@@ -30,7 +30,7 @@ function aliasesToBin(aliases) {
 
   Object.keys(aliases).forEach(groupName =>
     Object.keys(aliases[groupName]).forEach(name => {
-      bin[name] = `./bin/${groupName}/${name}.js`;
+      bin[name] = `bin/${groupName}/${name}.js`;
     })
   );
 
