@@ -57,6 +57,8 @@
     "gbcd": "bin/git/gbcd.js",
     "gbco": "bin/git/gbco.js",
     "gbd": "bin/git/gbd.js",
+    "gbdio": "bin/git/gbdio.js",
+    "gbdr": "bin/git/gbdr.js",
     "gcl": "bin/git/gcl.js",
     "gcm": "bin/git/gcm.js",
     "gcma": "bin/git/gcma.js",

@@ -146,7 +146,8 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(30000, () => {
     it('should replace private aliases in descriptions', async () => {
       const result = await testScript();
       expect(result).not.toContain('__');
-      expect(result).toContain('(interactively pick a branch)');
+      expect(result).toContain('(interactively pick a local branch)');
+      expect(result).toContain('(interactively pick a remote branch)');
       expect(result).toContain('(interactively pick a commit)');
     });
   });
