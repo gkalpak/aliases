@@ -53,6 +53,7 @@
     "dkrrm": "bin/docker/dkrrm.js",
     "gaa": "bin/git/gaa.js",
     "gb": "bin/git/gb.js",
+    "gba": "bin/git/gba.js",
     "gbc": "bin/git/gbc.js",
     "gbcd": "bin/git/gbcd.js",
     "gbco": "bin/git/gbco.js",
