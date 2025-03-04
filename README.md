@@ -36,39 +36,40 @@ My global aliases packaged as a node module for easy installation/update across 
 
     See [cli-utils] for more details.
 
-    NOTE: All arguments starting with `--gkcu-` will be ignored when substituting input arguments or
-    determining their index.
+    **NOTE:**
+    All arguments starting with `--gkcu-` will be ignored when substituting input arguments or determining their index.
 
     <sub>(*): This is still an experimental feature and not guaranteed to work as expected.</sub>
 
 Run `halp` for a list of all available aliases.
-Run `halp <category>` for a list of available aliases for a particular category (e.g. `git`, `node`,
-`misc`).
+Run `halp <category>` for a list of available aliases for a particular category (e.g. `git`, `node`, `misc`).
 
 
 ## Global Dependencies
 
-Obviously, aliases refer to other global commands/scripts. In order for an alias to work, the
-corresponding command must be globally available. You can see each alias' global dependency by
-inspecting the associated command (e.g. via `halp`).
+Obviously, aliases refer to other global commands/scripts.
+In order for an alias to work, the corresponding command must be globally available.
+You can see each alias' global dependency by inspecting the associated command (e.g. via `halp`).
 
 Here is the list of all global dependencies with associated min. version (older versions are not guaranteed work):
 
 - `git`: [git] >=2.40
 - `docker`: [docker] >= 17
-- `grep`: [grep] >=3 (could come through a bash emulation environment on Windows, such as [git for
-    Windows][git-win]' `Git BASH`)
+- `grep`: [grep] >=3 (could come through a bash emulation environment on Windows, such as [git for Windows][git-win]' `Git BASH`)
 - `http-server`: [http-server] >=0.12.0 (installed globally via [npm] or [yarn])
 - `kdiff3`: [kdiff3] >=0.9
 - `light-server`: [light-server] >=2.5.0 (installed globally via [npm] or [yarn])
-- `ls`: [ls] >=8 (could come through a bash emulation environment on Windows, such as [git for
-    Windows][git-win]' `Git BASH`)
+- `ls`: [ls] >=8 (could come through a bash emulation environment on Windows, such as [git for Windows][git-win]' `Git BASH`)
 - `ngm-diff-wh`: `ngm-diff-wh` >=0.0.4 (part of the [ng-maintain] suite)
 - `ngm-pr-merge`: `ngm-pr-merge` >=0.0.4 (part of the [ng-maintain] suite)
 - `node`: [Node.js][node] >=16
 - `npm`: [npm] >=3 (comes bundled with Node.js)
 - `nvm`: [nvm] >=0.30 (on *nix) / [nvm-windows][nvm-win] >=1 (on Windows)
 - `yarn`: [yarn] >=0.24
+
+> [!Tip]
+> The git commands are generally generic and should work with the default git configuration, but are only tested using the configuration provided by the `cfggit` alias.
+
 
 ## Testing
 
@@ -81,16 +82,14 @@ The following test-types/modes are available:
   _Run all the unit tests once. These tests are quick and suitable to be run on every change._
 
 - **E2E tests:** `npm run test-e2e`
-  _Run all the end-to-end tests once. These test may hit actual API endpoints or perform expensive
-  I/O operations and are considerably slower than unit tests._
+  _Run all the end-to-end tests once. These test may hit actual API endpoints or perform expensive I/O operations and are considerably slower than unit tests._
 
 - **All tests:** `npm test` / `npm run test`
-  _Run all of the above tests (code-linting, unit tests, e2e tests). This command is automatically
-  run before every release (via `npm run release`)._
+  _Run all of the above tests (code-linting, unit tests, e2e tests). This command is automatically run before every release (via `npm run release`)._
 
 - **"Dev" mode:** `npm run dev`
-  _Watch all files and rerun linting and the unit tests whenever something changes. For performance
-  reasons, e2e tests are omitted._
+  _Watch all files and rerun linting and the unit tests whenever something changes. For performance reasons, e2e tests are omitted._
+
 
 ## TODO
 
