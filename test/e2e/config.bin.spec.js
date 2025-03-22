@@ -61,7 +61,7 @@ describe(SCRIPT_DIR, () => {
       const result = await testScript();
 
       expect(result).toMatch(new RegExp(`^### ${generatedByReSrc}\\n### Copy the following into '~/\\.ssh/config':`));
-      expect(result).toMatch(/IdentityFile ~\/\.ssh\/id-rsa-gkalpak\.ppk$/);
+      expect(result).toMatch(/IdentityFile ~\/\.ssh\/id-rsa-gkalpak\.priv$/);
     });
   });
 
