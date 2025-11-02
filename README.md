@@ -1,8 +1,14 @@
-# aliases [![Build Status][build-status-image]][build-status]
+<div align="center">
+
+<img src="./assets/images/logo.svg" alt="package logo" height="64" />
+
+# @gkalpak/aliases [![Build Status][build-status-image]][build-status]
 
 _Warning:_
 _This is still an experimental tool._
 _Use at your own risk!_
+
+</div>
 
 
 ## Description
