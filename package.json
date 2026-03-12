@@ -8,7 +8,7 @@
   "scripts": {
     "start": "run-s dev",
     "build": "node scripts/build",
-    "dev": "watch \"run-s ~~lint ~~test-unit\" lib/ test/ --wait 1",
+    "dev": "node --watch-path=lib/ --watch-path=test/ scripts/run-npm-script ~~dev",
     "postinstall": "npm run ~~platformize-bin",
     "prelint": "npm run prepare-bin-local",
     "lint": "npm run ~~lint",
@@ -24,6 +24,7 @@
     "pretest-unit": "npm run prepare-bin-local",
     "test-unit": "npm run ~~test-unit",
     "postversion": "git push && git push --tags",
+    "~~dev": "run-s ~~lint ~~test-unit",
     "~~lint": "eslint ./",
     "~~platformize-bin": "node scripts/platformize-bin",
     "~~test-e2e": "jasmine test/e2e/**/*.spec.js",
@@ -198,29 +199,18 @@
     }
   },
   "dependencies": {
-    "@gkalpak/cli-utils": "^0.2.0",
+    "@gkalpak/cli-utils": "^0.3.0",
     "chalk": "^5.6.2",
-    "inquirer": "^12.10.0",
-    "is-wsl": "^3.1.0"
+    "inquirer": "^13.3.0",
+    "is-wsl": "^3.1.1"
   },
   "devDependencies": {
     "eslint": "^8.57.1",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jasmine": "^4.2.2",
-    "jasmine": "^5.12.0",
+    "jasmine": "^6.1.0",
     "npm-run-all": "^4.1.5",
     "shelljs": "^0.10.0",
-    "strip-ansi": "^7.1.2",
-    "watch": "^1.0.2"
-  },
-  "overrides-comments": {
-    "watch": {
-      "exec-sh": "Fix vulnerability in transitive dependency `merge` (see https://github.com/gkalpak/aliases/security/dependabot/1)."
-    }
-  },
-  "overrides": {
-    "watch": {
-      "exec-sh": "0.4.0"
-    }
+    "strip-ansi": "^7.2.0"
   }
 }

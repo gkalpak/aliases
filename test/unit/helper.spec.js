@@ -33,7 +33,7 @@ describe('helper', () => {
       ['specific category', ['misc']],
       ['specific aliases', ['gs', 'nv', 'aioall', 'll']],
     ].forEach(([desc, args]) => {
-      describe(`(for ${desc})`, () => {
+      describe(`(for ${desc} - group: 1 of 2)`, () => {
         it('should return a promise', async () => {
           const promise = help(...args);
           expect(promise).toEqual(jasmine.any(Promise));
@@ -55,7 +55,7 @@ describe('helper', () => {
       });
     });
 
-    describe('(for all categories)', () => {
+    describe('(for all categories - group: 2 of 2)', () => {
       it('should contain "Available aliases"', async () => {
         const msg = await getHelpMessage();
         expect(msg).toContain('Available aliases');
@@ -95,7 +95,7 @@ describe('helper', () => {
       });
     });
 
-    describe('(for specific category)', () => {
+    describe('(for specific category - group: 2 of 2)', () => {
       const chainCategoryTestFactory = runAssertions => async (prev, cat) => {
         await prev;
         const msg = await getHelpMessage(cat.name);
@@ -164,7 +164,7 @@ describe('helper', () => {
       });
     });
 
-    describe('(for specific aliases)', () => {
+    describe('(for specific aliases - group: 2 of 2)', () => {
       it('should not contain "Available aliases"', async () => {
         const msg1 = await getHelpMessage('gs', 'foo');
         expect(msg1).not.toContain('Available aliases');
