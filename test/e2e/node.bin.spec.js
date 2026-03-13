@@ -104,10 +104,13 @@ describe(SCRIPT_DIR, testingUtils.withJasmineTimeout(60000, () => {
       expect(linesWithVersions.length).toBeGreaterThan(5);
     });
 
-    it('should include the current Node.js version', async () => {
-      const result = await testScript();
-      expect(result).toContain(process.version.replace(/^v/, ''));
-    });
+    // `nvm` on Windows does not list all available versions.
+    if (!IS_WINDOWS) {
+      it('should include the current Node.js version', async () => {
+        const result = await testScript();
+        expect(result).toContain(process.version.replace(/^v/, ''));
+      });
+    }
   }));
 
   describe('ylsg', () => {
