@@ -20,7 +20,7 @@ function _main() {
   const defaultScripts = findFiles(BIN_DIR).filter(x => defaultExtRe.test(x));
   defaultScripts.forEach(defaultScriptPath => {
     const activeScriptPath = defaultScriptPath.replace(defaultExtRe, '.js');
-    moveFile(defaultScriptPath, activeScriptPath);
+    renameSync(defaultScriptPath, activeScriptPath);
   });
 
   // "Activate" any platform-specific scripts.
@@ -33,26 +33,27 @@ function _main() {
     const activeScriptMode = statSync(activeScriptPath).mode;
 
     // Back up the default script for future restoration.
-    moveFile(activeScriptPath, defaultScriptPath);
+    renameSync(activeScriptPath, defaultScriptPath);
 
     // Copy the platform-specific script (not move just in case).
-    copyFile(platformScriptPath, activeScriptPath);
+    copyFileSync(platformScriptPath, activeScriptPath);
 
     // Preserve active script mode (including "executability") for the scripts to work on *nix platforms.
     chmodSync(activeScriptPath, activeScriptMode);
   });
 }
 
-function copyFile(fromPath, toPath) {
-  copyFileSync(fromPath, toPath);
-}
-
+/**
+ * @param {string} rootDir
+ * @returns {string[]}
+ */
 function findFiles(rootDir) {
   const unvisitedDirectories = [rootDir];
+  /** @type {string[]} */
   const files = [];
 
   while (unvisitedDirectories.length) {
-    const currentDir = unvisitedDirectories.pop();
+    const currentDir = /** @type {string} */(unvisitedDirectories.pop());
     readdirSync(currentDir).forEach(name => {
       const path = join(currentDir, name);
       const info = statSync(path);
@@ -63,8 +64,4 @@ function findFiles(rootDir) {
   }
 
   return files;
-}
-
-function moveFile(fromPath, toPath) {
-  renameSync(fromPath, toPath);
 }
