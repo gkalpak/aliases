@@ -1,8 +1,9 @@
 // Imports
 import {commandUtils, processUtils} from '@gkalpak/cli-utils';
-import inquirer from 'inquirer';
+import {Separator} from '@inquirer/select';
 
 import {_testing, gPickCommit, main} from '../../../lib/alias-scripts/g-pick-commit.js';
+import {_testing as utilsTesting} from '../../../lib/utils.js';
 
 
 // Tests
@@ -10,12 +11,24 @@ describe('g-pick-commit', () => {
   describe('gPickCommit()', () => {
     let cmdUtilsRunSpy;
     let consoleLogSpy;
-    let promptSpy;
+    let selectSpy;
 
     beforeEach(() => {
       cmdUtilsRunSpy = spyOn(commandUtils, 'run').and.resolveTo('');
       consoleLogSpy = spyOn(console, 'log');
-      promptSpy = spyOn(inquirer, 'prompt').and.resolveTo({commit: ''});
+      selectSpy = jasmine.createSpy('select').and.resolveTo('');
+
+      const originalImportWithEnv = utilsTesting._importWithEnv;
+      spyOn(utilsTesting, '_importWithEnv').and.callFake(async (...args) => {
+        if (/import\((["'])@inquirer\/select\1\)/.test(args[0].toString())) {
+          return {
+            default: selectSpy,
+            ...(await import('@inquirer/select').then(({default: _, ...rest}) => rest)),
+          };
+        } else {
+          return originalImportWithEnv(...args);
+        }
+      });
     });
 
     it('should be a function', () => {
@@ -146,9 +159,9 @@ describe('g-pick-commit', () => {
         let commits;
         let procUtilsDoOnExitSpy;
 
-        const verifyPromptedWith = (prop, value) => () => {
-          if (prop === 'choices') value.push(new inquirer.Separator());
-          expect(inquirer.prompt).toHaveBeenCalledWith([jasmine.objectContaining({[prop]: value})]);
+        const verifyPromptedWith = (prop, value) => {
+          if (prop === 'choices') value.push(new Separator());
+          expect(selectSpy).toHaveBeenCalledWith(jasmine.objectContaining({[prop]: value}));
         };
 
         beforeEach(() => {
@@ -161,11 +174,10 @@ describe('g-pick-commit', () => {
         it('should prompt the user to pick a commit', async () => {
           await gPickCommit();
 
-          verifyPromptedWith('type', 'list');
           verifyPromptedWith('message', 'Pick a commit:');
         });
 
-        it('should pass the commits as options (as returned by `git log ...`)', async () => {
+        it('should pass the commit SHAs (removing other info returned by `git log ...`) as options', async () => {
           commits = [
             '123456 The foo commit',
             '234567 The bar commit',
@@ -175,27 +187,27 @@ describe('g-pick-commit', () => {
           await gPickCommit();
 
           verifyPromptedWith('choices', [
-            '123456 The foo commit',
-            '234567 The bar commit',
-            '3456789 The baz commit',
-            '456789 The qux commit',
+            {name: '123456 The foo commit', value: '123456'},
+            {name: '234567 The bar commit', value: '234567'},
+            {name: '3456789 The baz commit', value: '3456789'},
+            {name: '456789 The qux commit', value: '456789'},
           ]);
         });
 
         it('should trim whitespace around commit lines', async () => {
           commits = [
             '    123456 The foo commit    ',
-            '\r\n234567 The bar commit\r\n',
-            '\t\t3456789 The baz commit\t\t',
+            '\r\n234567 \r\r The bar commit\r\n',
+            '\t\t3456789\t\tThe baz commit\t\t',
             ' \n 456789 The qux commit \t ',
           ];
           await gPickCommit();
 
           verifyPromptedWith('choices', [
-            '123456 The foo commit',
-            '234567 The bar commit',
-            '3456789 The baz commit',
-            '456789 The qux commit',
+            {name: '123456 The foo commit', value: '123456'},
+            {name: '234567 \r\r The bar commit', value: '234567'},
+            {name: '3456789\t\tThe baz commit', value: '3456789'},
+            {name: '456789 The qux commit', value: '456789'},
           ]);
         });
 
@@ -211,10 +223,10 @@ describe('g-pick-commit', () => {
           await gPickCommit();
 
           verifyPromptedWith('choices', [
-            '123456 The foo commit',
-            '234567 The bar commit',
-            '3456789 The baz commit',
-            '456789 The qux commit',
+            {name: '123456 The foo commit', value: '123456'},
+            {name: '234567 The bar commit', value: '234567'},
+            {name: '3456789 The baz commit', value: '3456789'},
+            {name: '456789 The qux commit', value: '456789'},
           ]);
         });
 
@@ -227,13 +239,13 @@ describe('g-pick-commit', () => {
           ];
           await gPickCommit();
 
-          verifyPromptedWith('default', 0);
+          verifyPromptedWith('default', '123456');
         });
 
         it('should register a callback to exit with an error if exited while the prompt is shown', async () => {
           let callback;
 
-          promptSpy.and.callFake(() => {
+          selectSpy.and.callFake(() => {
             expect(procUtilsDoOnExitSpy).toHaveBeenCalledWith(process, jasmine.any(Function));
             callback = procUtilsDoOnExitSpy.calls.mostRecent().args[1];
             return Promise.resolve({commit: ''});
@@ -257,7 +269,7 @@ describe('g-pick-commit', () => {
           const unlistenSpy = jasmine.createSpy('unlisten');
 
           procUtilsDoOnExitSpy.and.returnValue(unlistenSpy);
-          promptSpy.and.callFake(() => {
+          selectSpy.and.callFake(() => {
             expect(procUtilsDoOnExitSpy).toHaveBeenCalledTimes(1);
             expect(unlistenSpy).not.toHaveBeenCalled();
             return Promise.resolve({commit: ''});
@@ -265,7 +277,7 @@ describe('g-pick-commit', () => {
 
           await gPickCommit();
 
-          expect(promptSpy).toHaveBeenCalledTimes(1);
+          expect(selectSpy).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });
 
@@ -273,7 +285,7 @@ describe('g-pick-commit', () => {
           const unlistenSpy = jasmine.createSpy('unlisten');
 
           procUtilsDoOnExitSpy.and.returnValue(unlistenSpy);
-          promptSpy.and.callFake(() => {
+          selectSpy.and.callFake(() => {
             expect(procUtilsDoOnExitSpy).toHaveBeenCalledTimes(1);
             expect(unlistenSpy).not.toHaveBeenCalled();
             return Promise.reject('');
@@ -281,18 +293,18 @@ describe('g-pick-commit', () => {
 
           await expectAsync(gPickCommit()).toBeRejected();
 
-          expect(promptSpy).toHaveBeenCalledTimes(1);
+          expect(selectSpy).toHaveBeenCalledTimes(1);
           expect(unlistenSpy).toHaveBeenCalledWith();
         });
       });
 
       describe('output', () => {
-        it('should log the selected commit SHA (removing other info)', async () => {
-          promptSpy.and.returnValues(
-              Promise.resolve({commit: 'f00f00 (foo, origin/foo) This is the foo commit message'}),
-              Promise.resolve({commit: 'b4rb4r (bar, origin/bar) This is the bar commit message'}),
-              Promise.resolve({commit: 'b4zb4z (baz, origin/baz) This is the baz commit message'}),
-              Promise.resolve({commit: '9ux9ux (qux, origin/qux) This is the qux commit message'}));
+        it('should log the selected commit SHA', async () => {
+          selectSpy.and.returnValues(
+              Promise.resolve('f00f00'),
+              Promise.resolve('b4rb4r'),
+              Promise.resolve('b4zb4z'),
+              Promise.resolve('9ux9ux'));
 
           expect(await gPickCommit()).toBeUndefined();
           expect(consoleLogSpy).toHaveBeenCalledWith('f00f00');
@@ -307,9 +319,8 @@ describe('g-pick-commit', () => {
           expect(consoleLogSpy).toHaveBeenCalledWith('9ux9ux');
         });
 
-        it('should return the selected commit SHA (removing other info) if `returnOutput` is `true`', async () => {
-          const commit = 'f00b4r (baz, origin/qux) This is the commit message';
-          promptSpy.and.resolveTo({commit});
+        it('should return the selected commit SHA if `returnOutput` is `true`', async () => {
+          selectSpy.and.resolveTo('f00b4r');
 
           expect(await gPickCommit([], {returnOutput: true})).toBe('f00b4r');
           expect(consoleLogSpy).not.toHaveBeenCalled();
