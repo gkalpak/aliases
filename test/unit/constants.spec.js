@@ -9,6 +9,7 @@ import {
   ALIASES,
   BIN_DIR,
   DEF_CODE,
+  DEF_SAP_VERSION,
   getDescReplacements,
   PR_LOCAL_BRANCH_PREFIX,
   PR_REMOTE_ALIAS_PREFIX,
@@ -74,9 +75,10 @@ describe('constants', () => {
     });
 
     it('should support passing default config options', () => {
-      expect(DEF_CODE('')).toContain('Object.assign({}, config)');
-      expect(DEF_CODE('', {})).toContain('Object.assign({}, config)');
-      expect(DEF_CODE('', {foo: true})).toContain('Object.assign({"foo":true}, config)');
+      expect(DEF_CODE('')).toContain(`Object.assign({sapVersion: ${DEF_SAP_VERSION}}, {}, runtimeConfig)`);
+      expect(DEF_CODE('', {})).toContain(`Object.assign({sapVersion: ${DEF_SAP_VERSION}}, {}, runtimeConfig)`);
+      expect(DEF_CODE('', {foo: true})).
+        toContain(`Object.assign({sapVersion: ${DEF_SAP_VERSION}}, {"foo":true}, runtimeConfig)`);
     });
   });
 

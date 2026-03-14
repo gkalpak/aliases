@@ -116,19 +116,6 @@ describe('alias', () => {
       expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', jasmine.objectContaining({bar: 'baz'}));
     });
 
-    it('should default to `sapVersion: 2`', () => {
-      new AliasSpecDefault('foo');
-      expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', {sapVersion: 2});
-
-      new AliasSpecDefault('foo', {bar: 'baz'});
-      expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', {bar: 'baz', sapVersion: 2});
-    });
-
-    it('should allow overwriting `sapVersion`', () => {
-      new AliasSpecDefault('foo', {bar: 'baz', sapVersion: 3});
-      expect(AliasSpecDefault.DEF_CODE).toHaveBeenCalledWith('foo', {bar: 'baz', sapVersion: 3});
-    });
-
     it('should use the command as description', () => {
       const spec = new AliasSpecDefault('foo', {bar: 'baz'});
       expect(spec.description).toBe('foo');

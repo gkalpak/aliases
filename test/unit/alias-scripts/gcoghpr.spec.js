@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import stripAnsi from 'strip-ansi';
 
 import {_testing, Gcoghpr, main} from '../../../lib/alias-scripts/gcoghpr.js';
-import {ALIASES, PR_LOCAL_BRANCH_PREFIX, PR_REMOTE_ALIAS_PREFIX} from '../../../lib/constants.js';
+import {ALIASES, DEF_SAP_VERSION, PR_LOCAL_BRANCH_PREFIX, PR_REMOTE_ALIAS_PREFIX} from '../../../lib/constants.js';
 import {loadPackageJson} from '../../test-utils.js';
 
 import {MockExecutor, MockHttps, MockLogger} from './gcoghpr.mocks.js';
@@ -125,11 +125,11 @@ describe('gcoghpr', () => {
         expect(MockExecutor.instances.length).toBe(2);
 
         expect(executor1.logger).toBe(gcoghpr._logger);
-        expect(executor1.baseConfig).toEqual({sapVersion: 2, foo: 'bar'});
+        expect(executor1.baseConfig).toEqual({sapVersion: DEF_SAP_VERSION, foo: 'bar'});
         expect(executor1.debugMode).toBe(false);
 
         expect(executor2.logger).toBe(gcoghpr._logger);
-        expect(executor2.baseConfig).toEqual({sapVersion: 2, debug: true});
+        expect(executor2.baseConfig).toEqual({sapVersion: DEF_SAP_VERSION, debug: true});
         expect(executor2.debugMode).toBe(true);
       });
 
