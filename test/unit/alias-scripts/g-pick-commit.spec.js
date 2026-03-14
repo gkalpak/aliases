@@ -3,6 +3,7 @@ import {commandUtils, processUtils} from '@gkalpak/cli-utils';
 import {Separator} from '@inquirer/select';
 
 import {_testing, gPickCommit, main} from '../../../lib/alias-scripts/g-pick-commit.js';
+import {DEF_SAP_VERSION} from '../../../lib/constants.js';
 import {_testing as utilsTesting} from '../../../lib/utils.js';
 
 
@@ -95,7 +96,8 @@ describe('g-pick-commit', () => {
 
       it('should run `git log ...` (and return the output)', async () => {
         await gPickCommit();
-        expect(cmdUtilsRunSpy).toHaveBeenCalledWith('git log --oneline --max-count=50', [], {returnOutput: true});
+        expect(cmdUtilsRunSpy).toHaveBeenCalledWith(
+            'git log --oneline --max-count=50', [], {returnOutput: true, sapVersion: DEF_SAP_VERSION});
       });
 
       it('should return `git log ...` output even if `config.returnOutput` is false (but not affect `config`)',
@@ -103,7 +105,8 @@ describe('g-pick-commit', () => {
             const config = {returnOutput: false};
             await gPickCommit([], config);
 
-            expect(cmdUtilsRunSpy).toHaveBeenCalledWith('git log --oneline --max-count=50', [], {returnOutput: true});
+            expect(cmdUtilsRunSpy).toHaveBeenCalledWith(
+                'git log --oneline --max-count=50', [], {returnOutput: true, sapVersion: DEF_SAP_VERSION});
             expect(config.returnOutput).toBe(false);
           }
       );
@@ -133,7 +136,9 @@ describe('g-pick-commit', () => {
             await gPickCommit(testArgs);
 
             expect(cmdUtilsRunSpy).withContext(`With args: ${testArgs.join(', ')}`).toHaveBeenCalledWith(
-                'git log --oneline | grep "foo or bar" --max-count=50', [], {returnOutput: true});
+                'git log --oneline | grep "foo or bar" --max-count=50',
+                [],
+                {returnOutput: true, sapVersion: DEF_SAP_VERSION});
           }
         });
 
@@ -148,7 +153,9 @@ describe('g-pick-commit', () => {
                 await gPickCommit(testArgs, config);
 
                 expect(cmdUtilsRunSpy).withContext(`With args: ${testArgs.join(', ')}`).toHaveBeenCalledWith(
-                    'git log --oneline | grep "foo or bar" --max-count=50', [], {returnOutput: true});
+                    'git log --oneline | grep "foo or bar" --max-count=50',
+                    [],
+                    {returnOutput: true, sapVersion: DEF_SAP_VERSION});
                 expect(config.returnOutput).toBe(false);
               }
             }

@@ -3,6 +3,7 @@ import {commandUtils, processUtils} from '@gkalpak/cli-utils';
 import {Separator} from '@inquirer/select';
 
 import {_testing, gPickBranch, main} from '../../../lib/alias-scripts/g-pick-branch.js';
+import {DEF_SAP_VERSION} from '../../../lib/constants.js';
 import {_testing as utilsTesting} from '../../../lib/utils.js';
 
 
@@ -104,7 +105,8 @@ describe('g-pick-branch', () => {
 
       it('should run `git branch` (and return the output)', async () => {
         await gPickBranch();
-        expect(cmdUtilsRunSpy).toHaveBeenCalledWith('git branch --all', [], {returnOutput: true});
+        expect(cmdUtilsRunSpy).
+          toHaveBeenCalledWith('git branch --all', [], {returnOutput: true, sapVersion: DEF_SAP_VERSION});
       });
 
       it('should return `git branch` output even if `config.returnOutput` is false (but not affect `config`)',
@@ -112,7 +114,8 @@ describe('g-pick-branch', () => {
             const config = {returnOutput: false};
             await gPickBranch([], config);
 
-            expect(cmdUtilsRunSpy).toHaveBeenCalledWith('git branch --all', [], {returnOutput: true});
+            expect(cmdUtilsRunSpy).
+              toHaveBeenCalledWith('git branch --all', [], {returnOutput: true, sapVersion: DEF_SAP_VERSION});
             expect(config.returnOutput).toBe(false);
           }
       );
