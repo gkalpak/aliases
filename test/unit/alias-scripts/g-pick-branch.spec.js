@@ -267,6 +267,34 @@ describe('g-pick-branch', () => {
           ]);
         });
 
+        it('should propagate errors thrown while picking a branch', async () => {
+          const err1 = 'Test error 1.';
+          selectSpy.and.rejectWith(err1);
+
+          await expectAsync(gPickBranch()).toBeRejectedWith(err1);
+
+          const err2 = new Error('Test error 2.');
+          selectSpy.and.rejectWith(err2);
+
+          await expectAsync(gPickBranch()).toBeRejectedWith(err2);
+        });
+
+        it('should exit with an error if the prompt is interrupted by the user', async () => {
+          const stderrWriteSpy = spyOn(process.stderr, 'write');
+          const processExitSpy = spyOn(process, 'exit');
+
+          const exitPromptErr = Object.assign(
+              new Error('User force closed the prompt in some way.'),
+              {name: 'ExitPromptError'});
+          selectSpy.and.rejectWith(exitPromptErr);
+
+          await gPickBranch();
+
+          expect(stderrWriteSpy).toHaveBeenCalledOnceWith('Aborted by user.\n');
+          expect(processExitSpy).toHaveBeenCalledOnceWith(1);
+          expect(stderrWriteSpy).toHaveBeenCalledBefore(processExitSpy);
+        });
+
         it('should register a callback to exit with an error if exited while the prompt is shown', async () => {
           let callback;
 
