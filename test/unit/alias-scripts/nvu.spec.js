@@ -2,7 +2,7 @@
 import {commandUtils} from '@gkalpak/cli-utils';
 
 import {main, nvu, _testing as nvuTesting} from '../../../lib/alias-scripts/nvu.js';
-import {ALIASES} from '../../../lib/constants.js';
+import {ALIASES, DEF_SAP_VERSION} from '../../../lib/constants.js';
 import {_testing as utilsTesting} from '../../../lib/utils.js';
 
 
@@ -156,7 +156,7 @@ describe('nvu', () => {
           const config = {foo: 'bar'};
           await nvu(['333'], config);
 
-          expect(cmdUtilsRunSpy.calls.mostRecent().args[2]).toBe(config);
+          expect(cmdUtilsRunSpy.calls.mostRecent().args[2]).toEqual({foo: 'bar', sapVersion: DEF_SAP_VERSION});
         });
       });
 
@@ -165,14 +165,16 @@ describe('nvu', () => {
 
         it('should first run `nvls` (and return the output)', async () => {
           await nvu(['333'], {});
-          expect(cmdUtilsRunSpy).toHaveBeenCalledWith(nvlsCmdWin, [], {returnOutput: true});
+          expect(cmdUtilsRunSpy).
+            toHaveBeenCalledWith(nvlsCmdWin, [], {returnOutput: true, sapVersion: DEF_SAP_VERSION});
         });
 
         it('should return `nvls` output even if `config.returnOutput` is false (but not affect `config`)', async () => {
           const config = {returnOutput: false};
           await nvu(['333'], config);
 
-          expect(cmdUtilsRunSpy).toHaveBeenCalledWith(nvlsCmdWin, [], {returnOutput: true});
+          expect(cmdUtilsRunSpy).
+            toHaveBeenCalledWith(nvlsCmdWin, [], {returnOutput: true, sapVersion: DEF_SAP_VERSION});
           expect(config.returnOutput).toBe(false);
         });
 
@@ -212,7 +214,7 @@ describe('nvu', () => {
           const config = {foo: 'bar'};
           await nvu(['333'], config);
 
-          expect(cmdUtilsRunSpy.calls.mostRecent().args[2]).toBe(config);
+          expect(cmdUtilsRunSpy.calls.mostRecent().args[2]).toEqual({foo: 'bar', sapVersion: DEF_SAP_VERSION});
         });
       });
     });
